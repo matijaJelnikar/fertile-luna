@@ -54,6 +54,9 @@
     },
     "@nestjs/schematics:module": {
       "path": "apps/api/src"
+    },
+    "@nx/angular:component": {
+      "style": "scss"
     }
   }
 }
