@@ -1,0 +1,28 @@
+<mat-toolbar color="primary">
+  <span>Basal Temp Monitor</span>
+</mat-toolbar>
+
+<main>
+  <router-outlet></router-outlet>
+</main>
+
+<div class="bottom-nav">
+  <mat-nav-list>
+    <mat-list-item (click)="selectTab(0)" [routerLink]="['/home']">
+      <mat-icon>home</mat-icon>
+      Home
+    </mat-list-item>
+    <mat-list-item (click)="selectTab(1)" [routerLink]="['/history']">
+      <mat-icon>history</mat-icon>
+      History
+    </mat-list-item>
+    <mat-list-item (click)="selectTab(2)" [routerLink]="['/settings']">
+      <mat-icon>settings</mat-icon>
+      Settings
+    </mat-list-item>
+  </mat-nav-list>
+</div>
+
+<button mat-fab color="accent" class="fab-button" (click)="addRecord()">
+  <mat-icon>add</mat-icon>
+</button>
