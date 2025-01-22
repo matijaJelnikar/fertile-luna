@@ -1,7 +1,17 @@
 <h2 mat-dialog-title>Add measurement</h2>
 <mat-dialog-content>
   <form [formGroup]="temperatureForm" (ngSubmit)="addTemperature()">
-    <!-- Temperature Input -->
+    <mat-form-field class="example-full-width">
+      <mat-label>Choose a date</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="date" />
+      <mat-hint>MM/DD/YYYY</mat-hint>
+      <mat-datepicker-toggle
+        matIconSuffix
+        [for]="picker"
+      ></mat-datepicker-toggle>
+      <mat-datepicker touchUi #picker></mat-datepicker>
+    </mat-form-field>
+
     <mat-form-field appearance="fill">
       <input
         matInput

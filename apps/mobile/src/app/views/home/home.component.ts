@@ -21,6 +21,7 @@ export class HomeComponent {
       height: 'auto',
       maxHeight: '90vh',
       panelClass: 'mobile-dialog',
+      data: { date: Date.now() },
     });
 
     dialogRef.afterClosed().subscribe((result) => {

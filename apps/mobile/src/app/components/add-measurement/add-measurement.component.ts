@@ -7,6 +7,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { provideNativeDateAdapter } from '@angular/material/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   BleedingOption,
@@ -19,19 +20,30 @@ import {
 } from '@basal-temp-log-workspace/model';
 import { MaterialModule } from '../../material.module';
 
-export interface DialogData {}
+export interface AddMeasurementModel {
+  date: Date;
+  temperature: number;
+  bleeding: BleedingOption;
+  pain: PainOption;
+  mucusFeeling: MucusFeelingOption;
+  mucusAppearance: MucusAppearanceOption;
+  cervixPosition: CervixPositionOption;
+  cervixFeeling: CervixFeelingOption;
+  intercourse: IntercourseOption;
+  notes: string;
+}
 
 @Component({
   standalone: true,
   selector: 'app-add-measurement',
   templateUrl: './add-measurement.component.html',
   styleUrls: ['./add-measurement.component.scss'],
+  providers: [provideNativeDateAdapter()],
   imports: [CommonModule, ReactiveFormsModule, FormsModule, MaterialModule],
 })
 export class AddMeasurementComponent implements OnInit {
   readonly dialogRef = inject(MatDialogRef<AddMeasurementComponent>);
-  readonly data = inject<DialogData>(MAT_DIALOG_DATA);
-  // readonly animal = model(this.data.animal);
+  readonly data = inject<AddMeasurementModel>(MAT_DIALOG_DATA);
 
   isLoading = true;
   bleedingOptions = Object.values(BleedingOption);
@@ -43,6 +55,7 @@ export class AddMeasurementComponent implements OnInit {
   intercourseOptions = Object.values(IntercourseOption);
 
   temperatureForm: FormGroup<any> = new FormGroup({
+    date: new FormControl(Date.now),
     temperature: new FormControl(null),
     bleeding: new FormControl('Light', Validators.required),
     pain: new FormControl(null),
@@ -54,7 +67,9 @@ export class AddMeasurementComponent implements OnInit {
     notes: new FormControl(''),
   });
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.temperatureForm.patchValue(this.data);
+  }
 
   addTemperature(): void {}
 
