@@ -1,0 +1,90 @@
+<h2 mat-dialog-title>Add measurement</h2>
+<mat-dialog-content>
+  <form [formGroup]="temperatureForm" (ngSubmit)="addTemperature()">
+    <!-- Temperature Input -->
+    <mat-form-field appearance="fill">
+      <input
+        matInput
+        placeholder="Temperature"
+        formControlName="temperature"
+        type="number"
+        id="temperatureInput"
+      />
+      <mat-label for="temperatureInput" id="temperatureLabel"
+        >Temperature</mat-label
+      >
+    </mat-form-field>
+
+    <label for="bleedingLabel">Bleeding</label>
+    <mat-button-toggle-group formControlName="bleeding">
+      <mat-button-toggle
+        *ngFor="let option of bleedingOptions"
+        [value]="option"
+        class="btn-primary"
+        >{{ option }}</mat-button-toggle
+      >
+    </mat-button-toggle-group>
+
+    <label for="painLabel">Pain</label>
+    <mat-button-toggle-group formControlName="pain">
+      <mat-button-toggle *ngFor="let option of painOptions" [value]="option">{{
+        option
+      }}</mat-button-toggle>
+    </mat-button-toggle-group>
+
+    <label for="mucusFeelingLabel">Mucus - Feeling</label>
+    <mat-button-toggle-group formControlName="mucusFeeling">
+      <mat-button-toggle
+        *ngFor="let option of mucusFeelingOptions"
+        [value]="option"
+        >{{ option }}</mat-button-toggle
+      >
+    </mat-button-toggle-group>
+
+    <label for="mucusAppearanceLabel">Mucus - Appearance</label>
+    <mat-button-toggle-group formControlName="mucusAppearance">
+      <mat-button-toggle
+        *ngFor="let option of mucusAppearanceOptions"
+        [value]="option"
+        >{{ option }}</mat-button-toggle
+      >
+    </mat-button-toggle-group>
+
+    <label for="cervixPositionLabel">Cervix - Position</label>
+    <mat-button-toggle-group formControlName="cervixPosition">
+      <mat-button-toggle
+        *ngFor="let option of cervixPositionOptions"
+        [value]="option"
+        >{{ option }}</mat-button-toggle
+      >
+    </mat-button-toggle-group>
+
+    <label for="cervixFeelingLabel">Cervix - Feeling</label>
+    <mat-button-toggle-group formControlName="cervixFeeling">
+      <mat-button-toggle
+        *ngFor="let option of cervixFeelingOptions"
+        [value]="option"
+        >{{ option }}</mat-button-toggle
+      >
+    </mat-button-toggle-group>
+
+    <label for="intercourseLabel">Intercourse</label>
+    <mat-button-toggle-group formControlName="intercourse">
+      <mat-button-toggle
+        *ngFor="let option of intercourseOptions"
+        [value]="option"
+        >{{ option }}</mat-button-toggle
+      >
+    </mat-button-toggle-group>
+
+    <mat-form-field appearance="fill">
+      <mat-label id="temperatureLabel">Notes</mat-label>
+      <input matInput formControlName="notes" type="text" />
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <button mat-button (click)="close()">Close</button>
+  <button mat-button [mat-dialog-close]="save()" cdkFocusInitial>Ok</button>
+</mat-dialog-actions>

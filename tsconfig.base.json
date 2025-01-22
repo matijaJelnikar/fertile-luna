@@ -17,7 +17,8 @@
     "paths": {
       "@basal-temp-log-workspace/components": [
         "libs/shared/components/src/index.ts"
-      ]
+      ],
+      "@basal-temp-log-workspace/model": ["libs/shared/model/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

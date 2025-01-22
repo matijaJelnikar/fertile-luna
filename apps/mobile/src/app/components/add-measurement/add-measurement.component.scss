@@ -1,0 +1,25 @@
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; // Space between each form control
+  padding: 20px;
+  max-width: 500px; // Optional: limit the form width
+  label,
+  textarea {
+    width: 100%; // Ensure all elements take up the full width
+  }
+
+  // Mobile responsiveness
+  @media (max-width: 600px) {
+    padding: 15px;
+    gap: 15px; // Smaller gap between form controls
+
+    mat-form-field {
+      margin-bottom: 15px; // Adjust space after form field on small screens
+    }
+
+    textarea {
+      min-height: 80px; // Adjust text area height for mobile
+    }
+  }
+}
