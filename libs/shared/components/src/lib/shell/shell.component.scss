@@ -1,5 +1,3 @@
-@import '@angular/material/prebuilt-themes/rose-red.css';
-
 $dark_soft_pink: #f4a8b8;
 $dark_rose: #880e4f;
 
@@ -10,6 +8,7 @@ $dark_rose: #880e4f;
 
   .main-content {
     padding: 8px;
+    padding-bottom: 72px;
   }
 }
 
@@ -51,14 +50,10 @@ mat-toolbar {
       transition: background-color 0.3s ease;
 
       &:hover,
-      &:focus {
+      &:focus,
+      &.selected {
         background-color: var(--mat-mdc-theme-secondary-container, #f8bbd0);
         color: var(--mat-mdc-theme-on-secondary-container, #880e4f);
-      }
-
-      &.active {
-        background-color: var(--mat-mdc-theme-primary, #ad1457);
-        color: var(--mat-mdc-theme-on-primary, #ffffff);
       }
     }
   }

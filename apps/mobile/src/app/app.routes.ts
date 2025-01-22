@@ -1,33 +1,22 @@
 import { Route } from '@angular/router';
 import { ShellComponent } from '@basal-temp-log-workspace/components';
+import { HistoryComponent } from './views/history/history.component';
 import { HomeComponent } from './views/home/home.component';
+import { SettingsComponent } from './views/settings/settings.component';
 
 export const appRoutes: Route[] = [
   {
     path: '',
-    component: ShellComponent, // Shell component wraps all content pages
+    component: ShellComponent,
     children: [
-      { path: '', redirectTo: 'home', pathMatch: 'full' }, // Default page
+      { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'home', component: HomeComponent },
-      // { path: 'history', component: HistoryComponent },
-      // { path: 'settings', component: SettingsComponent },
+      { path: 'history', component: HistoryComponent },
+      { path: 'settings', component: SettingsComponent },
     ],
   },
-
-  // {
-  //   path: '',
-  //   redirectTo: 'home',
-  //   pathMatch: 'full', // Ensures exact match for the empty path
-  // },
-  // {
-  //   path: 'home',
-  //   loadComponent: () =>
-  //     import(`./views/home/home.component.ts.component`).then(
-  //       (c) => c.HomeComponent
-  //     ),
-  // },
-  // {
-  //   path: '**',
-  //   redirectTo: 'home', // Wildcard route to handle undefined paths
-  // },
+  {
+    path: '**',
+    redirectTo: 'home', // Wildcard route to handle undefined paths
+  },
 ];

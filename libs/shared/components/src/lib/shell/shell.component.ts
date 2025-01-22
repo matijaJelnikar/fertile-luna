@@ -1,3 +1,4 @@
+import { NgClass } from '@angular/common';
 import { Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -5,6 +6,12 @@ import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterModule } from '@angular/router';
+
+enum NavigationButton {
+  HOME = 'HOME',
+  HISTORY = 'HISTORY',
+  SETTINGS = 'SETTINGS',
+}
 
 @Component({
   selector: 'lib-shell',
@@ -17,23 +24,26 @@ import { Router, RouterModule } from '@angular/router';
     MatButtonModule,
     MatListModule,
     RouterModule,
+    NgClass,
   ],
 })
 export class ShellComponent {
-  selectedIndex = 0;
+  selectedTab: NavigationButton = NavigationButton.HOME;
+
+  protected Navigation: typeof NavigationButton = NavigationButton;
 
   constructor(private router: Router) {}
 
-  selectTab(index: number): void {
-    this.selectedIndex = index;
-    switch (index) {
-      case 0:
+  selectTab(navButton: NavigationButton): void {
+    this.selectedTab = navButton;
+    switch (navButton) {
+      case NavigationButton.HOME:
         this.router.navigate(['/home']);
         break;
-      case 1:
+      case NavigationButton.HISTORY:
         this.router.navigate(['/history']);
         break;
-      case 2:
+      case NavigationButton.SETTINGS:
         this.router.navigate(['/settings']);
         break;
     }
