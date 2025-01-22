@@ -1,0 +1,14 @@
+.fab-container {
+  position: fixed;
+  z-index: 1000;
+
+  &.bottom-right {
+    bottom: 85px;
+    right: 16px;
+  }
+
+  &.bottom-left {
+    bottom: 85px;
+    left: 16px;
+  }
+}

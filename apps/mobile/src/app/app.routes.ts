@@ -1,6 +1,6 @@
 import { Route } from '@angular/router';
 import { ShellComponent } from '@basal-temp-log-workspace/components';
-import { HomeComponent } from './views/home/home.component.ts.component';
+import { HomeComponent } from './views/home/home.component';
 
 export const appRoutes: Route[] = [
   {

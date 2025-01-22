@@ -1,19 +1,65 @@
-.shell-container {
+@import '@angular/material/prebuilt-themes/rose-red.css';
+
+$dark_soft_pink: #f4a8b8;
+$dark_rose: #880e4f;
+
+:host {
   display: flex;
   flex-direction: column;
   height: 100vh;
+
+  .main-content {
+    padding: 8px;
+  }
 }
 
-.content {
-  flex: 1;
-  overflow: auto;
+mat-toolbar {
+  background-color: $dark_soft_pink;
+  color: $dark_rose;
+  gap: 5px;
+
+  span {
+    letter-spacing: 0.5px;
+    text-transform: none;
+  }
 }
 
-.bottom-nav {
+.bottom-nav-wrapper {
+  position: fixed;
+  bottom: 0;
+  height: 65px;
+  width: 100%;
+  background-color: var(--mat-mdc-theme-surface, #fce4ec);
+  border-top: 1px solid var(--mat-mdc-theme-outline, #e0e0e0);
   display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  background-color: #fff;
-  padding: 10px;
-  border-top: 1px solid #ccc;
+  justify-content: center;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+
+  .bottom-nav-container {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+
+    .nav-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--mat-mdc-theme-on-surface, $dark_rose);
+      cursor: pointer;
+      padding: 10px 15px;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+
+      &:hover,
+      &:focus {
+        background-color: var(--mat-mdc-theme-secondary-container, #f8bbd0);
+        color: var(--mat-mdc-theme-on-secondary-container, #880e4f);
+      }
+
+      &.active {
+        background-color: var(--mat-mdc-theme-primary, #ad1457);
+        color: var(--mat-mdc-theme-on-primary, #ffffff);
+      }
+    }
+  }
 }
