@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>Add measurement</h2>
 <mat-dialog-content>
   <form [formGroup]="temperatureForm" (ngSubmit)="addTemperature()">
-    <mat-form-field class="example-full-width">
+    <mat-form-field>
       <mat-label>Choose a date</mat-label>
       <input matInput [matDatepicker]="picker" formControlName="date" />
       <mat-hint>MM/DD/YYYY</mat-hint>
@@ -11,11 +11,10 @@
       ></mat-datepicker-toggle>
       <mat-datepicker touchUi #picker></mat-datepicker>
     </mat-form-field>
-
     <mat-form-field appearance="fill">
       <input
+        #temperatureInput
         matInput
-        placeholder="Temperature"
         formControlName="temperature"
         type="number"
         id="temperatureInput"
@@ -24,69 +23,68 @@
         >Temperature</mat-label
       >
     </mat-form-field>
+    <div class="bleeding-container">
+      <label for="bleedingLabel">Bleeding</label>
+      <mat-chip-listbox multiple formControlName="bleeding">
+        @for (option of bleedingOptions; track option) {
+        <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
+        }
+      </mat-chip-listbox>
+    </div>
+    <div class="pain-container">
+      <label for="painLabel">Pain</label>
+      <mat-chip-listbox multiple formControlName="pain">
+        @for (option of painOptions; track option) {
+        <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
+        }
+      </mat-chip-listbox>
+    </div>
+    <div class="mucus-feeling-container">
+      <label for="mucusFeelingLabel">Mucus - Feeling</label>
+      <mat-chip-listbox multiple formControlName="mucusFeeling">
+        @for (option of mucusFeelingOptions; track option) {
+        <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
+        }
+      </mat-chip-listbox>
+    </div>
 
-    <label for="bleedingLabel">Bleeding</label>
-    <mat-button-toggle-group formControlName="bleeding">
-      <mat-button-toggle
-        *ngFor="let option of bleedingOptions"
-        [value]="option"
-        class="btn-primary"
-        >{{ option }}</mat-button-toggle
-      >
-    </mat-button-toggle-group>
+    <div class="mucus-appearance-container">
+      <label for="mucusAppearanceLabel">Mucus - Appearance</label>
+      <mat-chip-listbox multiple formControlName="mucusAppearance">
+        @for (option of mucusAppearanceOptions; track option) {
+        <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
+        }
+      </mat-chip-listbox>
+    </div>
 
-    <label for="painLabel">Pain</label>
-    <mat-button-toggle-group formControlName="pain">
-      <mat-button-toggle *ngFor="let option of painOptions" [value]="option">{{
-        option
-      }}</mat-button-toggle>
-    </mat-button-toggle-group>
+    <div class="cervix-position-container">
+      <label for="cervixPositionLabel">Cervix - Position</label>
+      <mat-chip-listbox multiple formControlName="cervixPosition">
+        @for (option of cervixPositionOptions; track option) {
+        <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
+        }
+      </mat-chip-listbox>
+    </div>
 
-    <label for="mucusFeelingLabel">Mucus - Feeling</label>
-    <mat-button-toggle-group formControlName="mucusFeeling">
-      <mat-button-toggle
-        *ngFor="let option of mucusFeelingOptions"
-        [value]="option"
-        >{{ option }}</mat-button-toggle
-      >
-    </mat-button-toggle-group>
+    <div class="cervix-feeling-container">
+      <label for="cervixFeelingLabel">Cervix - Feeling</label>
+      <mat-chip-listbox multiple formControlName="cervixFeeling">
+        @for (option of cervixFeelingOptions; track option) {
+        <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
+        }
+      </mat-chip-listbox>
+    </div>
 
-    <label for="mucusAppearanceLabel">Mucus - Appearance</label>
-    <mat-button-toggle-group formControlName="mucusAppearance">
-      <mat-button-toggle
-        *ngFor="let option of mucusAppearanceOptions"
-        [value]="option"
-        >{{ option }}</mat-button-toggle
-      >
-    </mat-button-toggle-group>
+    <div class="intercourse-container">
+      <label for="intercourseLabel">Intercourse</label>
+      <mat-chip-listbox multiple formControlName="intercourse">
+        @for (option of intercourseOptions; track option) {
+        <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
+        }
+      </mat-chip-listbox>
+    </div>
 
-    <label for="cervixPositionLabel">Cervix - Position</label>
-    <mat-button-toggle-group formControlName="cervixPosition">
-      <mat-button-toggle
-        *ngFor="let option of cervixPositionOptions"
-        [value]="option"
-        >{{ option }}</mat-button-toggle
-      >
-    </mat-button-toggle-group>
-
-    <label for="cervixFeelingLabel">Cervix - Feeling</label>
-    <mat-button-toggle-group formControlName="cervixFeeling">
-      <mat-button-toggle
-        *ngFor="let option of cervixFeelingOptions"
-        [value]="option"
-        >{{ option }}</mat-button-toggle
-      >
-    </mat-button-toggle-group>
-
-    <label for="intercourseLabel">Intercourse</label>
-    <mat-button-toggle-group formControlName="intercourse">
-      <mat-button-toggle
-        *ngFor="let option of intercourseOptions"
-        [value]="option"
-        >{{ option }}</mat-button-toggle
-      >
-    </mat-button-toggle-group>
-
+    <div class="-container"></div>
     <mat-form-field appearance="fill">
       <mat-label id="temperatureLabel">Notes</mat-label>
       <input matInput formControlName="notes" type="text" />
