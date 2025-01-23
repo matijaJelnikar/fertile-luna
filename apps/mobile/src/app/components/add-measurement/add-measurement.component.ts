@@ -12,6 +12,7 @@ import {
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -63,7 +64,7 @@ export class AddMeasurementComponent implements OnInit, AfterViewInit {
 
   temperatureForm = new FormGroup<AddMeasurementFormModel>({
     date: new FormControl(),
-    temperature: new FormControl(null),
+    temperature: new FormControl(null, Validators.required),
     bleeding: new FormControl(null),
     pain: new FormControl(null),
     mucusFeeling: new FormControl(null),
@@ -81,9 +82,7 @@ export class AddMeasurementComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.temperatureInput.nativeElement.focus();
-    }, 0);
+    this.temperatureInput.nativeElement.focus();
   }
 
   addTemperature(): void {}

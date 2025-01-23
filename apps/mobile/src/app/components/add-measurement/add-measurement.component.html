@@ -94,5 +94,12 @@
 
 <mat-dialog-actions>
   <button mat-button (click)="close()">Close</button>
-  <button mat-button [mat-dialog-close]="save()" cdkFocusInitial>Ok</button>
+  <button
+    mat-button
+    [mat-dialog-close]="save()"
+    cdkFocusInitial
+    [disabled]="this.temperatureForm.invalid"
+  >
+    Ok
+  </button>
 </mat-dialog-actions>
