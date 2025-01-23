@@ -24,6 +24,7 @@
     "@nestjs/swagger": "^7.4.2",
     "@nestjs/typeorm": "^10.0.2",
     "axios": "^1.6.0",
+    "chart.js": "^4.4.7",
     "dotenv": "^16.4.5",
     "mysql2": "^3.11.3",
     "passport": "^0.7.0",
