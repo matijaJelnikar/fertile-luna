@@ -1,12 +1,10 @@
-import { Column, Entity, ObjectId, PrimaryGeneratedColumn } from 'typeorm';
+import { UUID } from 'crypto';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
-export class UserEntity {
+@Entity({ name: 'user' })
+export class User {
   @PrimaryGeneratedColumn()
-  id: ObjectId;
-
-  @Column()
-  username: string;
+  id?: UUID;
 
   @Column()
   email: string;
@@ -15,8 +13,8 @@ export class UserEntity {
   password: string;
 
   @Column()
-  createdAt: Date;
+  firstName: string;
 
   @Column()
-  updatedAt: Date;
+  lastName: string;
 }

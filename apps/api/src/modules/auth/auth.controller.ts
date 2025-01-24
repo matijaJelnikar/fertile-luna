@@ -1,43 +1,34 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Public } from '../../decorators/public.decorator';
-import { BaseUser } from '../../dto/user/base-user.dto';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 
+import { AuthGuard } from '@nestjs/passport';
+import { Public } from '../../decorators/public.decorator';
+import { LoginResponseDTO } from './dtos/login-response.dto';
+import { RegisterRequestDto } from './dtos/register-request.dto';
+import { RegisterResponseDTO } from './dtos/register-response.dto';
+
+@Public()
 @Controller('auth')
-@ApiTags('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @Public()
-  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard('local'))
   @Post('login')
-  @ApiOperation({ summary: 'User Login' })
-  @ApiResponse({
-    status: 200,
-    description: 'The record found',
-    type: [BaseUser],
-  })
-  signIn(@Body() signInDto: Record<string, any>) {
-    return this.authService.signIn(signInDto.email, signInDto.password);
+  async login(@Request() req): Promise<LoginResponseDTO | BadRequestException> {
+    return this.authService.login(req.user);
   }
 
-  @Public()
-  @HttpCode(HttpStatus.OK)
-  @Post('signup')
-  @ApiOperation({ summary: 'User Signup' })
-  @ApiResponse({
-    status: 200,
-    description: 'The record found',
-    type: [BaseUser],
-  })
-  signUp(@Body() signUpDto: Record<string, any>) {
-    const payload = {
-      username: signUpDto.username,
-      email: signUpDto.email,
-      password: signUpDto.password,
-      createdAt: new Date(),
-    };
-    return this.authService.signUp(payload);
+  @Post('register')
+  async register(
+    @Body() registerBody: RegisterRequestDto
+  ): Promise<RegisterResponseDTO | BadRequestException> {
+    return await this.authService.register(registerBody);
   }
 }
