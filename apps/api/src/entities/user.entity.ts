@@ -1,20 +1,27 @@
 import { UUID } from 'crypto';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Measurement } from './measurement.entity';
 
 @Entity({ name: 'user' })
 export class User {
   @PrimaryGeneratedColumn()
   id?: UUID;
 
-  @Column()
+  @Column({ type: 'varchar', length: 40 })
   email: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   password: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 30 })
   firstName: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 50 })
   lastName: string;
+
+  @Column({ type: 'int' })
+  age: number;
+
+  @OneToMany(() => Measurement, (measurement) => measurement.user)
+  measurements?: Measurement[];
 }
