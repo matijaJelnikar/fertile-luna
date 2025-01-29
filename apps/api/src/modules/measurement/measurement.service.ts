@@ -3,7 +3,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UUID } from 'crypto';
 import { Repository } from 'typeorm';
-import { CreateMeasurementDto } from '../../dto/create-measurement.dto';
+import { CreateMeasurementDto } from '../../../../../libs/shared/model/src/lib/dto/create-measurement.dto';
 import { Measurement } from '../../entities/measurement.entity';
 import { UsersService } from '../users/users.service';
 

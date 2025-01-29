@@ -3,18 +3,16 @@
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
     "module": "commonjs",
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "emitDecoratorMetadata": true,
-    "target": "es2021"
+    "target": "es2021",
+    "strictPropertyInitialization": false
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "../../libs/shared/model/src/lib/dto/create-measurement.dto.ts",
+    "../../libs/shared/model/src/lib/dto/update-user.dto.ts",
+    "../../libs/shared/model/src/lib/dto/create-user.dto.ts"
   ],
-  "exclude": [
-    "jest.config.ts",
-    "src/**/*.spec.ts",
-    "src/**/*.test.ts"
-  ]
+  "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
 }

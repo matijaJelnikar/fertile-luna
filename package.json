@@ -2,7 +2,9 @@
   "name": "@basal-temp-log-workspace/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "start:all": "nx run-many --target=serve --projects=api,mobile --parallel"
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "19.1.2",

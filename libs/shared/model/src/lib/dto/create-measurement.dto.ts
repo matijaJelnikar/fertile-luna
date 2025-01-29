@@ -6,7 +6,7 @@ import {
   MucusAppearanceOption,
   MucusFeelingOption,
   PainOption,
-} from '@basal-temp-log-workspace/model';
+} from '../constants/add-measurement.constants';
 
 export type CreateMeasurementDto = {
   date: Date;

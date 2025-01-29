@@ -27,19 +27,6 @@ async function bootstrap() {
     })
   );
 
-  // app.useGlobalFilters({
-  //   catch(exception, host) {
-  //     const ctx = host.switchToHttp();
-  //     const response = ctx.getResponse();
-  //     const status = exception.getStatus ? exception.getStatus() : 500;
-  //     Logger.error(exception); // Logs the full error
-  //     response.status(status).json({
-  //       statusCode: status,
-  //       message: exception.message || 'Internal server error',
-  //     });
-  //   },
-  // });
-
   // Swagger setup
   const config = new DocumentBuilder()
     .setTitle('Basal temp API spec')

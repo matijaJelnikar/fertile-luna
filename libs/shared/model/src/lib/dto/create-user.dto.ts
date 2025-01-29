@@ -14,17 +14,17 @@ export class CreateUserDto {
   @MinLength(2, { message: 'Name must have at least 2 characters.' })
   @IsNotEmpty()
   @IsString()
-  firstName: string;
+  firstName!: string;
 
   @IsString()
-  lastName: string;
+  lastName!: string;
 
   @IsInt()
-  age: number;
+  age!: number;
 
   @IsNotEmpty()
   @IsEmail({}, { message: 'Please provide valid Email.' })
-  email: string;
+  email!: string;
 
   @IsNotEmpty()
   @Matches(passwordRegEx, {
@@ -34,5 +34,5 @@ export class CreateUserDto {
     one number and
     one special character`,
   })
-  password: string;
+  password!: string;
 }
