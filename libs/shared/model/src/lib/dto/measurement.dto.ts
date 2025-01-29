@@ -8,7 +8,7 @@ import {
   PainOption,
 } from '../constants/add-measurement.constants';
 
-export interface AddMeasurementModel {
+export type MeasurementDto = {
   date: Date;
   temperature: number;
   bleeding?: BleedingOption;
@@ -19,4 +19,4 @@ export interface AddMeasurementModel {
   cervixFeeling?: CervixFeelingOption;
   intercourse?: IntercourseOption;
   notes?: string;
-}
+};

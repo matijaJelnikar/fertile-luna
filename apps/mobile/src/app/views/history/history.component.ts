@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { AddMeasurementModel } from '@basal-temp-log-workspace/model';
+import { MeasurementDto } from '@basal-temp-log-workspace/model';
 import { MaterialModule } from '../../material.module';
 import { HistoryService } from './history.service';
 
@@ -16,7 +16,7 @@ import { HistoryService } from './history.service';
 })
 export class HistoryComponent implements OnInit {
   displayedColumns: string[] = ['temperature', 'timestamp'];
-  dataSource = new MatTableDataSource<AddMeasurementModel>();
+  dataSource = new MatTableDataSource<MeasurementDto>();
   constructor(public historyService: HistoryService) {}
 
   ngOnInit(): void {

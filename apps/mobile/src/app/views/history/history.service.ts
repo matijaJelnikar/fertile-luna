@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { AddMeasurementModel } from '@basal-temp-log-workspace/model';
+import { MeasurementDto } from '@basal-temp-log-workspace/model';
 import { MeasurementsService } from '../../services/measurements.service';
 
 @Injectable()
 export class HistoryService {
-  measurements: AddMeasurementModel[] = [];
+  measurements: MeasurementDto[] = [];
   constructor(private measurementsService: MeasurementsService) {}
 
   initHistory(): void {

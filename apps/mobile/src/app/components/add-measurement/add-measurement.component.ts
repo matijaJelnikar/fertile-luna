@@ -17,11 +17,11 @@ import {
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
-  AddMeasurementModel,
   BleedingOption,
   CervixFeelingOption,
   CervixPositionOption,
   IntercourseOption,
+  MeasurementDto,
   MucusAppearanceOption,
   MucusFeelingOption,
   PainOption,
@@ -51,7 +51,7 @@ export interface AddMeasurementFormModel {
 })
 export class AddMeasurementComponent implements OnInit, AfterViewInit {
   readonly dialogRef = inject(MatDialogRef<AddMeasurementComponent>);
-  readonly data = inject<AddMeasurementModel>(MAT_DIALOG_DATA);
+  readonly data = inject<MeasurementDto>(MAT_DIALOG_DATA);
 
   isLoading = true;
   bleedingOptions = Object.values(BleedingOption);

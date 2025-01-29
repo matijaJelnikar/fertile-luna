@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
-import { AddMeasurementModel } from '@basal-temp-log-workspace/model';
+import { MeasurementDto } from '@basal-temp-log-workspace/model';
 
 @Injectable({ providedIn: 'root' })
 export class MeasurementsService {
-  measurements: AddMeasurementModel[] = [];
+  measurements: MeasurementDto[] = [];
 
   init(): void {
     this.measurements = this.getMeasurementsMock();
   }
 
-  getMeasurementsMock(): AddMeasurementModel[] {
-    const _measurements: AddMeasurementModel[] = [];
+  getMeasurementsMock(): MeasurementDto[] {
+    const _measurements: MeasurementDto[] = [];
     const today = new Date();
 
     for (let index = 0; index < 50; index++) {

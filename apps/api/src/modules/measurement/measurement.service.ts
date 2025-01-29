@@ -3,7 +3,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UUID } from 'crypto';
 import { Repository } from 'typeorm';
-import { CreateMeasurementDto } from '../../../../../libs/shared/model/src/lib/dto/create-measurement.dto';
+import { MeasurementDto } from '../../../../../libs/shared/model/src/lib/dto/measurement.dto';
 import { Measurement } from '../../entities/measurement.entity';
 import { UsersService } from '../users/users.service';
 
@@ -16,7 +16,7 @@ export class MeasurementService {
   ) {}
 
   async createMeasurement(
-    measurementData: CreateMeasurementDto,
+    measurementData: MeasurementDto,
     userId: UUID
   ): Promise<Partial<Measurement>> {
     const user = await this.usersService.findOneById(userId);

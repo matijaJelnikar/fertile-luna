@@ -10,7 +10,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "../../libs/shared/model/src/lib/dto/create-measurement.dto.ts",
+    "../../libs/shared/model/src/lib/dto/measurement.dto.ts",
     "../../libs/shared/model/src/lib/dto/update-user.dto.ts",
     "../../libs/shared/model/src/lib/dto/create-user.dto.ts"
   ],

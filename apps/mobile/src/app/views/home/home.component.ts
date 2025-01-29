@@ -5,7 +5,7 @@ import {
   FabComponent,
   TemperaturesChartComponent,
 } from '@basal-temp-log-workspace/components';
-import { AddMeasurementModel } from '@basal-temp-log-workspace/model';
+import { MeasurementDto } from '@basal-temp-log-workspace/model';
 import { AddMeasurementComponent } from '../../components/add-measurement/add-measurement.component';
 import { HomeService } from './home.service';
 
@@ -39,7 +39,7 @@ export class HomeComponent implements OnInit {
   }
 
   addRecord(): void {
-    const data: Partial<AddMeasurementModel> = { date: new Date() };
+    const data: Partial<MeasurementDto> = { date: new Date() };
 
     const dialogRef = this.dialog.open(AddMeasurementComponent, {
       width: '90%',
