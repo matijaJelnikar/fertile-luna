@@ -2,12 +2,16 @@
   <div class="table-container">
     <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
       <ng-container matColumnDef="temperature">
-        <th mat-header-cell *matHeaderCellDef>Temperature</th>
+        <th mat-header-cell *matHeaderCellDef>
+          {{ 'TEMPERATURE' | translate }}
+        </th>
         <td mat-cell *matCellDef="let element">{{ element.temperature }}</td>
       </ng-container>
 
       <ng-container matColumnDef="timestamp">
-        <th mat-header-cell *matHeaderCellDef>Timestamp</th>
+        <th mat-header-cell *matHeaderCellDef>
+          {{ 'DATE_ADDED' | translate }}
+        </th>
         <td mat-cell *matCellDef="let element">
           {{ element.date | date : 'medium' }}
         </td>

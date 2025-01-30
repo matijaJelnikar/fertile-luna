@@ -6,6 +6,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 
 enum NavigationButton {
   HOME = 'HOME',
@@ -25,6 +26,7 @@ enum NavigationButton {
     MatListModule,
     RouterModule,
     NgClass,
+    TranslateModule,
   ],
 })
 export class ShellComponent {

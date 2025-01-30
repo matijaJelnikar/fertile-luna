@@ -1,19 +1,25 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MeasurementsService } from './services/measurements.service';
 @Component({
   standalone: true,
-  imports: [RouterModule],
+  imports: [RouterModule, TranslateModule],
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
-  title = 'mobile';
+  title = '';
 
   measurementsService = inject(MeasurementsService);
 
+  constructor(private translateService: TranslateService) {
+    this.translateService.setDefaultLang('en');
+    this.translateService.use('en');
+  }
   ngOnInit(): void {
+    this.title = this.translateService.instant('APP_NAME');
     this.measurementsService.init();
   }
 }

@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { MeasurementDto } from '@basal-temp-log-workspace/model';
+import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from '../../material.module';
 import { HistoryService } from './history.service';
 
@@ -12,7 +13,7 @@ import { HistoryService } from './history.service';
   templateUrl: './history.component.html',
   styleUrls: ['./history.component.scss'],
   providers: [HistoryService],
-  imports: [MaterialModule, FormsModule, CommonModule],
+  imports: [MaterialModule, FormsModule, CommonModule, TranslateModule],
 })
 export class HistoryComponent implements OnInit {
   displayedColumns: string[] = ['temperature', 'timestamp'];

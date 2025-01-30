@@ -1,0 +1,13 @@
+{
+  "APP_NAME": "FertileLuna",
+  "LOGIN": "Login",
+  "USERNAME": "Username",
+  "USERNAME_REQUIRED": "Username is required",
+  "PASSWORD": "Password",
+  "PASSWORD_REQUIRED": "Password is required",
+  "REMEMBER_ME": "Remember me",
+  "VERSION": "v1.0",
+  "LOGIN_CREDENTIALS_INCORRECT": " Username or password incorrect.",
+  "TEMPERATURE": "Temperature",
+  "DATE_ADDED": "Added on"
+}

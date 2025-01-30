@@ -10,8 +10,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
 import { CommonModule } from '@angular/common';
-import { MatCard } from '@angular/material/card';
-import { MatError, MatFormField } from '@angular/material/form-field';
+import { TranslateModule } from '@ngx-translate/core';
+import { MaterialModule } from '../material.module';
 import { AuthenticationService } from './authentication.service';
 
 @Component({
@@ -19,7 +19,7 @@ import { AuthenticationService } from './authentication.service';
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  imports: [CommonModule, MatCard, ReactiveFormsModule, MatFormField, MatError],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, MaterialModule],
 })
 export class LoginComponent implements OnInit {
   version: string | null = '1.0';

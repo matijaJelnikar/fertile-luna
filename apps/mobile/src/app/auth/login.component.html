@@ -6,9 +6,9 @@
   class="mat-typography"
 >
   <div>
-    <h1 fxLayoutAlign="center" translate>APP_NAME</h1>
+    <h1 fxLayoutAlign="center" translate>{{ 'APP_NAME' | translate }}</h1>
     <div fxLayout="row" fxLayoutAlign="center center" fxLayoutGap="2rem">
-      <h4 class="version">v{{ version }}</h4>
+      <h4 class="version">{{ 'VERSION' | translate }}</h4>
     </div>
   </div>
   <div class="login-container" fxLayout="row" fxLayoutAlign="center">
@@ -21,7 +21,7 @@
     >
       <form (ngSubmit)="login()" [formGroup]="loginForm" novalidate>
         <div class="login-error" [hidden]="!error || isLoading" translate>
-          Username or password incorrect.
+          {{ 'LOGIN_CREDENTIALS_INCORRECT' | translate }}
         </div>
         <br />
         <div class="login-fields" fxLayout="column">
@@ -40,7 +40,7 @@
                 loginForm.controls['username'].touched
               "
             >
-              <span translate>Username is required</span>
+              <span translate>{{ 'USERNAME_REQUIRED' | translate }}</span>
             </mat-error>
           </mat-form-field>
           <mat-form-field [hideRequiredMarker]="true">
@@ -58,12 +58,16 @@
                 loginForm.controls['password'].touched
               "
             >
-              <span translate>Password is required</span>
+              <span translate>{{ 'PASSWORD_REQUIRED' | translate }}</span>
             </mat-error>
           </mat-form-field>
-          <mat-slide-toggle color="primary" formControlName="remember" translate
-            >Remember me</mat-slide-toggle
+          <mat-slide-toggle
+            color="primary"
+            formControlName="remember"
+            translate
+            >{{ 'REMEMBER_ME' | translate }}</mat-slide-toggle
           >
+          <br />
           <br />
           <button
             mat-raised-button
@@ -72,7 +76,7 @@
             [disabled]="loginForm.invalid || isLoading"
           >
             <!-- <app-loader class="inline-loader" [isLoading]="isLoading"></app-loader> -->
-            <span translate>Login</span>
+            <span translate>{{ 'LOGIN' | translate }}</span>
           </button>
         </div>
       </form>
