@@ -1,7 +1,7 @@
 import { Route } from '@angular/router';
 import { ShellComponent } from '@basal-temp-log-workspace/components';
 import { AuthenticationGuard } from './auth';
-import { LoginComponent } from './auth/login.component';
+import { LoginComponent } from './auth/components/login/login.component';
 import { HistoryComponent } from './views/history/history.component';
 import { HomeComponent } from './views/home/home.component';
 import { SettingsComponent } from './views/settings/settings.component';

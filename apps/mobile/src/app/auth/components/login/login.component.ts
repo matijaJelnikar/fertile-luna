@@ -11,8 +11,8 @@ import { finalize } from 'rxjs/operators';
 
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { MaterialModule } from '../material.module';
-import { AuthenticationService } from './authentication.service';
+import { MaterialModule } from '../../../material.module';
+import { AuthenticationService } from '../../authentication.service';
 
 @Component({
   standalone: true,
