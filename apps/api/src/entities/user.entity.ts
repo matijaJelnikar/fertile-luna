@@ -7,17 +7,14 @@ export class User {
   @PrimaryGeneratedColumn()
   id?: UUID;
 
-  @Column({ type: 'varchar', length: 40 })
-  email: string;
+  @Column({ type: 'varchar', length: 30 })
+  username: string;
 
   @Column({ type: 'varchar' })
   password: string;
 
-  @Column({ type: 'varchar', length: 30 })
-  firstName: string;
-
-  @Column({ type: 'varchar', length: 50 })
-  lastName: string;
+  @Column({ type: 'varchar', length: 40 })
+  email: string;
 
   @Column({ type: 'int' })
   age: number;
