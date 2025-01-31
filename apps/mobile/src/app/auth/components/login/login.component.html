@@ -26,21 +26,19 @@
               <input
                 type="text"
                 matInput
-                formControlName="username"
-                autocomplete="username"
-                id="usernameInput"
+                formControlName="email"
+                autocomplete="email"
+                id="emailInput"
                 required
               />
-              <mat-label for="usernameInput">{{
-                'username' | translate
-              }}</mat-label>
+              <mat-label for="emailInput">{{ 'email' | translate }}</mat-label>
               <mat-error
                 *ngIf="
-                  loginForm.controls['username'].invalid &&
-                  loginForm.controls['username'].touched
+                  loginForm.controls['email'].invalid &&
+                  loginForm.controls['email'].touched
                 "
               >
-                <span>{{ 'username.required' | translate }}</span>
+                <span>{{ 'email.required' | translate }}</span>
               </mat-error>
             </mat-form-field>
             <mat-form-field [hideRequiredMarker]="true">
@@ -76,7 +74,7 @@
               [disabled]="loginForm.invalid || isLoading"
             >
               <!-- <app-loader class="inline-loader" [isLoading]="isLoading"></app-loader> -->
-              <span>{{ 'login' }}</span>
+              <span>{{ 'login.label' | translate }}</span>
             </button>
             <div
               class="register-row"

@@ -1,8 +1,8 @@
 import { Route } from '@angular/router';
-import { ShellComponent } from '@basal-temp-log-workspace/components';
 import { AuthenticationGuard } from './auth';
 import { LoginComponent } from './auth/components/login/login.component';
 import { RegistrationComponent } from './auth/components/registration/registration.component';
+import { ShellComponent } from './components/shell/shell.component';
 import { HistoryComponent } from './views/history/history.component';
 import { HomeComponent } from './views/home/home.component';
 import { SettingsComponent } from './views/settings/settings.component';

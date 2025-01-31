@@ -5,6 +5,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CreateUserDto } from '@basal-temp-log-workspace/model';
 import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from '../../../material.module';
@@ -40,7 +41,11 @@ export class RegistrationComponent implements OnInit {
   isLoading = false;
   error: string | null = null;
 
-  constructor(private authService: AuthenticationService) {}
+  constructor(
+    private authService: AuthenticationService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit() {}
 
@@ -52,16 +57,20 @@ export class RegistrationComponent implements OnInit {
     this.isLoading = true;
     const formValues: CreateUserDto = this.registrationForm.value;
 
-    // Call registration service to handle the backend request
-    this.authService.register(formValues).subscribe(
-      (response) => {
+    this.authService.register(formValues).subscribe({
+      complete: () => {
+        this.router.navigate(
+          [this.route.snapshot.queryParams['redirect'] || '/'],
+          { replaceUrl: true }
+        );
         this.isLoading = false;
-        // Handle successful registration (e.g., navigate to login page or show success message)
       },
-      (error) => {
+      error: (err) => {
         this.isLoading = false;
-        this.error = error.message || 'Registration failed. Please try again.';
-      }
-    );
+        console.log(err);
+        this.error =
+          err.error?.message?.[0] || 'Registration failed. Please try again.';
+      },
+    });
   }
 }

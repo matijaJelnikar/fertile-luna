@@ -1,3 +1,3 @@
-import { AccessToken } from '../types/AccessToken';
+import { AccessToken } from '@basal-temp-log-workspace/model';
 
 export type LoginResponseDTO = AccessToken;

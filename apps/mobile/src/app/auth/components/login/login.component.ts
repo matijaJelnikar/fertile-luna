@@ -22,7 +22,6 @@ import { AuthenticationService } from '../../authentication.service';
   imports: [CommonModule, ReactiveFormsModule, TranslateModule, MaterialModule],
 })
 export class LoginComponent implements OnInit {
-  version: string | null = '1.0';
   error: string | undefined;
   loginForm!: FormGroup;
   isLoading = false;
@@ -41,8 +40,8 @@ export class LoginComponent implements OnInit {
 
   login() {
     this.isLoading = true;
-    const login$ = this.authenticationService.login(this.loginForm.value);
-    login$
+    this.authenticationService
+      .login(this.loginForm.value)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
@@ -50,24 +49,22 @@ export class LoginComponent implements OnInit {
           this.isLoading = false;
         })
       )
-      .subscribe(
-        (credentials) => {
-          // log.debug(`${credentials.username} successfully logged in`);
+      .subscribe({
+        complete: () => {
           this.router.navigate(
             [this.route.snapshot.queryParams['redirect'] || '/'],
             { replaceUrl: true }
           );
         },
-        (error) => {
-          // log.debug(`Login error: ${error}`);
+        error: (error) => {
           this.error = error;
-        }
-      );
+        },
+      });
   }
 
   private createForm() {
     this.loginForm = this.formBuilder.group({
-      username: ['', Validators.required],
+      email: ['', Validators.required],
       password: ['', Validators.required],
       remember: true,
     });

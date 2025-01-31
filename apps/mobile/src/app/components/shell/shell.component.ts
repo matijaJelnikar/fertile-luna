@@ -1,12 +1,9 @@
 import { NgClass } from '@angular/common';
 import { Component } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatListModule } from '@angular/material/list';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { AuthenticationService } from '../../auth';
+import { MaterialModule } from '../../material.module';
 
 enum NavigationButton {
   HOME = 'HOME',
@@ -15,26 +12,20 @@ enum NavigationButton {
 }
 
 @Component({
-  selector: 'lib-shell',
+  selector: 'app-shell',
   templateUrl: './shell.component.html',
   styleUrls: ['./shell.component.scss'],
-  imports: [
-    MatSidenavModule,
-    MatToolbarModule,
-    MatIconModule,
-    MatButtonModule,
-    MatListModule,
-    RouterModule,
-    NgClass,
-    TranslateModule,
-  ],
+  imports: [RouterModule, NgClass, TranslateModule, MaterialModule],
 })
 export class ShellComponent {
   selectedTab: NavigationButton = NavigationButton.HOME;
-
+  isLoggedIn = true;
   protected Navigation: typeof NavigationButton = NavigationButton;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthenticationService
+  ) {}
 
   selectTab(navButton: NavigationButton): void {
     this.selectedTab = navButton;
@@ -49,5 +40,10 @@ export class ShellComponent {
         this.router.navigate(['/settings']);
         break;
     }
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

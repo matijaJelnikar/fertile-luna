@@ -59,11 +59,13 @@
           "buildTarget": "mobile:build:production"
         },
         "development": {
-          "buildTarget": "mobile:build:development",
-          "proxyConfig": "proxy.conf.json"
+          "buildTarget": "mobile:build:development"
         }
       },
-      "defaultConfiguration": "development"
+      "defaultConfiguration": "development",
+      "options": {
+        "proxyConfig": "apps/mobile/proxy.conf.json"
+      }
     },
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",

@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { map, Observable, of, tap } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
-import { CreateUserDto } from '@basal-temp-log-workspace/model';
+import { AccessToken, CreateUserDto } from '@basal-temp-log-workspace/model';
+import { LoginFlowEndpoints } from '../shared/constants/endpoints.constants';
 import { Credentials, CredentialsService } from './credentials.service';
 
 export interface LoginContext {
-  username: string;
+  email: string;
   password: string;
   remember?: boolean;
 }
@@ -30,18 +31,29 @@ export class AuthenticationService {
    * @return The user credentials.
    */
   login(context: LoginContext): Observable<Credentials> {
-    // Replace by proper authentication call
     const data = {
-      username: context.username,
-      token: '123456',
+      email: context.email,
+      password: context.password,
     };
-    this.credentialsService.setCredentials(data, context.remember);
-    return of(data);
+
+    return this.http.post<AccessToken>(LoginFlowEndpoints.LOGIN, data).pipe(
+      tap((loginResponse: AccessToken) => {
+        this.credentialsService.setCredentials(
+          { username: context.email, token: loginResponse.access_token },
+          context.remember
+        );
+      }),
+      map((res: AccessToken) => {
+        return {
+          username: context.email,
+          token: res.access_token,
+        } as Credentials;
+      })
+    );
   }
 
-  register(userData: CreateUserDto): Observable<unknown> {
-    // return this.http.post(this.apiUrl, userData);
-    return of(null);
+  register(userData: CreateUserDto): Observable<AccessToken> {
+    return this.http.post<AccessToken>(LoginFlowEndpoints.REGISTER, userData);
   }
 
   /**
