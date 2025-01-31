@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 
+import { HttpClient } from '@angular/common/http';
+import { CreateUserDto } from '@basal-temp-log-workspace/model';
 import { Credentials, CredentialsService } from './credentials.service';
 
 export interface LoginContext {
@@ -17,7 +19,10 @@ export interface LoginContext {
   providedIn: 'root',
 })
 export class AuthenticationService {
-  constructor(private credentialsService: CredentialsService) {}
+  constructor(
+    private credentialsService: CredentialsService,
+    private http: HttpClient
+  ) {}
 
   /**
    * Authenticates the user.
@@ -32,6 +37,11 @@ export class AuthenticationService {
     };
     this.credentialsService.setCredentials(data, context.remember);
     return of(data);
+  }
+
+  register(userData: CreateUserDto): Observable<unknown> {
+    // return this.http.post(this.apiUrl, userData);
+    return of(null);
   }
 
   /**

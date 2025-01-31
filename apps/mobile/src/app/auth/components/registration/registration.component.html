@@ -1,0 +1,85 @@
+<div
+  class="registration-container"
+  fxLayout="row"
+  fxLayoutAlign="center center"
+>
+  <mat-card
+    fxFlex="90%"
+    fxFlex.sm="66%"
+    fxFlex.md="50%"
+    fxFlex.gt-md="33%"
+    class="registration-box"
+  >
+    <form (ngSubmit)="register()" [formGroup]="registrationForm" novalidate>
+      @if(error){
+      <div class="registration-error" translate>
+        {{ error }}
+      </div>
+      }
+      <br />
+      <div class="registration-fields" fxLayout="column">
+        <h1 fxLayoutAlign="center" translate>{{ 'register' | translate }}</h1>
+
+        <mat-form-field [hideRequiredMarker]="true">
+          <input
+            type="text"
+            matInput
+            formControlName="username"
+            autocomplete="username"
+            [placeholder]="'USERNAME' | translate"
+            required
+          />
+          @if(registrationForm.controls['username'].invalid &&
+          registrationForm.controls['username'].touched){
+          <mat-error>
+            <span translate>{{ 'username.required' | translate }}</span>
+          </mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field [hideRequiredMarker]="true">
+          <input
+            type="email"
+            matInput
+            formControlName="email"
+            autocomplete="email"
+            [placeholder]="'EMAIL' | translate"
+            required
+          />
+          @if(registrationForm.controls['email'].invalid &&
+          registrationForm.controls['email'].touched){
+          <mat-error>
+            <span translate>{{ 'email.required' | translate }}</span>
+          </mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field [hideRequiredMarker]="true">
+          <input
+            type="password"
+            matInput
+            formControlName="password"
+            autocomplete="new-password"
+            [placeholder]="'PASSWORD' | translate"
+            required
+          />
+          @if( registrationForm.controls['password'].invalid &&
+          registrationForm.controls['password'].touched){
+          <mat-error>
+            <span translate>{{ 'password.required' | translate }}</span>
+          </mat-error>
+          }
+        </mat-form-field>
+
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          [disabled]="registrationForm.invalid || isLoading"
+        >
+          <span translate>{{ 'register' | translate }}</span>
+        </button>
+      </div>
+    </form>
+  </mat-card>
+</div>

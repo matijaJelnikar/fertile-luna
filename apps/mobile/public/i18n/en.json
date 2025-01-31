@@ -1,13 +1,17 @@
 {
-  "APP_NAME": "FertileLuna",
-  "LOGIN": "Login",
-  "USERNAME": "Username",
-  "USERNAME_REQUIRED": "Username is required",
-  "PASSWORD": "Password",
-  "PASSWORD_REQUIRED": "Password is required",
-  "REMEMBER_ME": "Remember me",
-  "VERSION": "v1.0",
-  "LOGIN_CREDENTIALS_INCORRECT": " Username or password incorrect.",
-  "TEMPERATURE": "Temperature",
-  "DATE_ADDED": "Added on"
+  "app.name": "FertileLuna",
+  "login": "Login",
+  "username": "Username",
+  "username.required": "Username is required",
+  "password": "Password",
+  "password.required": "Password is required",
+  "remember.me": "Remember me",
+  "version": "v1.0",
+  "login.credentials.incorrect": " Username or password incorrect.",
+  "temperature": "Temperature",
+  "date.added": "Added on",
+  "age": "Age",
+  "age.required": "Age is required",
+  "email": "Email",
+  "email.required": "Email is required"
 }

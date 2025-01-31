@@ -19,7 +19,7 @@ export class AppComponent implements OnInit {
     this.translateService.use('en');
   }
   ngOnInit(): void {
-    this.title = this.translateService.instant('APP_NAME');
+    this.title = this.translateService.instant('app.name');
     this.measurementsService.init();
   }
 }
