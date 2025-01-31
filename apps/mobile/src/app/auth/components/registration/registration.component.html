@@ -5,20 +5,20 @@
 >
   <mat-card
     fxFlex="90%"
-    fxFlex.sm="66%"
+    fxFlex.sm="75%"
     fxFlex.md="50%"
-    fxFlex.gt-md="33%"
+    fxFlex.gt-md="40%"
     class="registration-box"
   >
     <form (ngSubmit)="register()" [formGroup]="registrationForm" novalidate>
       @if(error){
-      <div class="registration-error" translate>
+      <div class="registration-error">
         {{ error }}
       </div>
       }
       <br />
       <div class="registration-fields" fxLayout="column">
-        <h1 fxLayoutAlign="center" translate>{{ 'register' | translate }}</h1>
+        <h1 fxLayoutAlign="center">{{ 'register.label' | translate }}</h1>
 
         <mat-form-field [hideRequiredMarker]="true">
           <input
@@ -26,13 +26,16 @@
             matInput
             formControlName="username"
             autocomplete="username"
-            [placeholder]="'USERNAME' | translate"
             required
+            id="usernameInput"
           />
+          <mat-label for="usernameInput">{{
+            'username' | translate
+          }}</mat-label>
           @if(registrationForm.controls['username'].invalid &&
           registrationForm.controls['username'].touched){
           <mat-error>
-            <span translate>{{ 'username.required' | translate }}</span>
+            <span>{{ 'username.required' | translate }}</span>
           </mat-error>
           }
         </mat-form-field>
@@ -43,13 +46,32 @@
             matInput
             formControlName="email"
             autocomplete="email"
-            [placeholder]="'EMAIL' | translate"
             required
+            id="emailInput"
           />
+          <mat-label for="emailInput">{{ 'email' | translate }}</mat-label>
           @if(registrationForm.controls['email'].invalid &&
           registrationForm.controls['email'].touched){
           <mat-error>
-            <span translate>{{ 'email.required' | translate }}</span>
+            <span>{{ 'email.required' | translate }}</span>
+          </mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field [hideRequiredMarker]="true">
+          <input
+            type="number"
+            matInput
+            formControlName="age"
+            autocomplete="age"
+            required
+            id="ageInput"
+          />
+          <mat-label for="ageInput">{{ 'age' | translate }}</mat-label>
+          @if(registrationForm.controls['age'].invalid &&
+          registrationForm.controls['age'].touched){
+          <mat-error>
+            <span>{{ 'age.required' | translate }}</span>
           </mat-error>
           }
         </mat-form-field>
@@ -60,13 +82,16 @@
             matInput
             formControlName="password"
             autocomplete="new-password"
-            [placeholder]="'PASSWORD' | translate"
+            id="passwordInput"
             required
           />
+          <mat-label for="passwordInput">{{
+            'password' | translate
+          }}</mat-label>
           @if( registrationForm.controls['password'].invalid &&
           registrationForm.controls['password'].touched){
           <mat-error>
-            <span translate>{{ 'password.required' | translate }}</span>
+            <span>{{ 'password.required' | translate }}</span>
           </mat-error>
           }
         </mat-form-field>
@@ -77,8 +102,14 @@
           type="submit"
           [disabled]="registrationForm.invalid || isLoading"
         >
-          <span translate>{{ 'register' | translate }}</span>
+          <span>{{ 'register' | translate }}</span>
         </button>
+
+        <div class="back-to-login" fxLayout="row" fxLayoutAlign="left center">
+          <a mat-button href="/login">{{
+            'register.back.to.login' | translate
+          }}</a>
+        </div>
       </div>
     </form>
   </mat-card>

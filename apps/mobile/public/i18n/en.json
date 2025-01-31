@@ -1,6 +1,6 @@
 {
   "app.name": "FertileLuna",
-  "login": "Login",
+  "login.label": "Login",
   "username": "Username",
   "username.required": "Username is required",
   "password": "Password",
@@ -13,5 +13,8 @@
   "age": "Age",
   "age.required": "Age is required",
   "email": "Email",
-  "email.required": "Email is required"
+  "email.required": "Email is required",
+  "register.without.account": "Don't have an account?",
+  "register.label": "Register",
+  "register.back.to.login": "Back to login"
 }

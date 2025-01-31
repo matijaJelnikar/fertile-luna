@@ -5,81 +5,92 @@
   fxLayoutGap="1.5rem"
   class="mat-typography"
 >
-  <div>
-    <h1 fxLayoutAlign="center" translate>{{ 'app.name' | translate }}</h1>
-    <div fxLayout="row" fxLayoutAlign="center center" fxLayoutGap="2rem">
-      <h4 class="version">{{ 'version' | translate }}</h4>
+  <ng-container>
+    <h1 fxLayoutAlign="center">{{ 'app.name' | translate }}</h1>
+    <div class="login-container" fxLayout="row" fxLayoutAlign="center">
+      <mat-card
+        fxFlex="90%"
+        fxFlex.sm="75%"
+        fxFlex.md="50%"
+        fxFlex.gt-md="40%"
+        class="login-box"
+      >
+        <form (ngSubmit)="login()" [formGroup]="loginForm" novalidate>
+          <div class="login-error" [hidden]="!error || isLoading">
+            {{ 'login.credentials.incorrect' | translate }}
+          </div>
+          <br />
+          <div class="login-fields" fxLayout="column">
+            <h1 fxLayoutAlign="center">{{ 'login.label' | translate }}</h1>
+            <mat-form-field [hideRequiredMarker]="true">
+              <input
+                type="text"
+                matInput
+                formControlName="username"
+                autocomplete="username"
+                id="usernameInput"
+                required
+              />
+              <mat-label for="usernameInput">{{
+                'username' | translate
+              }}</mat-label>
+              <mat-error
+                *ngIf="
+                  loginForm.controls['username'].invalid &&
+                  loginForm.controls['username'].touched
+                "
+              >
+                <span>{{ 'username.required' | translate }}</span>
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field [hideRequiredMarker]="true">
+              <input
+                type="password"
+                matInput
+                formControlName="password"
+                autocomplete="current-password"
+                id="passwordInput"
+                required
+              />
+              <mat-label for="passwordInput">{{
+                'password' | translate
+              }}</mat-label>
+              <mat-error
+                *ngIf="
+                  loginForm.controls['password'].invalid &&
+                  loginForm.controls['password'].touched
+                "
+              >
+                <span>{{ 'password.required' | translate }}</span>
+              </mat-error>
+            </mat-form-field>
+            <mat-slide-toggle color="primary" formControlName="remember">{{
+              'remember.me' | translate
+            }}</mat-slide-toggle>
+            <br />
+            <br />
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              [disabled]="loginForm.invalid || isLoading"
+            >
+              <!-- <app-loader class="inline-loader" [isLoading]="isLoading"></app-loader> -->
+              <span>{{ 'login' }}</span>
+            </button>
+            <div
+              class="register-row"
+              fxLayout="row"
+              fxLayoutAlign="center center"
+            >
+              <span>{{ 'register.without.account' | translate }}</span>
+              <a mat-button href="/register">{{
+                'register.label' | translate
+              }}</a>
+            </div>
+          </div>
+        </form>
+      </mat-card>
     </div>
-  </div>
-  <div class="login-container" fxLayout="row" fxLayoutAlign="center">
-    <mat-card
-      fxFlex="90%"
-      fxFlex.sm="66%"
-      fxFlex.md="50%"
-      fxFlex.gt-md="33%"
-      class="login-box"
-    >
-      <form (ngSubmit)="login()" [formGroup]="loginForm" novalidate>
-        <div class="login-error" [hidden]="!error || isLoading" translate>
-          {{ 'login.credentials.incorrect' | translate }}
-        </div>
-        <br />
-        <div class="login-fields" fxLayout="column">
-          <mat-form-field [hideRequiredMarker]="true">
-            <input
-              type="text"
-              matInput
-              formControlName="username"
-              autocomplete="username"
-              [placeholder]="'Username'"
-              required
-            />
-            <mat-error
-              *ngIf="
-                loginForm.controls['username'].invalid &&
-                loginForm.controls['username'].touched
-              "
-            >
-              <span translate>{{ 'username.required' | translate }}</span>
-            </mat-error>
-          </mat-form-field>
-          <mat-form-field [hideRequiredMarker]="true">
-            <input
-              type="password"
-              matInput
-              formControlName="password"
-              autocomplete="current-password"
-              [placeholder]="'Password'"
-              required
-            />
-            <mat-error
-              *ngIf="
-                loginForm.controls['password'].invalid &&
-                loginForm.controls['password'].touched
-              "
-            >
-              <span translate>{{ 'password.required' | translate }}</span>
-            </mat-error>
-          </mat-form-field>
-          <mat-slide-toggle
-            color="primary"
-            formControlName="remember"
-            translate
-            >{{ 'remember.me' | translate }}</mat-slide-toggle
-          >
-          <br />
-          <br />
-          <button
-            mat-raised-button
-            color="primary"
-            type="submit"
-            [disabled]="loginForm.invalid || isLoading"
-          >
-            <!-- <app-loader class="inline-loader" [isLoading]="isLoading"></app-loader> -->
-            <span translate>{{ 'login' | translate }}</span>
-          </button>
-        </div>
-      </form>
-    </mat-card>
-  </div>
+  </ng-container>
 </div>
