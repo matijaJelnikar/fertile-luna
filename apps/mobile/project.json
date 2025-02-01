@@ -22,10 +22,7 @@
             "input": "apps/mobile/public"
           }
         ],
-        "styles": [
-          "@angular/material/prebuilt-themes/rose-red.css",
-          "apps/mobile/src/styles.scss"
-        ],
+        "styles": ["apps/mobile/src/styles.scss"],
         "scripts": []
       },
       "configurations": {

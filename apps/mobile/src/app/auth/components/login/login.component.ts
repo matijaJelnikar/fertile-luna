@@ -9,7 +9,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from '../../../material.module';
 import { AuthenticationService } from '../../authentication.service';
@@ -26,6 +26,7 @@ export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   isLoading = false;
   destroyRef = inject(DestroyRef);
+  private document = inject(DOCUMENT);
 
   constructor(
     private router: Router,

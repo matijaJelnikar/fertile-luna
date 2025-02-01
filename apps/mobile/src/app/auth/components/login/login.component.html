@@ -22,7 +22,10 @@
           <br />
           <div class="login-fields" fxLayout="column">
             <h1 fxLayoutAlign="center">{{ 'login.label' | translate }}</h1>
-            <mat-form-field [hideRequiredMarker]="true">
+            <mat-form-field
+              [hideRequiredMarker]="true"
+              [appearance]="'outline'"
+            >
               <input
                 type="text"
                 matInput
@@ -41,7 +44,10 @@
                 <span>{{ 'email.required' | translate }}</span>
               </mat-error>
             </mat-form-field>
-            <mat-form-field [hideRequiredMarker]="true">
+            <mat-form-field
+              [hideRequiredMarker]="true"
+              [appearance]="'outline'"
+            >
               <input
                 type="password"
                 matInput
