@@ -5,25 +5,23 @@
 }
 
 .toolbar-container {
-  background-color: var(
-    --mat-sys-primary-container
-  ); // Theme-based toolbar background
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  height: 80px;
 
-  .left {
-    color: var(--mat-sys-on-primary-container); // Theme-based text color
-    gap: 5px;
+  .title {
+    color: var(--mat-sys-on-primary-container);
     justify-content: center;
     align-items: center;
     display: flex;
 
-    span {
+    h1 {
       letter-spacing: 0.5px;
-      text-transform: none;
     }
   }
-  .right {
+  .user-avatar {
+    position: absolute;
+    right: 6px;
   }
 }
 
@@ -35,10 +33,9 @@
 .bottom-nav-wrapper {
   position: fixed;
   bottom: 0;
-  height: 65px;
+  height: 78px;
   width: 100%;
   background-color: var(--mat-sys-surface);
-  border-top: 1px solid var(--mat-sys-outline);
   display: flex;
   justify-content: center;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
@@ -52,17 +49,14 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      color: var(--mat-sys-on-surface);
       cursor: pointer;
       padding: 10px 15px;
       border-radius: 8px;
-      transition: background-color 0.3s ease;
 
       &:hover,
       &:focus,
       &.selected {
-        background-color: var(--mat-sys-secondary-container);
-        color: var(--mat-sys-on-secondary-container);
+        color: var(--mat-sys-primary);
       }
     }
   }

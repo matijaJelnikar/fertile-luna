@@ -7,12 +7,18 @@ import {
 } from '@basal-temp-log-workspace/components';
 import { MeasurementDto } from '@basal-temp-log-workspace/model';
 import { AddMeasurementComponent } from '../../components/add-measurement/add-measurement.component';
+import { MaterialModule } from '../../material.module';
 import { HomeService } from './home.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FabComponent, TemperaturesChartComponent],
+  imports: [
+    CommonModule,
+    FabComponent,
+    TemperaturesChartComponent,
+    MaterialModule,
+  ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   providers: [HomeService],

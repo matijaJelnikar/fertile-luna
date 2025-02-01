@@ -10,7 +10,7 @@ html {
         primary: theme-colors.$primary-palette,
         tertiary: theme-colors.$tertiary-palette,
       ),
-      typography: Roboto,
+      typography: Inter,
       density: 0,
     )
   );
@@ -22,7 +22,7 @@ body {
 }
 body {
   margin: 0;
-  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 body {
   background: var(--mat-sys-surface);
@@ -37,7 +37,7 @@ body.dark {
         primary: theme-colors.$primary-palette,
         tertiary: theme-colors.$tertiary-palette,
       ),
-      typography: Roboto,
+      typography: Inter,
       density: 0,
     )
   );

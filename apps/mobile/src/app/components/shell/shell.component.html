@@ -1,9 +1,9 @@
 <div class="shell-container">
   <mat-toolbar class="toolbar-container">
-    <div class="left">
-      <span> {{ 'app.name' | translate }} </span>
+    <div class="title">
+      <h1 class="mat-headline-1">{{ 'app.name' | translate }}</h1>
     </div>
-    <div class="right">
+    <div class="user-avatar">
       <div class="user-dropdown">
         <mat-icon class="user-icon" [matMenuTriggerFor]="menu" tabindex="0">
           <mat-icon
@@ -52,7 +52,7 @@
         (keydown.space)="selectTab(Navigation.HISTORY)"
         [routerLink]="['/history']"
       >
-        <mat-icon>history</mat-icon>
+        <mat-icon>show_chart</mat-icon>
         History
       </div>
       <div
