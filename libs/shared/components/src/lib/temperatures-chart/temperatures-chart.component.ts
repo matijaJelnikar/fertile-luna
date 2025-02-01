@@ -19,17 +19,28 @@ export class TemperaturesChartComponent implements OnInit {
 
   ngOnInit() {
     const chartData: ChartConfiguration<'line'> = {
-      type: 'line', // Line chart
+      type: 'line',
       data: {
-        labels: this.timestampData(), // X-axis labels: formatted timestamps
+        labels: this.timestampData(),
         datasets: [
           {
-            label: 'Temperature (°C)', // Label for the dataset
-            data: this.temperatureData(), // Y-axis data: temperature values
-            borderColor: 'rgba(75, 192, 192, 1)', // Line color
+            label: 'Temperature (°C)',
+            data: this.temperatureData(),
+            borderColor: 'rgba(75, 192, 192, 1)', // Default line color
             borderWidth: 2,
-            fill: false, // Do not fill the area under the line
-            tension: 0.1, // Smoothing the line
+            fill: false,
+            tension: 0.1, // Smoothing effect
+
+            // Segment-based color change
+            segment: {
+              borderColor: (ctx) => {
+                if (!ctx.p0 || !ctx.p1) return 'rgba(75, 192, 192, 1)'; // Default color
+                return ctx.p1.y > ctx.p0.y
+                  ? 'rgba(255, 99, 132, 1)' // Red if increasing
+                  : 'rgba(54, 162, 235, 1)'; // Blue if decreasing
+              },
+              borderWidth: (ctx) => (ctx.p1.y > ctx.p0.y ? 3 : 2), // Thicker if increasing
+            },
           },
         ],
       },
@@ -38,18 +49,18 @@ export class TemperaturesChartComponent implements OnInit {
         scales: {
           x: {
             ticks: {
-              autoSkip: true, // Automatically skip labels to avoid clutter
-              maxTicksLimit: 20, // Limit the number of ticks on the x-axis
+              autoSkip: true,
+              maxTicksLimit: 20,
             },
           },
           y: {
-            beginAtZero: false, // Do not force the y-axis to start at 0
+            beginAtZero: false,
           },
         },
       },
     };
 
-    // Create the chart with the configuration
+    // Create the chart with the updated configuration
     this.chart = new Chart('temperatureChart', chartData);
   }
 }

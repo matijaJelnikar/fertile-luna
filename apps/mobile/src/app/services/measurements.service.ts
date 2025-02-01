@@ -1,25 +1,22 @@
 import { Injectable } from '@angular/core';
-import { MeasurementDto } from '@basal-temp-log-workspace/model';
+import { MeasurementGraphData } from '@basal-temp-log-workspace/model';
 
 @Injectable({ providedIn: 'root' })
 export class MeasurementsService {
-  measurements: MeasurementDto[] = [];
+  measurements: MeasurementGraphData[] = [];
 
   init(): void {
     this.measurements = this.getMeasurementsMock();
   }
 
-  getMeasurementsMock(): MeasurementDto[] {
-    const _measurements: MeasurementDto[] = [];
-    const today = new Date();
+  getMeasurementsMock(): MeasurementGraphData[] {
+    const _measurements: MeasurementGraphData[] = [];
 
-    for (let index = 0; index < 50; index++) {
-      const pastDate = new Date();
-      pastDate.setDate(today.getDate() - index);
-
+    for (let index = 1; index < 28; index++) {
       _measurements.push({
         temperature: this.getRandomTemperature(),
-        date: pastDate,
+        day: index,
+        date: new Date(),
       });
     }
     return _measurements;
