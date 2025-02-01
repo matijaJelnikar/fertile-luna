@@ -1,24 +1,21 @@
-$dark_soft_pink: #f4a8b8;
-$dark_rose: #880e4f;
-$light_pink_bg: #fce4ec; // Soft background similar to shell
-
 :host {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background-color: $light_pink_bg; // Soft pink background
+  background-color: var(--mat-sys-surface); // Uses theme-based background
 }
 
 h1 {
-  color: $dark_rose;
+  color: var(--mat-sys-primary); // Primary color adapts to theme mode
   font-weight: 600;
   text-align: center;
 }
 
 .version {
-  color: rgba(136, 14, 79, 0.7);
+  color: var(--mat-sys-on-surface); // Adjusts based on theme mode
+  opacity: 0.7;
   font-size: 0.9rem;
 }
 
@@ -31,9 +28,9 @@ h1 {
 .registration-box {
   padding: 2rem;
   border-radius: 12px;
-  background: white;
+  background: var(--mat-sys-surface-container); // Adaptable background
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(136, 14, 79, 0.3);
+  border: 1px solid var(--mat-sys-outline); // Uses theme-based border color
 }
 
 mat-form-field {
@@ -43,7 +40,7 @@ mat-form-field {
 
 mat-slide-toggle {
   margin-top: 10px;
-  color: $dark_rose;
+  color: var(--mat-sys-primary); // Uses theme primary color
 }
 
 button {
@@ -52,21 +49,25 @@ button {
   font-size: 1.1rem;
   border-radius: 8px;
   font-weight: bold;
-  background-color: $dark_soft_pink;
-  color: $dark_rose;
+  background-color: var(
+    --mat-sys-primary-container
+  ); // Adaptable button background
+  color: var(--mat-sys-on-primary-container); // Ensures contrast
   transition: 0.3s;
 
   &:hover {
-    background-color: darken($dark_soft_pink, 10%);
+    background-color: var(
+      --mat-sys-secondary-container
+    ); // Theme-aware hover effect
   }
 }
 
 button:enabled {
-  background: rgba(244, 168, 184, 0.6);
+  background: var(--mat-sys-secondary); // Adjusts dynamically based on theme
 }
 
 .registration-error {
-  color: red;
+  color: var(--mat-sys-error); // Theme-aware error color
   text-align: center;
   font-weight: bold;
 }
