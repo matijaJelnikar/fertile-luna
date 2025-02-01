@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { AfterViewInit, Component } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -16,9 +17,9 @@ import { AuthenticationService } from '../../authentication.service';
   selector: 'app-registration',
   templateUrl: './registration.component.html',
   styleUrls: ['./registration.component.scss'],
-  imports: [MaterialModule, ReactiveFormsModule, TranslateModule],
+  imports: [MaterialModule, ReactiveFormsModule, TranslateModule, NgClass],
 })
-export class RegistrationComponent implements OnInit {
+export class RegistrationComponent implements AfterViewInit {
   registrationForm: FormGroup = new FormGroup({
     username: new FormControl('', {
       validators: [Validators.required],
@@ -39,6 +40,7 @@ export class RegistrationComponent implements OnInit {
   });
 
   isLoading = false;
+  initialLoad = true;
   error: string | null = null;
 
   constructor(
@@ -47,7 +49,11 @@ export class RegistrationComponent implements OnInit {
     private route: ActivatedRoute
   ) {}
 
-  ngOnInit() {}
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.initialLoad = false;
+    }, 10);
+  }
 
   register(): void {
     if (this.registrationForm.invalid) {
@@ -67,7 +73,6 @@ export class RegistrationComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        console.log(err);
         this.error =
           err.error?.message?.[0] || 'Registration failed. Please try again.';
       },

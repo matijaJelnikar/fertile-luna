@@ -1,7 +1,7 @@
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-  FormBuilder,
+  FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
@@ -9,7 +9,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
-import { CommonModule, DOCUMENT } from '@angular/common';
+import { CommonModule, NgClass } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from '../../../material.module';
 import { AuthenticationService } from '../../authentication.service';
@@ -19,25 +19,45 @@ import { AuthenticationService } from '../../authentication.service';
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  imports: [CommonModule, ReactiveFormsModule, TranslateModule, MaterialModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TranslateModule,
+    MaterialModule,
+    NgClass,
+  ],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements AfterViewInit {
   error: string | undefined;
-  loginForm!: FormGroup;
+  loginForm: FormGroup = new FormGroup({
+    email: new FormControl('', {
+      validators: [Validators.required],
+      nonNullable: true,
+    }),
+    password: new FormControl('', {
+      validators: [Validators.required],
+      nonNullable: true,
+    }),
+    remember: new FormControl(false, {
+      validators: [Validators.required],
+      nonNullable: true,
+    }),
+  });
   isLoading = false;
   destroyRef = inject(DestroyRef);
-  private document = inject(DOCUMENT);
+  initialLoad = true;
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private formBuilder: FormBuilder,
     private authenticationService: AuthenticationService
-  ) {
-    this.createForm();
-  }
+  ) {}
 
-  ngOnInit() {}
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.initialLoad = false;
+    }, 10);
+  }
 
   login() {
     this.isLoading = true;
@@ -57,17 +77,9 @@ export class LoginComponent implements OnInit {
             { replaceUrl: true }
           );
         },
-        error: (error) => {
-          this.error = error;
+        error: (err) => {
+          this.error = err.error?.message;
         },
       });
-  }
-
-  private createForm() {
-    this.loginForm = this.formBuilder.group({
-      email: ['', Validators.required],
-      password: ['', Validators.required],
-      remember: true,
-    });
   }
 }

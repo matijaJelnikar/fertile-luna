@@ -1,6 +1,7 @@
 <div fxFill fxLayout="column" class="login-wrapper">
   <div
     class="login-image"
+    [ngClass]="{ 'initial-load': initialLoad }"
     style="background-image: url('resources/fertileluna_background.png')"
   ></div>
 
@@ -8,7 +9,7 @@
     <form (ngSubmit)="login()" [formGroup]="loginForm" novalidate>
       <div class="login-error">
         @if (error) {
-        {{ 'login.credentials.incorrect' | translate }}
+        {{ error || 'login.credentials.incorrect' | translate }}
         }
       </div>
 
@@ -24,14 +25,12 @@
           required
         />
         <mat-label for="emailInput">{{ 'email' | translate }}</mat-label>
-        <mat-error
-          *ngIf="
-            loginForm.controls['email'].invalid &&
-            loginForm.controls['email'].touched
-          "
-        >
+        @if (loginForm.controls['email'].invalid &&
+        loginForm.controls['email'].touched) {
+        <mat-error>
           <span>{{ 'email.required' | translate }}</span>
         </mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field [appearance]="'outline'">
@@ -44,14 +43,12 @@
           required
         />
         <mat-label for="passwordInput">{{ 'password' | translate }}</mat-label>
-        <mat-error
-          *ngIf="
-            loginForm.controls['password'].invalid &&
-            loginForm.controls['password'].touched
-          "
-        >
+        @if(loginForm.controls['password'].invalid &&
+        loginForm.controls['password'].touched){
+        <mat-error>
           <span>{{ 'password.required' | translate }}</span>
         </mat-error>
+        }
       </mat-form-field>
 
       <mat-slide-toggle color="primary" formControlName="remember">
