@@ -1,3 +1,25 @@
-<p>
-  settings works!
-</p>
+<div class="settings-container">
+  <h2 mat-dialog-title>{{ 'settings' | translate }}</h2>
+  <div class="dark-mode-row">
+    <mat-icon>light_mode</mat-icon>
+    <mat-slide-toggle
+      [(ngModel)]="isDarkMode"
+      (change)="onDarkModeChange()"
+      color="primary"
+    >
+    </mat-slide-toggle>
+    <mat-icon>dark_mode</mat-icon>
+  </div>
+  <!-- <mat-card class="settings-box">
+    <form>
+      <mat-slide-toggle
+        [(ngModel)]="isDarkMode"
+        [ngModelOptions]="{ standalone: true }"
+        (change)="onDarkModeChange()"
+        color="primary"
+      >
+        {{ 'settings.dark.mode' | translate }}
+      </mat-slide-toggle>
+    </form>
+  </mat-card> -->
+</div>

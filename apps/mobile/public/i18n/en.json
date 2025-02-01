@@ -17,5 +17,7 @@
   "dont.have.an.account": "Don't have an account?",
   "register": "Register",
   "sign.up.label": "Sign up",
-  "register.back.to.login": "Back to login"
+  "register.back.to.login": "Back to login",
+  "settings": "Settings",
+  "settings.dark.mode": "Dark mode"
 }
