@@ -20,6 +20,10 @@
           {
             "glob": "**/*",
             "input": "apps/mobile/public"
+          },
+          {
+            "glob": "**/*",
+            "input": "apps/mobile/src/assets"
           }
         ],
         "styles": ["apps/mobile/src/styles.scss"],
