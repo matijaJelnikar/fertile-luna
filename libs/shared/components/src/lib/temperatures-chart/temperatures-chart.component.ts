@@ -1,4 +1,4 @@
-import { Component, input, OnInit } from '@angular/core';
+import { Component, effect, input, OnInit } from '@angular/core';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
 // Register necessary Chart.js components
@@ -15,7 +15,17 @@ export class TemperaturesChartComponent implements OnInit {
   timestampData = input<string[]>([]);
   chart!: Chart;
 
-  constructor() {}
+  constructor() {
+    effect(() => {
+      if (!this.chart) return;
+
+      const tempData = this.temperatureData();
+      const timeData = this.timestampData();
+      this.chart.data.labels = timeData;
+      this.chart.data.datasets[0].data = tempData;
+      this.chart.update();
+    });
+  }
 
   ngOnInit() {
     const chartData: ChartConfiguration<'line'> = {
