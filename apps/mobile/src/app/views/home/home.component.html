@@ -6,6 +6,9 @@
       [timestampData]="timestampData()"
     ></lib-temperatures-chart>
   </div>
+  @for (data of temperatureData(); track $index) {
+  {{ data }}<br />
+  }
   <div class="chart-controls">
     <button mat-button>1D</button>
     <button mat-button>1W</button>

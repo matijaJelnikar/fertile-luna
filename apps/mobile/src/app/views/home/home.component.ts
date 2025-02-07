@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, computed, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import {
   FabComponent,
@@ -24,24 +24,30 @@ import { HomeService } from './home.service';
   providers: [HomeService],
 })
 export class HomeComponent implements OnInit {
-  temperatureData = signal<number[]>([]);
-  timestampData = signal<string[]>([]);
+  temperatureData = computed<number[]>(() => {
+    return this.homeService.measurements().map((item) => item.temperature);
+  });
+  timestampData = computed<string[]>(() => {
+    return this.homeService
+      .measurements()
+      .map((item) => new Date(item.date).toLocaleDateString());
+  });
+
   constructor(private dialog: MatDialog, private homeService: HomeService) {}
 
   ngOnInit(): void {
-    this.homeService.init();
     this.initGraphData();
   }
 
   initGraphData(): void {
-    this.temperatureData.set(
-      this.homeService.measurements.map((item) => item.temperature)
-    );
-    this.timestampData.set(
-      this.homeService.measurements.map((item) =>
-        new Date(item.date).toLocaleDateString()
-      )
-    );
+    // this.temperatureData.set(
+    //   this.homeService.measurements().map((item) => item.temperature)
+    // );
+    // this.timestampData.set(
+    //   this.homeService
+    //     .measurements()
+    //     .map((item) => new Date(item.date).toLocaleDateString())
+    // );
   }
 
   addRecord(): void {
@@ -58,7 +64,7 @@ export class HomeComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-      //TODO cleanup
+      this.homeService.addMeasurement(result);
     });
   }
 }

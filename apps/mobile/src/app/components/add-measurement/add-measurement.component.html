@@ -1,6 +1,6 @@
 <h2 mat-dialog-title>Add measurement</h2>
 <mat-dialog-content>
-  <form [formGroup]="temperatureForm" (ngSubmit)="addTemperature()">
+  <form [formGroup]="temperatureForm" (ngSubmit)="save()">
     <mat-form-field>
       <mat-label>Choose a date</mat-label>
       <input matInput [matDatepicker]="picker" formControlName="date" />
@@ -96,7 +96,7 @@
   <button mat-button (click)="close()">Close</button>
   <button
     mat-button
-    [mat-dialog-close]="save()"
+    (click)="save()"
     cdkFocusInitial
     [disabled]="this.temperatureForm.invalid"
   >

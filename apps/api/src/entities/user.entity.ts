@@ -4,8 +4,8 @@ import { Measurement } from './measurement.entity';
 
 @Entity({ name: 'user' })
 export class User {
-  @PrimaryGeneratedColumn()
-  id?: UUID;
+  @PrimaryGeneratedColumn('uuid')
+  uuid?: UUID;
 
   @Column({ type: 'varchar', length: 30 })
   username: string;

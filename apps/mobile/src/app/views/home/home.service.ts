@@ -1,13 +1,17 @@
-import { Injectable } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 import { MeasurementDto } from '@basal-temp-log-workspace/model';
-import { MeasurementsService } from '../../services/measurements.service';
+import { MeasurementsQuery } from '../../state/measurements/measurements.query';
+import { MeasurementsService } from '../../state/measurements/mesaurements.service';
 
 @Injectable()
 export class HomeService {
-  measurements: MeasurementDto[] = [];
-  constructor(private measurementsService: MeasurementsService) {}
+  measurementQuery = inject(MeasurementsQuery);
+  measurementsService = inject(MeasurementsService);
+  measurements = computed(() => {
+    return this.measurementQuery.measurements() || [];
+  });
 
-  init(): void {
-    this.measurements = this.measurementsService.getMeasurementsMock();
+  addMeasurement(data: MeasurementDto): void {
+    this.measurementsService.addMeasurement(data).subscribe();
   }
 }

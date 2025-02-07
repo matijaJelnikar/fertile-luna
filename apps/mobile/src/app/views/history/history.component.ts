@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { MeasurementDto } from '@basal-temp-log-workspace/model';
@@ -17,12 +17,15 @@ import { HistoryService } from './history.service';
 })
 export class HistoryComponent implements OnInit {
   displayedColumns: string[] = ['temperature', 'timestamp'];
-  dataSource = new MatTableDataSource<MeasurementDto>();
-  constructor(public historyService: HistoryService) {}
+  historyService = inject(HistoryService);
+  dataSource = new MatTableDataSource<MeasurementDto>(
+    this.historyService.measurements()
+  );
+  source = computed(() => {
+    return new MatTableDataSource<MeasurementDto>(
+      this.historyService.measurements()
+    );
+  });
 
-  ngOnInit(): void {
-    this.historyService.initHistory();
-
-    this.dataSource.data = [...this.historyService.measurements];
-  }
+  ngOnInit(): void {}
 }

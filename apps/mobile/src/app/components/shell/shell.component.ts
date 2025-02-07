@@ -1,7 +1,9 @@
 import { NgClass } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { tap } from 'rxjs';
 import { AuthenticationService } from '../../auth';
 import { MaterialModule } from '../../material.module';
 
@@ -18,16 +20,28 @@ enum NavigationButton {
   imports: [RouterModule, NgClass, TranslateModule, MaterialModule],
 })
 export class ShellComponent implements OnInit {
-  selectedTab: NavigationButton = NavigationButton.HOME;
+  router = inject(Router);
+  authService = inject(AuthenticationService);
+  destroyRef = inject(DestroyRef);
+  selectedTab: NavigationButton = this.router.url as NavigationButton;
+
   protected Navigation: typeof NavigationButton = NavigationButton;
 
-  constructor(
-    private router: Router,
-    private authService: AuthenticationService
-  ) {}
-
   ngOnInit(): void {
-    this.selectedTab = this.router.url as NavigationButton;
+    this.registerRouteChangesListener();
+  }
+
+  registerRouteChangesListener(): void {
+    this.router.events
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        tap((event) => {
+          if (event instanceof NavigationEnd) {
+            this.selectedTab = this.router.url as NavigationButton;
+          }
+        })
+      )
+      .subscribe();
   }
 
   selectTab(navButton: NavigationButton): void {

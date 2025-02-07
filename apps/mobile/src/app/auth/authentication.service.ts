@@ -39,13 +39,13 @@ export class AuthenticationService {
     return this.http.post<AccessToken>(LoginFlowEndpoints.LOGIN, data).pipe(
       tap((loginResponse: AccessToken) => {
         this.credentialsService.setCredentials(
-          { username: context.email, token: loginResponse.access_token },
+          { email: context.email, token: loginResponse.access_token },
           context.remember
         );
       }),
       map((res: AccessToken) => {
         return {
-          username: context.email,
+          email: context.email,
           token: res.access_token,
         } as Credentials;
       })

@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 
+import { MeasurementDto } from '@basal-temp-log-workspace/model';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UUID } from 'crypto';
 import { Repository } from 'typeorm';
-import { MeasurementDto } from '../../../../../libs/shared/model/src/lib/dto/measurement.dto';
 import { Measurement } from '../../entities/measurement.entity';
 import { UsersService } from '../users/users.service';
 
@@ -40,14 +40,11 @@ export class MeasurementService {
 
   async getMeasurementsByUser(userId: UUID): Promise<Partial<Measurement>[]> {
     const measurements = await this.measurementRepository.find({
-      where: { user: { id: userId } },
+      where: { user: { uuid: userId } },
     });
 
     return measurements.map((measurement) => ({
-      id: measurement.id,
-      date: measurement.date,
-      temperature: measurement.temperature,
-      notes: measurement.notes,
+      ...measurement,
     }));
   }
 }

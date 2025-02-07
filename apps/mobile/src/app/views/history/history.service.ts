@@ -1,13 +1,10 @@
-import { Injectable } from '@angular/core';
-import { MeasurementDto } from '@basal-temp-log-workspace/model';
-import { MeasurementsService } from '../../services/measurements.service';
+import { computed, inject, Injectable } from '@angular/core';
+import { MeasurementsQuery } from '../../state/measurements/measurements.query';
 
 @Injectable()
 export class HistoryService {
-  measurements: MeasurementDto[] = [];
-  constructor(private measurementsService: MeasurementsService) {}
-
-  initHistory(): void {
-    this.measurements = this.measurementsService.getMeasurementsMock();
-  }
+  measurementQuery = inject(MeasurementsQuery);
+  measurements = computed(() => {
+    return this.measurementQuery.measurements();
+  });
 }

@@ -1,6 +1,6 @@
 <div class="form-container">
   <div class="table-container">
-    <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+    <table mat-table [dataSource]="source()" class="mat-elevation-z8">
       <ng-container matColumnDef="temperature">
         <th mat-header-cell *matHeaderCellDef>
           {{ 'temperature' | translate }}

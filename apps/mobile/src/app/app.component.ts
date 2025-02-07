@@ -3,8 +3,8 @@ import { Component, inject, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LocalStorageService } from './services/local-storage.service';
-import { MeasurementsService } from './services/measurements.service';
 import { StorageKeys } from './shared/constants/common.constants';
+import { MeasurementsService } from './state/measurements/mesaurements.service';
 @Component({
   standalone: true,
   imports: [RouterModule, TranslateModule],
@@ -14,9 +14,8 @@ import { StorageKeys } from './shared/constants/common.constants';
 })
 export class AppComponent implements OnInit {
   title = '';
-
-  measurementsService = inject(MeasurementsService);
   document = inject(DOCUMENT);
+  measurementsService = inject(MeasurementsService);
 
   constructor(
     private translateService: TranslateService,
@@ -27,8 +26,8 @@ export class AppComponent implements OnInit {
   }
   ngOnInit(): void {
     this.title = this.translateService.instant('app.name');
-    this.measurementsService.init();
     this.setTheme();
+    this.measurementsService.getMeasurements();
   }
 
   setTheme(): void {

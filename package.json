@@ -57,6 +57,7 @@
     "@angular/compiler-cli": "19.1.2",
     "@angular/language-service": "19.1.2",
     "@angular/material": "^19.1.1",
+    "@datorama/akita": "^8.0.1",
     "@eslint/js": "^9.8.0",
     "@nestjs/schematics": "^10.0.1",
     "@nestjs/testing": "^10.0.2",

@@ -85,11 +85,24 @@ export class AddMeasurementComponent implements OnInit, AfterViewInit {
     this.temperatureInput.nativeElement.focus();
   }
 
-  addTemperature(): void {}
-
   close(): void {
     this.dialogRef.close();
   }
 
-  save(): void {}
+  save(): void {
+    const formValues = this.temperatureForm.getRawValue();
+    const payload: MeasurementDto = {
+      date: formValues.date,
+      temperature: formValues.temperature!,
+      bleeding: formValues.bleeding || undefined,
+      cervixFeeling: formValues.cervixFeeling || undefined,
+      cervixPosition: formValues.cervixPosition || undefined,
+      intercourse: formValues.intercourse || undefined,
+      mucusAppearance: formValues.mucusAppearance || undefined,
+      mucusFeeling: formValues.mucusFeeling || undefined,
+      notes: formValues.notes || undefined,
+      pain: formValues.pain || undefined,
+    };
+    this.dialogRef.close(payload);
+  }
 }
