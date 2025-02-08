@@ -9,12 +9,13 @@ import {
   MucusFeelingOption,
   PainOption,
 } from '@basal-temp-log-workspace/model';
-import { User } from './user.entity';
+import { UUID } from 'crypto';
+import { Cycle } from './cycle.entity';
 
 @Entity()
 export class Measurement {
   @PrimaryGeneratedColumn()
-  id: number;
+  uuid: UUID;
 
   @Column({ type: 'date' })
   date: Date;
@@ -46,6 +47,6 @@ export class Measurement {
   @Column({ type: 'text', nullable: true })
   notes?: string;
 
-  @ManyToOne(() => User, (user) => user.measurements, { onDelete: 'CASCADE' })
-  user?: User;
+  @ManyToOne(() => Cycle, (cycle) => cycle.measurements)
+  cycle?: Cycle;
 }

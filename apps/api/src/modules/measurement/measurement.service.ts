@@ -1,46 +1,62 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-
 import { MeasurementDto } from '@basal-temp-log-workspace/model';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UUID } from 'crypto';
 import { Repository } from 'typeorm';
 import { Measurement } from '../../entities/measurement.entity';
-import { UsersService } from '../users/users.service';
+import { CycleService } from '../cycle/cycle.service';
 
 @Injectable()
 export class MeasurementService {
   constructor(
     @InjectRepository(Measurement)
     private readonly measurementRepository: Repository<Measurement>,
-    private readonly usersService: UsersService
+    private readonly cycleService: CycleService
   ) {}
 
   async createMeasurement(
     measurementData: MeasurementDto,
-    userId: UUID
+    cycleUuid: UUID,
+    userUuid: UUID
   ): Promise<Partial<Measurement>> {
-    const user = await this.usersService.findOneById(userId);
-    if (!user) {
-      throw new BadRequestException('User not found');
+    // 🔍 Ensure the cycle belongs to the authenticated user
+    const cycle = await this.cycleService.findOneById(cycleUuid, userUuid);
+    if (!cycle) {
+      throw new BadRequestException(
+        'Cycle not found or does not belong to user'
+      );
     }
 
     const newMeasurement = this.measurementRepository.create({
       ...measurementData,
-      user,
+      cycle,
     });
 
     const savedMeasurement = await this.measurementRepository.save(
       newMeasurement
     );
 
-    // Exclude user field from response
-    const { user: _, ...measurementResponse } = savedMeasurement;
+    // ✅ Exclude the cycle field from response
+    const { cycle: _, ...measurementResponse } = savedMeasurement;
     return measurementResponse;
   }
 
-  async getMeasurementsByUser(userId: UUID): Promise<Partial<Measurement>[]> {
+  async getMeasurementsByCycle(
+    cycleUuid: UUID,
+    userUuid: UUID
+  ): Promise<Partial<Measurement>[]> {
+    // 🔍 Ensure the cycle belongs to the authenticated user
+    const cycle = await this.cycleService.findOneById(cycleUuid, userUuid);
+    if (!cycle) {
+      throw new NotFoundException('Cycle not found or does not belong to user');
+    }
+
     const measurements = await this.measurementRepository.find({
-      where: { user: { uuid: userId } },
+      where: { cycle: { uuid: cycleUuid } },
     });
 
     return measurements.map((measurement) => ({

@@ -1,6 +1,6 @@
 import { UUID } from 'crypto';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Measurement } from './measurement.entity';
+import { Cycle } from './cycle.entity';
 
 @Entity({ name: 'user' })
 export class User {
@@ -19,6 +19,6 @@ export class User {
   @Column({ type: 'int' })
   age: number;
 
-  @OneToMany(() => Measurement, (measurement) => measurement.user)
-  measurements?: Measurement[];
+  @OneToMany(() => Cycle, (cycle) => cycle.user, { cascade: true })
+  cycle?: Cycle[];
 }
