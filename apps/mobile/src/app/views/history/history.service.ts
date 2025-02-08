@@ -1,10 +1,10 @@
 import { computed, inject, Injectable } from '@angular/core';
-import { MeasurementsQuery } from '../../state/measurements/measurements.query';
+import { MeasurementsService } from '../../state/measurements/mesaurements.service';
 
 @Injectable()
 export class HistoryService {
-  measurementQuery = inject(MeasurementsQuery);
+  measurementService = inject(MeasurementsService);
   measurements = computed(() => {
-    return this.measurementQuery.measurements();
+    return this.measurementService.measurements();
   });
 }

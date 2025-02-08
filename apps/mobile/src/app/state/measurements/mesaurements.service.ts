@@ -1,23 +1,21 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { MeasurementGraphData } from '@basal-temp-log-workspace/model';
 import { tap } from 'rxjs/operators';
 import { MeasurementEndpoints } from '../../shared/constants/endpoints.constants';
-import { MeasurementsStore } from './measurements.store';
 
 @Injectable({ providedIn: 'root' })
 export class MeasurementsService {
-  constructor(
-    private measurementsStore: MeasurementsStore,
-    private http: HttpClient
-  ) {}
+  measurements = signal<MeasurementGraphData[]>([]);
+
+  constructor(private http: HttpClient) {}
 
   getMeasurements() {
     this.http
       .get<MeasurementGraphData[]>(MeasurementEndpoints.GET_MEASUREMENT)
       .pipe(
         tap((measurements) => {
-          this.measurementsStore.updateMeasurements(measurements);
+          this.measurements.set(measurements);
         })
       )
       .subscribe();
@@ -31,7 +29,9 @@ export class MeasurementsService {
       )
       .pipe(
         tap((newMeasurement) => {
-          this.measurementsStore.addMeasurement(newMeasurement);
+          this.measurements.update((measurements) => {
+            return [...measurements, newMeasurement];
+          });
         })
       );
   }
