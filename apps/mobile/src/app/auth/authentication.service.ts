@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { map, Observable, of, tap } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
-import { AccessToken, CreateUserDto } from '@basal-temp-log-workspace/model';
+import { AccessToken } from '@basal-temp-log-workspace/model';
 import { LoginFlowEndpoints } from '../shared/constants/endpoints.constants';
 import { Credentials, CredentialsService } from './credentials.service';
 
@@ -52,7 +52,7 @@ export class AuthenticationService {
     );
   }
 
-  register(userData: CreateUserDto): Observable<AccessToken> {
+  register(userData: unknown): Observable<AccessToken> {
     return this.http.post<AccessToken>(LoginFlowEndpoints.REGISTER, userData);
   }
 

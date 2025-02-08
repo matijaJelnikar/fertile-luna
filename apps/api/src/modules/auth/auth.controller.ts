@@ -10,8 +10,8 @@ import { AuthService } from './auth.service';
 
 import { AuthGuard } from '@nestjs/passport';
 
-import { CreateUserDto } from '@basal-temp-log-workspace/model';
 import { Public } from '../../decorators/public.decorator';
+import { CreateUserDto } from '../../dto/create-user.dto';
 import { LoginResponseDTO } from './dto/login-response.dto';
 import { RegisterResponseDTO } from './dto/register-response.dto';
 import { AuthenticatedRequest } from './types/AuthenticatedRequest';

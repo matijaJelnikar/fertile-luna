@@ -1,0 +1,31 @@
+{
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.ico", // Cache favicon
+          "/index.html", // Cache the main entry point (index.html)
+          "/*.css", // Cache all CSS files
+          "/*.js" // Cache all JS files
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "api-cache",
+      "urls": [
+        "https://your-api-url.com/api/*" // Change this to your actual API base URL
+      ],
+      "cacheConfig": {
+        "strategy": "freshness", // Use freshness strategy to get the most up-to-date data
+        "maxSize": 50, // Max number of entries to cache
+        "maxAge": "1h", // Cache API responses for 1 hour
+        "timeout": "5s" // If the network takes longer than 5 seconds, use the cached response
+      }
+    }
+  ]
+}

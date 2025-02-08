@@ -7,10 +7,16 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CreateUserDto } from '@basal-temp-log-workspace/model';
 import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from '../../../material.module';
 import { AuthenticationService } from '../../authentication.service';
+
+export interface UserDto {
+  username: string;
+  age: number;
+  email: string;
+  password: string;
+}
 
 @Component({
   standalone: true,
@@ -61,7 +67,7 @@ export class RegistrationComponent implements AfterViewInit {
     }
 
     this.isLoading = true;
-    const formValues: CreateUserDto = this.registrationForm.value;
+    const formValues: UserDto = this.registrationForm.value;
 
     this.authService.register(formValues).subscribe({
       complete: () => {
