@@ -27,7 +27,6 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     this.title = this.translateService.instant('app.name');
     this.setTheme();
-    this.measurementsService.getMeasurements();
   }
 
   setTheme(): void {

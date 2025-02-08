@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import {
   FabComponent,
@@ -8,6 +8,7 @@ import {
 import { MeasurementDto } from '@basal-temp-log-workspace/model';
 import { AddMeasurementComponent } from '../../components/add-measurement/add-measurement.component';
 import { MaterialModule } from '../../material.module';
+import { MeasurementsService } from '../../state/measurements/mesaurements.service';
 import { HomeService } from './home.service';
 
 @Component({
@@ -24,6 +25,8 @@ import { HomeService } from './home.service';
   providers: [HomeService],
 })
 export class HomeComponent implements OnInit {
+  measurementsService = inject(MeasurementsService);
+
   temperatureData = computed<number[]>(() => {
     return this.homeService.measurements().map((item) => item.temperature);
   });
@@ -33,23 +36,17 @@ export class HomeComponent implements OnInit {
       .map((item) => new Date(item.date).toLocaleDateString());
   });
 
+  currentCycleNumber = 1;
+
   constructor(private dialog: MatDialog, private homeService: HomeService) {}
 
   ngOnInit(): void {
-    this.initGraphData();
+    this.measurementsService.getMeasurements();
+    //maybe delete
   }
 
-  initGraphData(): void {
-    // this.temperatureData.set(
-    //   this.homeService.measurements().map((item) => item.temperature)
-    // );
-    // this.timestampData.set(
-    //   this.homeService
-    //     .measurements()
-    //     .map((item) => new Date(item.date).toLocaleDateString())
-    // );
-  }
-
+  previousCycle(): void {}
+  nextCycle(): void {}
   addRecord(): void {
     const data: Partial<MeasurementDto> = { date: new Date() };
 

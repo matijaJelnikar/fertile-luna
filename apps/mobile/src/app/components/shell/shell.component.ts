@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -23,7 +23,7 @@ export class ShellComponent implements OnInit {
   router = inject(Router);
   authService = inject(AuthenticationService);
   destroyRef = inject(DestroyRef);
-  selectedTab: NavigationButton = this.router.url as NavigationButton;
+  selectedTab = signal<NavigationButton>(this.router.url as NavigationButton);
 
   protected Navigation: typeof NavigationButton = NavigationButton;
 
@@ -37,7 +37,7 @@ export class ShellComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
         tap((event) => {
           if (event instanceof NavigationEnd) {
-            this.selectedTab = this.router.url as NavigationButton;
+            this.selectedTab.set(this.router.url as NavigationButton);
           }
         })
       )
@@ -45,7 +45,7 @@ export class ShellComponent implements OnInit {
   }
 
   selectTab(navButton: NavigationButton): void {
-    this.selectedTab = navButton;
+    this.selectedTab.set(navButton);
     switch (navButton) {
       case NavigationButton.HOME:
         this.router.navigate(['/home']);

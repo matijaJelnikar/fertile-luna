@@ -1,17 +1,22 @@
 <section class="temperature-section">
-  <h3>Basal Temperature</h3>
+  <section class="safe-sex">
+    <h3>Safe Sex Advisement</h3>
+    <p>Low Risk<br /><span>Based on fertility data</span></p>
+  </section>
   <div class="chart-placeholder">
     <lib-temperatures-chart
       [temperatureData]="temperatureData()"
       [timestampData]="timestampData()"
     ></lib-temperatures-chart>
   </div>
-  <div class="chart-controls">
-    <button mat-button>1D</button>
-    <button mat-button>1W</button>
-    <button mat-button>1M</button>
-    <button mat-button>3M</button>
-    <button mat-button>1Y</button>
+  <div class="cycle-navigation">
+    <button mat-button (click)="previousCycle()">
+      <mat-icon>chevron_left</mat-icon> Previous
+    </button>
+    <span class="cycle-indicator">Cycle {{ currentCycleNumber }}</span>
+    <button mat-button (click)="nextCycle()">
+      Next <mat-icon>chevron_right</mat-icon>
+    </button>
   </div>
 </section>
 
@@ -20,14 +25,6 @@
   <p>Today<br /><span>Day 25 of 28-day cycle</span></p>
   <p>
     Bleeding <span class="right">0 days left <mat-icon>event</mat-icon></span>
-  </p>
-</section>
-
-<section class="safe-sex">
-  <h3>Safe Sex Advisement</h3>
-  <p>
-    Low Risk<br /><span>Based on fertility data</span>
-    <mat-icon>check_circle</mat-icon>
   </p>
 </section>
 

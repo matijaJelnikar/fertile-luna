@@ -35,10 +35,10 @@
   bottom: 0;
   height: 78px;
   width: 100%;
-  background-color: var(--mat-sys-surface);
   display: flex;
   justify-content: center;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -2px 4px var(--mat-sys-outline-variant);
+  background-color: var(--mat-sys-surface);
 
   .bottom-nav-container {
     display: flex;
@@ -53,8 +53,6 @@
       padding: 10px 15px;
       border-radius: 8px;
 
-      &:hover,
-      &:focus,
       &.selected {
         color: var(--mat-sys-primary);
       }

@@ -5,7 +5,7 @@
     </div>
     <div class="user-avatar">
       <div class="user-dropdown">
-        <mat-icon class="user-icon" [matMenuTriggerFor]="menu" tabindex="0">
+        <mat-icon class="user-icon" [matMenuTriggerFor]="menu" [tabindex]="0">
           <mat-icon
             class="user-avatar"
             [style.background-image]="'url(resources/avatar_woman.png)'"
@@ -31,8 +31,8 @@
     <div class="bottom-nav-container">
       <div
         class="nav-button"
-        [tabindex]="0"
-        [ngClass]="{ selected: selectedTab === Navigation.HOME }"
+        [tabindex]="1"
+        [ngClass]="{ selected: selectedTab() === Navigation.HOME }"
         role="button"
         (click)="selectTab(Navigation.HOME)"
         (keydown.enter)="selectTab(Navigation.HOME)"
@@ -44,8 +44,8 @@
       </div>
       <div
         class="nav-button"
-        [ngClass]="{ selected: selectedTab === Navigation.HISTORY }"
-        [tabindex]="1"
+        [ngClass]="{ selected: selectedTab() === Navigation.HISTORY }"
+        [tabindex]="2"
         role="button"
         (click)="selectTab(Navigation.HISTORY)"
         (keydown.enter)="selectTab(Navigation.HISTORY)"
@@ -57,8 +57,8 @@
       </div>
       <div
         class="nav-button"
-        [tabindex]="2"
-        [ngClass]="{ selected: selectedTab === Navigation.SETTINGS }"
+        [tabindex]="3"
+        [ngClass]="{ selected: selectedTab() === Navigation.SETTINGS }"
         role="button"
         (click)="selectTab(Navigation.SETTINGS)"
         (keydown.enter)="selectTab(Navigation.SETTINGS)"
