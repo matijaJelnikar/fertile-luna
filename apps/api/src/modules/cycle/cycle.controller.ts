@@ -29,18 +29,18 @@ export class CycleController {
   }
 
   @UseGuards(JwtGuard)
-  @Get('get/:cycleId')
+  @Get('get/:cycleUuid')
   async findOne(
-    @Param('cycleId') cycleUuid: UUID,
+    @Param('cycleUuid') cycleUuid: UUID,
     @Req() req: AuthenticatedRequest
   ) {
     return this.cycleService.findOneById(cycleUuid, req.user.uuid);
   }
 
   @UseGuards(JwtGuard)
-  @Put('update/:cycleId')
+  @Put('update/:cycleUuid')
   async update(
-    @Param('cycleId') cycleUuid: UUID,
+    @Param('cycleUuid') cycleUuid: UUID,
     @Body() updateCycleDto: UpdateCycleDto,
     @Req() req: AuthenticatedRequest
   ) {
@@ -48,9 +48,9 @@ export class CycleController {
   }
 
   @UseGuards(JwtGuard)
-  @Delete('delete/:cycleId')
+  @Delete('delete/:cycleUuid')
   async remove(
-    @Param('cycleId') cycleUuid: UUID,
+    @Param('cycleUuid') cycleUuid: UUID,
     @Req() req: AuthenticatedRequest
   ) {
     return this.cycleService.removeCycle(cycleUuid, req.user.uuid);
