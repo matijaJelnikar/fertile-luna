@@ -14,26 +14,6 @@
       </div>
       <br />
       <h1>{{ 'register' | translate }}</h1>
-
-      <!-- Username field -->
-      <mat-form-field [appearance]="'outline'">
-        <input
-          type="text"
-          matInput
-          formControlName="username"
-          autocomplete="username"
-          id="usernameInput"
-          required
-        />
-        <mat-label for="usernameInput">{{ 'username' | translate }}</mat-label>
-        @if(registrationForm.controls['username'].invalid &&
-        registrationForm.controls['username'].touched){
-        <mat-error>
-          <span>{{ 'username.required' | translate }}</span>
-        </mat-error>
-        }
-      </mat-form-field>
-
       <!-- Email field -->
       <mat-form-field [appearance]="'outline'">
         <input
@@ -49,25 +29,6 @@
         registrationForm.controls['email'].touched){
         <mat-error>
           <span>{{ 'email.required' | translate }}</span>
-        </mat-error>
-        }
-      </mat-form-field>
-
-      <!-- Age field -->
-      <mat-form-field [appearance]="'outline'">
-        <input
-          type="number"
-          matInput
-          formControlName="age"
-          autocomplete="age"
-          id="ageInput"
-          required
-        />
-        <mat-label for="ageInput">{{ 'age' | translate }}</mat-label>
-        @if(registrationForm.controls['age'].invalid &&
-        registrationForm.controls['age'].touched){
-        <mat-error>
-          <span>{{ 'age.required' | translate }}</span>
         </mat-error>
         }
       </mat-form-field>

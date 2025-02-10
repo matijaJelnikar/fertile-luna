@@ -7,17 +7,23 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   uuid?: UUID;
 
-  @Column({ type: 'varchar', length: 30 })
-  username: string;
+  @Column({ type: 'varchar', length: 50 })
+  email: string;
 
   @Column({ type: 'varchar' })
   password: string;
 
-  @Column({ type: 'varchar', length: 40 })
-  email: string;
+  @Column({ type: 'boolean' })
+  profileIncomplete?: boolean;
 
-  @Column({ type: 'int' })
-  age: number;
+  @Column({ type: 'varchar', length: 30, nullable: true })
+  username?: string;
+
+  @Column({ type: 'date', nullable: true })
+  birthDate?: number;
+
+  @Column({ type: 'float', nullable: true })
+  weight?: number;
 
   @OneToMany(() => Cycle, (cycle) => cycle.user, { cascade: true })
   cycle?: Cycle[];

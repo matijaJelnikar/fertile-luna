@@ -1,0 +1,134 @@
+<mat-toolbar class="toolbar-container">
+  <div class="title">
+    <h1 class="mat-headline-1">{{ 'app.name' | translate }}</h1>
+  </div>
+  <div class="user-avatar">
+    <div class="user-dropdown">
+      <mat-icon class="user-icon" [matMenuTriggerFor]="menu" [tabindex]="0">
+        <mat-icon
+          class="user-avatar"
+          [style.background-image]="'url(resources/avatar_woman.png)'"
+          alt="User Avatar"
+        ></mat-icon>
+      </mat-icon>
+
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          Logout
+        </button>
+      </mat-menu>
+    </div>
+  </div>
+</mat-toolbar>
+<mat-stepper [linear]="isLinear" #stepper [orientation]="'vertical'">
+  <!-- Step 1: Fill out name -->
+  <mat-step [stepControl]="firstFormGroup">
+    <form [formGroup]="firstFormGroup">
+      <ng-template matStepLabel>Fill out your name</ng-template>
+
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>{{ 'username' | translate }}</mat-label>
+        <input type="text" matInput formControlName="username" required />
+        <mat-error
+          *ngIf="
+            firstFormGroup.controls['username'].invalid &&
+            firstFormGroup.controls['username'].touched
+          "
+        >
+          <span>{{ 'username.required' | translate }}</span>
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>{{ 'birth.date' | translate }}</mat-label>
+        <input
+          matInput
+          [matDatepicker]="birthDatePicker"
+          formControlName="birthDate"
+          required
+        />
+        <mat-datepicker-toggle
+          matIconSuffix
+          [for]="birthDatePicker"
+        ></mat-datepicker-toggle>
+        <mat-datepicker touchUi #birthDatePicker></mat-datepicker>
+        <mat-error
+          *ngIf="
+            firstFormGroup.controls['birthDate'].invalid &&
+            firstFormGroup.controls['birthDate'].touched
+          "
+        >
+          <span>{{ 'birth.date.required' | translate }}</span>
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>{{ 'weight' | translate }}</mat-label>
+        <input type="number" matInput formControlName="weight" />
+        <mat-error
+          *ngIf="
+            firstFormGroup.controls['weight'].invalid &&
+            firstFormGroup.controls['weight'].touched
+          "
+        >
+          <span>{{ 'weight.required' | translate }}</span>
+        </mat-error>
+      </mat-form-field>
+
+      <div class="button-group">
+        <button mat-button matStepperNext [disabled]="firstFormGroup.invalid">
+          Next
+        </button>
+      </div>
+    </form>
+  </mat-step>
+
+  <!-- Step 2: Fill cycle info -->
+  <mat-step [stepControl]="secondFormGroup">
+    <form [formGroup]="secondFormGroup">
+      <ng-template matStepLabel>Fill cycle info</ng-template>
+
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>When did you have your last period?</mat-label>
+        <input
+          matInput
+          [matDatepicker]="lastPeriodPicker"
+          formControlName="lastPeriodDate"
+        />
+        <mat-datepicker-toggle
+          matIconSuffix
+          [for]="lastPeriodPicker"
+        ></mat-datepicker-toggle>
+        <mat-datepicker touchUi #lastPeriodPicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="full-width">
+        <mat-label>How many days were you bleeding?</mat-label>
+        <input
+          type="number"
+          matInput
+          formControlName="bleedingLength"
+          required
+        />
+      </mat-form-field>
+
+      <div class="button-group">
+        <button mat-button matStepperPrevious>Back</button>
+        <button mat-button matStepperNext [disabled]="secondFormGroup.invalid">
+          Next
+        </button>
+      </div>
+    </form>
+  </mat-step>
+
+  <!-- Step 3: Completion -->
+  <mat-step>
+    <ng-template matStepLabel>Done</ng-template>
+    <p>You are now done.</p>
+    <div class="button-group">
+      <button mat-button matStepperPrevious>Back</button>
+      <button mat-button (click)="submit()">Submit</button>
+    </div>
+  </mat-step>
+</mat-stepper>

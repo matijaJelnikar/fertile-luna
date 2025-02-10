@@ -1,7 +1,10 @@
 import {
+  IsBoolean,
+  IsDate,
   IsEmail,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   MinLength,
@@ -11,14 +14,6 @@ const passwordRegEx =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.-])[A-Za-z\d@$!%*?&.-]{8,20}$/;
 
 export class CreateUserDto {
-  @MinLength(2, { message: 'Name must have at least 2 characters.' })
-  @IsNotEmpty()
-  @IsString()
-  username!: string;
-
-  @IsInt()
-  age!: number;
-
   @IsNotEmpty()
   @IsEmail({}, { message: 'Please provide valid Email.' })
   email!: string;
@@ -32,4 +27,21 @@ export class CreateUserDto {
     one special character`,
   })
   password!: string;
+
+  @IsBoolean()
+  @IsOptional()
+  profileIncomplete?: boolean;
+
+  @MinLength(2, { message: 'Name must have at least 2 characters.' })
+  @IsString()
+  @IsOptional()
+  username?: string;
+
+  @IsDate()
+  @IsOptional()
+  birthDate?: number;
+
+  @IsInt()
+  @IsOptional()
+  weight?: number;
 }

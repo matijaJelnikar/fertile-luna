@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 export interface Credentials {
   email: string;
   token: string;
+  profileIncomplete: boolean;
 }
 
 const credentialsKey = 'fertileLuna_credentials' as const;
@@ -32,6 +33,10 @@ export class CredentialsService {
    */
   isAuthenticated(): boolean {
     return !!this.credentials;
+  }
+
+  isProfileIncomplete(): boolean {
+    return !!this.credentials?.profileIncomplete;
   }
 
   /**

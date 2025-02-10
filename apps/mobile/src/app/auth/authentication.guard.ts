@@ -21,6 +21,13 @@ export class AuthenticationGuard implements CanActivate {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): boolean {
+    if (this.credentialsService.isProfileIncomplete()) {
+      this.router.navigate(['/complete-profile'], {
+        queryParams: { redirect: state.url },
+        replaceUrl: true,
+      });
+      return false;
+    }
     if (this.credentialsService.isAuthenticated()) {
       return true;
     }

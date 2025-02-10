@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { map, Observable, of, tap } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
-import { AccessToken } from '@basal-temp-log-workspace/model';
+import { LoginResponse } from '@basal-temp-log-workspace/model';
 import { LoginFlowEndpoints } from '../shared/constants/endpoints.constants';
 import { Credentials, CredentialsService } from './credentials.service';
 
@@ -36,14 +36,18 @@ export class AuthenticationService {
       password: context.password,
     };
 
-    return this.http.post<AccessToken>(LoginFlowEndpoints.LOGIN, data).pipe(
-      tap((loginResponse: AccessToken) => {
+    return this.http.post<LoginResponse>(LoginFlowEndpoints.LOGIN, data).pipe(
+      tap((loginResponse: LoginResponse) => {
         this.credentialsService.setCredentials(
-          { email: context.email, token: loginResponse.access_token },
+          {
+            email: context.email,
+            token: loginResponse.access_token,
+            profileIncomplete: loginResponse.profileIncomplete,
+          },
           context.remember
         );
       }),
-      map((res: AccessToken) => {
+      map((res: LoginResponse) => {
         return {
           email: context.email,
           token: res.access_token,
@@ -52,8 +56,8 @@ export class AuthenticationService {
     );
   }
 
-  register(userData: unknown): Observable<AccessToken> {
-    return this.http.post<AccessToken>(LoginFlowEndpoints.REGISTER, userData);
+  register(userData: unknown): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(LoginFlowEndpoints.REGISTER, userData);
   }
 
   /**

@@ -1,3 +1,3 @@
-import { AccessToken } from '@basal-temp-log-workspace/model';
+import { LoginResponse } from '@basal-temp-log-workspace/model';
 
-export type RegisterResponseDTO = AccessToken;
+export type RegisterResponseDTO = LoginResponse;

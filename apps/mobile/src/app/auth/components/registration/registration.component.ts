@@ -27,14 +27,6 @@ export interface UserDto {
 })
 export class RegistrationComponent implements AfterViewInit {
   registrationForm: FormGroup = new FormGroup({
-    username: new FormControl('', {
-      validators: [Validators.required],
-      nonNullable: true,
-    }),
-    age: new FormControl('', {
-      validators: [Validators.required],
-      nonNullable: true,
-    }),
     email: new FormControl('', {
       validators: [Validators.required],
       nonNullable: true,

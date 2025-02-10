@@ -33,6 +33,7 @@ export class AuthController {
   async register(
     @Body() registerBody: CreateUserDto
   ): Promise<RegisterResponseDTO | BadRequestException> {
+    registerBody.profileIncomplete = true;
     return await this.authService.register(registerBody);
   }
 }

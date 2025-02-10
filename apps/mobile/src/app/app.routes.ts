@@ -1,5 +1,6 @@
 import { Route } from '@angular/router';
 import { AuthenticationGuard } from './auth';
+import { CompleteProfileComponent } from './auth/components/complete-profile/complete-profile.component';
 import { LoginComponent } from './auth/components/login/login.component';
 import { RegistrationComponent } from './auth/components/registration/registration.component';
 import { ShellComponent } from './components/shell/shell.component';
@@ -10,6 +11,7 @@ import { SettingsComponent } from './views/settings/settings.component';
 export const appRoutes: Route[] = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegistrationComponent },
+  { path: 'complete-profile', component: CompleteProfileComponent },
   {
     path: '',
     component: ShellComponent,
