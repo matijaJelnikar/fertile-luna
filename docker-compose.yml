@@ -68,6 +68,7 @@ services:
 
 volumes:
   postgres_data:
+  frontend_build:
 
 networks:
   app-network:
