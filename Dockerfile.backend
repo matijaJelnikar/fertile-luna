@@ -1,0 +1,29 @@
+# Stage 1: Build the API
+FROM node:20.13.1 AS builder
+
+WORKDIR /app
+
+# Install Nx globally
+RUN npm install -g nx
+
+# Copy package files and install dependencies
+COPY package.json package-lock.json ./
+RUN npm install
+
+# Copy the rest of the files and build the app
+COPY . .
+RUN npx nx build api --skip-nx-cache --verbose
+
+# Stage 2: Production Image for the API
+FROM node:20.13.1
+
+WORKDIR /app
+
+# Copy the build output from the builder stage
+COPY --from=builder /app/dist/apps/api /app
+
+# Install production dependencies
+RUN npm install
+
+EXPOSE 3000
+CMD ["node", "main.js"]

@@ -8,16 +8,12 @@
   "targets": {
     "build": {
       "executor": "@angular-devkit/build-angular:application",
-      "outputs": [
-        "{options.outputPath}"
-      ],
+      "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/mobile",
         "index": "apps/mobile/src/index.html",
         "browser": "apps/mobile/src/main.ts",
-        "polyfills": [
-          "zone.js"
-        ],
+        "polyfills": ["zone.js"],
         "tsConfig": "apps/mobile/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
@@ -30,9 +26,7 @@
             "input": "apps/mobile/src/assets"
           }
         ],
-        "styles": [
-          "apps/mobile/src/styles.scss"
-        ],
+        "styles": ["apps/mobile/src/styles.scss"],
         "scripts": []
       },
       "configurations": {
@@ -41,7 +35,7 @@
             {
               "type": "initial",
               "maximumWarning": "500kb",
-              "maximumError": "1mb"
+              "maximumError": "2mb"
             },
             {
               "type": "anyComponentStyle",
@@ -86,9 +80,7 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": [
-        "{workspaceRoot}/coverage/{projectRoot}"
-      ],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "apps/mobile/jest.config.ts"
       }
