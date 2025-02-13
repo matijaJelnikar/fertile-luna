@@ -1,9 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
 import { LoginResponse } from '@basal-temp-log-workspace/model';
+import { UUID } from 'crypto';
+import { UpdateResult } from 'typeorm';
 import { CreateUserDto } from '../../dto/create-user.dto';
+import { UpdateUserDto } from '../../dto/update-user.dto';
 import { User } from '../../entities/user.entity';
 import { UsersService } from '../users/users.service';
 
@@ -43,5 +50,17 @@ export class AuthService {
     const newUser: User = { ...user, password: hashedPassword };
     await this.usersService.create(newUser);
     return this.login(newUser);
+  }
+
+  async update(
+    userUuid: UUID,
+    updateUser: UpdateUserDto
+  ): Promise<UpdateResult> {
+    const user = await this.usersService.findOneById(userUuid);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.usersService.update(userUuid, updateUser);
   }
 }

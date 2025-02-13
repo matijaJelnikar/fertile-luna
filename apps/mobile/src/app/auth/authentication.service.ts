@@ -4,6 +4,7 @@ import { map, Observable, of, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { LoginResponse } from '@basal-temp-log-workspace/model';
 import { LoginFlowEndpoints } from '../shared/constants/endpoints.constants';
+import { UserDto } from './components/registration/registration.component';
 import { Credentials, CredentialsService } from './credentials.service';
 
 export interface LoginContext {
@@ -68,5 +69,9 @@ export class AuthenticationService {
     // Customize credentials invalidation here
     this.credentialsService.setCredentials();
     return of(true);
+  }
+
+  updateUser(userData: UserDto): Observable<boolean> {
+    return this.http.post<boolean>(LoginFlowEndpoints.USER_UPDATE, userData);
   }
 }

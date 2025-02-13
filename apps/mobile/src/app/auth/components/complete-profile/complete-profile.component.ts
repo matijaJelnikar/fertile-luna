@@ -7,10 +7,16 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { CycleDto } from '@basal-temp-log-workspace/model';
 import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from '../../../material.module';
 import { AuthenticationService } from '../../authentication.service';
 
+export interface CompleteProfileDto {
+  username: string;
+  birthDate: Date;
+  weight: number;
+}
 @Component({
   standalone: true,
   selector: 'app-complete-profile',
@@ -26,7 +32,7 @@ import { AuthenticationService } from '../../authentication.service';
 })
 export class CompleteProfileComponent {
   isLinear = false;
-  firstFormGroup = new FormGroup({
+  userFormGroup = new FormGroup({
     username: new FormControl('', {
       validators: [Validators.required],
       nonNullable: true,
@@ -39,7 +45,7 @@ export class CompleteProfileComponent {
       validators: [],
     }),
   });
-  secondFormGroup = new FormGroup({
+  cycleFormGroup = new FormGroup({
     lastPeriodDate: new FormControl('', {
       validators: [Validators.required],
       nonNullable: true,
@@ -53,7 +59,10 @@ export class CompleteProfileComponent {
   authService = inject(AuthenticationService);
   router = inject(Router);
 
-  submit(): void {}
+  submit(): void {
+    const userFormValue: CompleteProfileDto = this.userFormGroup.value;
+    const cycleFormValue: CycleDto = this.cycleFormGroup.value;
+  }
 
   logout(): void {
     this.authService.logout();
