@@ -1,5 +1,5 @@
 export type CycleDto = {
-  cycleNumber: number;
+  cycleNumber?: number;
   bleedingLength: number;
   cycleLength?: number;
   firstHigherTemp?: number;

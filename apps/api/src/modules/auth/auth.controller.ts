@@ -1,3 +1,4 @@
+
 import {
   BadRequestException,
   Body,
@@ -19,6 +20,8 @@ import { LoginResponseDTO } from './dto/login-response.dto';
 import { RegisterResponseDTO } from './dto/register-response.dto';
 import { JwtGuard } from './guards/jwt.guard';
 import { AuthenticatedRequest } from './types/AuthenticatedRequest';
+import { ApiBody } from '@nestjs/swagger';
+import { User } from '../../entities/user.entity';
 
 @Public()
 @Controller('auth')
@@ -27,6 +30,10 @@ export class AuthController {
 
   @UseGuards(AuthGuard('local'))
   @Post('login')
+  @ApiBody({
+    type: User,
+    description: 'User login credentials',
+  })
   async login(
     @Request() req: AuthenticatedRequest
   ): Promise<LoginResponseDTO | BadRequestException> {
@@ -41,11 +48,11 @@ export class AuthController {
     return await this.authService.register(registerBody);
   }
 
-  @UseGuards(JwtGuard)
-  @Put('user/update')
+  @UseGuards(AuthGuard('local'))
+  @Post('user/update')
   async update(
     @Body() updateUserDto: UpdateUserDto,
-    @Req() req: AuthenticatedRequest
+    @Request() req: AuthenticatedRequest
   ) {
     return this.authService.update(req.user.uuid, updateUserDto);
   }

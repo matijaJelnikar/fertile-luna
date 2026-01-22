@@ -46,17 +46,7 @@ export class ShellComponent implements OnInit {
 
   selectTab(navButton: NavigationButton): void {
     this.selectedTab.set(navButton);
-    switch (navButton) {
-      case NavigationButton.HOME:
-        this.router.navigate(['/home']);
-        break;
-      case NavigationButton.HISTORY:
-        this.router.navigate(['/history']);
-        break;
-      case NavigationButton.SETTINGS:
-        this.router.navigate(['/settings']);
-        break;
-    }
+    this.router.navigate([navButton]);
   }
 
   logout() {

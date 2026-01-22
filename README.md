@@ -6,6 +6,15 @@
 
 [Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/node?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
 
+## Add .env file to apps/api/ with this variables:
+JWT_SECRET
+ACCESS_TOKEN_VALIDITY_DURATION_IN_SEC
+DB_HOST
+DB_PORT
+DB_NAME
+DB_USERNAME
+DB_PASSWORD
+
 ## Run tasks
 
 To run the dev server for your app, use:

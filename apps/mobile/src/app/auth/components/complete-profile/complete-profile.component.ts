@@ -11,6 +11,8 @@ import { CycleDto } from '@basal-temp-log-workspace/model';
 import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from '../../../material.module';
 import { AuthenticationService } from '../../authentication.service';
+import { UserDto } from '../registration/registration.component';
+import { CredentialsService } from '../../credentials.service';
 
 export interface CompleteProfileDto {
   username: string;
@@ -57,11 +59,23 @@ export class CompleteProfileComponent {
   });
 
   authService = inject(AuthenticationService);
+  credentialService = inject(CredentialsService);
   router = inject(Router);
 
   submit(): void {
-    const userFormValue: CompleteProfileDto = this.userFormGroup.value;
-    const cycleFormValue: CycleDto = this.cycleFormGroup.value;
+    const userFormValue = this.userFormGroup.value;
+    const cycleFormValue = this.cycleFormGroup.value;
+
+
+    const user: Partial<UserDto> = {
+       email: this.credentialService.credentials?.email,
+       birthDate: userFormValue.birthDate as unknown as Date,
+       username: userFormValue.username,
+       weight: userFormValue.weight as unknown as number
+    }
+    this.authService.updateUser(user).subscribe(() => {
+      this.router.navigate(['/login']);
+    })
   }
 
   logout(): void {

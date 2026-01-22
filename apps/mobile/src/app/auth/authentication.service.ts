@@ -71,7 +71,7 @@ export class AuthenticationService {
     return of(true);
   }
 
-  updateUser(userData: UserDto): Observable<boolean> {
+  updateUser(userData: Partial<UserDto>): Observable<boolean> {
     return this.http.post<boolean>(LoginFlowEndpoints.USER_UPDATE, userData);
   }
 }

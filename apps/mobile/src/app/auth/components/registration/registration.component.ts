@@ -12,10 +12,11 @@ import { MaterialModule } from '../../../material.module';
 import { AuthenticationService } from '../../authentication.service';
 
 export interface UserDto {
-  username: string;
-  age: number;
+  username?: string;
   email: string;
   password: string;
+  birthDate?: Date
+  weight?: number
 }
 
 @Component({

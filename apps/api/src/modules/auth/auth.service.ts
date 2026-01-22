@@ -56,7 +56,7 @@ export class AuthService {
     userUuid: UUID,
     updateUser: UpdateUserDto
   ): Promise<UpdateResult> {
-    const user = await this.usersService.findOneById(userUuid);
+    const user = await this.usersService.findOneByEmail(userUuid);
     if (!user) {
       throw new NotFoundException('User not found');
     }
