@@ -20,6 +20,12 @@ export class CycleController {
   constructor(private readonly cycleService: CycleService) {}
 
   @UseGuards(JwtGuard)
+  @Get('getAll')
+  async findAll(@Req() req: AuthenticatedRequest) {
+    return this.cycleService.findAllByUser(req.user.uuid);
+  }
+
+  @UseGuards(JwtGuard)
   @Post('add')
   async create(
     @Body() createCycleDto: CycleDto,

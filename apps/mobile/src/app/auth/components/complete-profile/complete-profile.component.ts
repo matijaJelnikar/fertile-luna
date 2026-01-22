@@ -9,10 +9,12 @@ import {
 import { Router, RouterModule } from '@angular/router';
 import { CycleDto } from '@basal-temp-log-workspace/model';
 import { TranslateModule } from '@ngx-translate/core';
+import { forkJoin } from 'rxjs';
 import { MaterialModule } from '../../../material.module';
+import { CycleService } from '../../../state/measurements/cycle.service';
 import { AuthenticationService } from '../../authentication.service';
-import { UserDto } from '../registration/registration.component';
 import { CredentialsService } from '../../credentials.service';
+import { UserDto } from '../registration/registration.component';
 
 export interface CompleteProfileDto {
   username: string;
@@ -60,22 +62,50 @@ export class CompleteProfileComponent {
 
   authService = inject(AuthenticationService);
   credentialService = inject(CredentialsService);
+  cycleService = inject(CycleService);
   router = inject(Router);
 
   submit(): void {
     const userFormValue = this.userFormGroup.value;
     const cycleFormValue = this.cycleFormGroup.value;
 
-
     const user: Partial<UserDto> = {
-       email: this.credentialService.credentials?.email,
-       birthDate: userFormValue.birthDate as unknown as Date,
-       username: userFormValue.username,
-       weight: userFormValue.weight as unknown as number
-    }
-    this.authService.updateUser(user).subscribe(() => {
-      this.router.navigate(['/login']);
-    })
+      email: this.credentialService.credentials?.email,
+      birthDate: userFormValue.birthDate as unknown as Date,
+      username: userFormValue.username,
+      weight: userFormValue.weight as unknown as number,
+    };
+
+    const cycle: CycleDto = {
+      cycleNumber: 1,
+      startDate: cycleFormValue.lastPeriodDate as unknown as Date,
+      bleedingLength: cycleFormValue.bleedingLength as unknown as number,
+      cycleLength: 28,
+      firstHigherTemp: 0,
+    };
+
+    forkJoin({
+      user: this.authService.updateUser(user),
+      cycle: this.cycleService.addCycle(cycle),
+    }).subscribe({
+      next: () => {
+        // Update credentials to mark profile as complete
+        const currentCredentials = this.credentialService.credentials;
+        if (currentCredentials) {
+          this.credentialService.setCredentials(
+            {
+              ...currentCredentials,
+              profileIncomplete: false,
+            },
+            true
+          );
+        }
+        this.router.navigate(['/home']);
+      },
+      error: (err) => {
+        console.error('Error completing profile:', err);
+      },
+    });
   }
 
   logout(): void {

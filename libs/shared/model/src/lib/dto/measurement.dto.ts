@@ -20,3 +20,7 @@ export type MeasurementDto = {
   intercourse?: IntercourseOption;
   notes?: string;
 };
+
+export type Measurement = MeasurementDto & {
+  uuid: string;
+};

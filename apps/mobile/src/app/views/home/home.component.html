@@ -13,7 +13,7 @@
     <button mat-button (click)="previousCycle()">
       <mat-icon>chevron_left</mat-icon> Previous
     </button>
-    <span class="cycle-indicator">Cycle {{ currentCycleNumber }}</span>
+    <span class="cycle-indicator">Cycle {{ currentCycleNumber() }}</span>
     <button mat-button (click)="nextCycle()">
       Next <mat-icon>chevron_right</mat-icon>
     </button>
@@ -22,10 +22,14 @@
 
 <section class="cycle-details">
   <h3>Cycle Details</h3>
-  <p>Today<br /><span>Day 25 of 28-day cycle</span></p>
-  <p>
-    Bleeding <span class="right">0 days left <mat-icon>event</mat-icon></span>
-  </p>
+  @if (currentCycle()) {
+    <p>Today<br /><span>Day {{ dayOfCycle() }} of {{ currentCycle()!.cycleLength || 28 }}-day cycle</span></p>
+    <p>
+      Bleeding <span class="right">{{ currentCycle()!.bleedingLength }} days <mat-icon>event</mat-icon></span>
+    </p>
+  } @else {
+    <p>No cycle data available</p>
+  }
 </section>
 
 <lib-fab

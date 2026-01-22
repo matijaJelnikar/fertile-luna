@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common';
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, inject } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -10,6 +10,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from '../../../material.module';
 import { AuthenticationService } from '../../authentication.service';
+import { CredentialsService } from '../../credentials.service';
 
 export interface UserDto {
   username?: string;
@@ -42,6 +43,8 @@ export class RegistrationComponent implements AfterViewInit {
   initialLoad = true;
   error: string | null = null;
 
+  private credentialsService = inject(CredentialsService);
+
   constructor(
     private authService: AuthenticationService,
     private router: Router,
@@ -63,11 +66,19 @@ export class RegistrationComponent implements AfterViewInit {
     const formValues: UserDto = this.registrationForm.value;
 
     this.authService.register(formValues).subscribe({
-      complete: () => {
-        this.router.navigate(
-          [this.route.snapshot.queryParams['redirect'] || '/'],
-          { replaceUrl: true }
+      next: (response) => {
+        // Store credentials after successful registration
+        this.credentialsService.setCredentials(
+          {
+            email: formValues.email,
+            token: response.access_token,
+            profileIncomplete: response.profileIncomplete,
+          },
+          false
         );
+
+        // Navigate directly to complete-profile
+        this.router.navigate(['/complete-profile'], { replaceUrl: true });
         this.isLoading = false;
       },
       error: (err) => {

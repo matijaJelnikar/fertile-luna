@@ -18,6 +18,14 @@ export class CycleService {
     @InjectRepository(User) private readonly userRepository: Repository<User>
   ) {}
 
+  async findAllByUser(userUuid: UUID): Promise<Cycle[]> {
+    return this.cycleRepository.find({
+      where: { user: { uuid: userUuid } },
+      order: { cycleNumber: 'DESC' },
+      relations: ['measurements'],
+    });
+  }
+
   async findOneById(cycleUuid: UUID, userUuid: UUID): Promise<Cycle | null> {
     const cycle = await this.cycleRepository.findOne({
       where: { uuid: cycleUuid, user: { uuid: userUuid } },

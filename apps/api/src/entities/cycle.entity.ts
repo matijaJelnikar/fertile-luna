@@ -17,6 +17,9 @@ export class Cycle {
   @Column({ type: 'int' })
   cycleNumber: number;
 
+  @Column({ type: 'date' })
+  startDate: Date;
+
   @Column({ type: 'int' })
   bleedingLength: number;
 

@@ -29,7 +29,7 @@ export class User {
   username?: string;
 
   @Column({ type: 'date', nullable: true })
-  birthDate?: number;
+  birthDate?: Date;
 
   @Column({ type: 'float', nullable: true })
   weight?: number;

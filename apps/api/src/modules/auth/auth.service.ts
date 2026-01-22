@@ -56,11 +56,15 @@ export class AuthService {
     userUuid: UUID,
     updateUser: UpdateUserDto
   ): Promise<UpdateResult> {
-    const user = await this.usersService.findOneByEmail(userUuid);
+    const user = await this.usersService.findOneById(userUuid);
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return this.usersService.update(userUuid, updateUser);
+    // Mark profile as complete when updating
+    return this.usersService.update(userUuid, {
+      ...updateUser,
+      profileIncomplete: false,
+    });
   }
 }

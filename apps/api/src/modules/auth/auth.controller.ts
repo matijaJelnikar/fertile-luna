@@ -23,11 +23,11 @@ import { AuthenticatedRequest } from './types/AuthenticatedRequest';
 import { ApiBody } from '@nestjs/swagger';
 import { User } from '../../entities/user.entity';
 
-@Public()
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Public()
   @UseGuards(AuthGuard('local'))
   @Post('login')
   @ApiBody({
@@ -40,6 +40,7 @@ export class AuthController {
     return this.authService.login(req.user);
   }
 
+  @Public()
   @Post('register')
   async register(
     @Body() registerBody: CreateUserDto
@@ -48,11 +49,11 @@ export class AuthController {
     return await this.authService.register(registerBody);
   }
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(JwtGuard)
   @Post('user/update')
   async update(
     @Body() updateUserDto: UpdateUserDto,
-    @Request() req: AuthenticatedRequest
+    @Req() req: AuthenticatedRequest
   ) {
     return this.authService.update(req.user.uuid, updateUserDto);
   }
