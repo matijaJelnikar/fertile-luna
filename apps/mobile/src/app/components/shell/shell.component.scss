@@ -26,8 +26,12 @@
 }
 
 .main-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 8px;
   padding-bottom: 72px;
+  box-sizing: border-box;
 }
 
 .bottom-nav-wrapper {
