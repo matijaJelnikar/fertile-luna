@@ -1,5 +1,6 @@
 import { Component, effect, input, OnInit } from '@angular/core';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
+import { MeasurementGraphData } from '@basal-temp-log-workspace/model';
 
 // Register necessary Chart.js components
 Chart.register(...registerables);
@@ -13,6 +14,7 @@ Chart.register(...registerables);
 export class TemperaturesChartComponent implements OnInit {
   temperatureData = input<number[]>([]);
   timestampData = input<string[]>([]);
+  measurements = input<MeasurementGraphData[]>([]);
   chart!: Chart;
 
   constructor() {
@@ -21,6 +23,8 @@ export class TemperaturesChartComponent implements OnInit {
 
       const tempData = this.temperatureData();
       const timeData = this.timestampData();
+      this.measurements(); // Track measurements changes
+
       this.chart.data.labels = timeData;
       this.chart.data.datasets[0].data = tempData;
       this.chart.update();
@@ -65,6 +69,56 @@ export class TemperaturesChartComponent implements OnInit {
           },
           y: {
             beginAtZero: false,
+          },
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              title: (tooltipItems) => {
+                const index = tooltipItems[0].dataIndex;
+                const allMeasurements = this.measurements();
+                const measurement = allMeasurements[index];
+                if (!measurement) return '';
+                const date = new Date(measurement.date).toLocaleDateString();
+                return `Day ${measurement.day} - ${date}`;
+              },
+              label: (context) => {
+                const index = context.dataIndex;
+                const allMeasurements = this.measurements();
+                const measurement = allMeasurements[index];
+                if (!measurement) return '';
+
+                const labels: string[] = [];
+                labels.push(`Temperature: ${measurement.temperature}°C`);
+
+                if (measurement.bleeding) {
+                  labels.push(`Bleeding: ${measurement.bleeding}`);
+                }
+                if (measurement.mucusFeeling) {
+                  labels.push(`Mucus Feeling: ${measurement.mucusFeeling}`);
+                }
+                if (measurement.mucusAppearance) {
+                  labels.push(`Mucus Appearance: ${measurement.mucusAppearance}`);
+                }
+                if (measurement.cervixPosition) {
+                  labels.push(`Cervix Position: ${measurement.cervixPosition}`);
+                }
+                if (measurement.cervixFeeling) {
+                  labels.push(`Cervix Feeling: ${measurement.cervixFeeling}`);
+                }
+                if (measurement.pain) {
+                  labels.push(`Pain: ${measurement.pain}`);
+                }
+                if (measurement.intercourse) {
+                  labels.push(`Intercourse: ${measurement.intercourse}`);
+                }
+                if (measurement.notes) {
+                  labels.push(`Notes: ${measurement.notes}`);
+                }
+
+                return labels;
+              },
+            },
           },
         },
       },

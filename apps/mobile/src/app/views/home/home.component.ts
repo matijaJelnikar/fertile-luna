@@ -51,7 +51,7 @@ export class HomeComponent implements OnInit {
     return diffDays + 1; // +1 because first day of bleeding is day 1
   });
 
-  constructor(private dialog: MatDialog, private homeService: HomeService) {}
+  constructor(private dialog: MatDialog, public homeService: HomeService) {}
 
   ngOnInit(): void {
     this.cycleService.getCycles().subscribe({
@@ -61,7 +61,11 @@ export class HomeComponent implements OnInit {
         if (currentCycleId && currentCycle) {
           this.measurementsService
             .getMeasurementsByCycle(currentCycleId, currentCycle.startDate)
-            .subscribe();
+            .subscribe({
+              error: (err) => {
+                console.error('Error loading measurements:', err);
+              }
+            });
         }
       },
       error: (err) => {

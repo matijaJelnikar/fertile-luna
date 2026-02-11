@@ -19,23 +19,32 @@ export class MeasurementsService {
       .get<Measurement[]>(`${MeasurementEndpoints.GET_MEASUREMENT}/${cycleId}`)
       .pipe(
         tap((measurements) => {
-          const graphData = measurements.map((m) => {
-            const measurementDate = new Date(m.date);
-            let day = 1;
+          const graphData = measurements
+            .map((m) => {
+              const measurementDate = new Date(m.date);
+              let day = 1;
 
-            if (cycleStartDate) {
-              const startDate = new Date(cycleStartDate);
-              const diffTime = measurementDate.getTime() - startDate.getTime();
-              const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-              day = diffDays + 1; // +1 because first day is day 1
-            }
+              if (cycleStartDate) {
+                // Create new Date instances for calculation to avoid mutation
+                const startDateCalc = new Date(cycleStartDate);
+                const measurementDateCalc = new Date(m.date);
 
-            return {
-              day: day,
-              date: measurementDate,
-              temperature: m.temperature,
-            };
-          });
+                // Reset time portion to midnight for accurate day calculation
+                startDateCalc.setHours(0, 0, 0, 0);
+                measurementDateCalc.setHours(0, 0, 0, 0);
+
+                const diffTime = measurementDateCalc.getTime() - startDateCalc.getTime();
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                day = diffDays + 1; // +1 because first day is day 1
+              }
+
+              return {
+                ...m,
+                day: day,
+                date: measurementDate,
+              };
+            })
+            .sort((a, b) => a.date.getTime() - b.date.getTime()); // Sort by date
           this.measurements.set(graphData);
         })
       );
@@ -63,8 +72,15 @@ export class MeasurementsService {
           let day = 1;
 
           if (cycleStartDate) {
-            const startDate = new Date(cycleStartDate);
-            const diffTime = measurementDate.getTime() - startDate.getTime();
+            // Create new Date instances for calculation to avoid mutation
+            const startDateCalc = new Date(cycleStartDate);
+            const measurementDateCalc = new Date(newMeasurement.date);
+
+            // Reset time portion to midnight for accurate day calculation
+            startDateCalc.setHours(0, 0, 0, 0);
+            measurementDateCalc.setHours(0, 0, 0, 0);
+
+            const diffTime = measurementDateCalc.getTime() - startDateCalc.getTime();
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
             day = diffDays + 1;
           }
@@ -73,9 +89,9 @@ export class MeasurementsService {
             return [
               ...measurements,
               {
+                ...newMeasurement,
                 day: day,
                 date: measurementDate,
-                temperature: newMeasurement.temperature,
               },
             ];
           });
