@@ -35,19 +35,88 @@
 </section>
 
 <section class="cycle-details">
-  <h3>Cycle Details</h3>
-  @if (currentCycle()) {
-    <p>Last measurement<br /><span>Day {{ dayOfCycle() }} of {{ currentCycle()!.cycleLength || 28 }}-day cycle</span></p>
-    <p>
-      Bleeding <span class="right">{{ currentCycle()!.bleedingLength }} days <mat-icon>event</mat-icon></span>
-    </p>
-    @if (isLatestCycle()) {
-      <button mat-stroked-button (click)="startNewCycle()" aria-label="Start a new cycle">
-        <mat-icon>add_circle_outline</mat-icon> New Cycle
-      </button>
+  <div class="cycle-stats" role="list" aria-label="Cycle statistics">
+    @if (currentCycle()) {
+      <div class="stat-chip" role="listitem">
+        <span class="stat-value">{{ dayOfCycle() }}</span>
+        <span class="stat-label">Day of {{ currentCycle()!.cycleLength || 28 }}</span>
+      </div>
+      <div class="stat-chip" role="listitem">
+        <span class="stat-value">{{ currentCycle()!.bleedingLength }}</span>
+        <span class="stat-label">Bleeding days</span>
+      </div>
     }
-  } @else {
-    <p>No cycle data available</p>
+    <div class="stat-chip" role="listitem">
+      <span class="stat-value">#{{ currentCycleNumber() }}</span>
+      <span class="stat-label">Cycle</span>
+    </div>
+  </div>
+
+  <!-- @if (isLatestCycle() && currentCycle()) {
+    <button mat-stroked-button (click)="startNewCycle()" aria-label="Start a new cycle" class="new-cycle-btn">
+      <mat-icon>add_circle_outline</mat-icon> New Cycle
+    </button>
+  } -->
+
+  <div
+    class="temp-shift-card"
+    [class.temp-shift-card--detected]="currentCycle()?.firstHigherTemp != null"
+    aria-label="Temperature shift status for current cycle"
+  >
+    <mat-icon aria-hidden="true">thermostat</mat-icon>
+    <div class="temp-shift-info">
+      @if (currentCycle()?.firstHigherTemp != null) {
+        <p class="temp-shift-label">Time shift confirmed</p>
+        @if (tempShiftMeasurement()) {
+          <p class="temp-shift-value">{{ tempShiftMeasurement()!.temperature }}°C</p>
+        }
+        <p class="temp-shift-day">Day {{ currentCycle()!.firstHigherTemp }}</p>
+        @if (fertilityAssessment().helperLineTemp) {
+          <p class="temp-shift-baseline">Baseline {{ fertilityAssessment().helperLineTemp }}°C</p>
+        }
+      } @else {
+        <p class="temp-shift-label">No temperature shift detected yet</p>
+      }
+    </div>
+  </div>
+
+  @if (firstEverTempShift()) {
+    <div class="first-ever-shift" aria-label="First ever temperature shift across all cycles">
+      <mat-icon aria-hidden="true">history</mat-icon>
+      <span>First ever shift: <strong>{{ firstEverTempShift()!.firstHigherTemp }}°C</strong> — Cycle #{{ firstEverTempShift()!.cycleNumber }}</span>
+    </div>
+  }
+
+  @if (lastMeasurementHasSigns()) {
+    <div class="last-measurement" aria-label="Secondary signs from last measurement">
+      <p class="last-measurement-title">Last logged signs</p>
+      <div class="signs-row">
+        @if (lastMeasurement()!.mucusAppearance || lastMeasurement()!.mucusFeeling) {
+          <div class="sign-chip">
+            <mat-icon aria-hidden="true">water_drop</mat-icon>
+            {{ lastMeasurement()!.mucusAppearance ?? lastMeasurement()!.mucusFeeling }}
+          </div>
+        }
+        @if (lastMeasurement()!.cervixPosition) {
+          <div class="sign-chip">
+            <mat-icon aria-hidden="true">adjust</mat-icon>
+            {{ lastMeasurement()!.cervixPosition }}
+          </div>
+        }
+        @if (lastMeasurement()!.bleeding) {
+          <div class="sign-chip sign-chip--bleeding">
+            <mat-icon aria-hidden="true">opacity</mat-icon>
+            {{ lastMeasurement()!.bleeding }}
+          </div>
+        }
+        @if (lastMeasurement()!.intercourse) {
+          <div class="sign-chip">
+            <mat-icon aria-hidden="true">favorite</mat-icon>
+            {{ lastMeasurement()!.intercourse }}
+          </div>
+        }
+      </div>
+    </div>
   }
 </section>
 

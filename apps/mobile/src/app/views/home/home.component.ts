@@ -60,6 +60,32 @@ export class HomeComponent implements OnInit {
     return cycles[0].uuid === this.cycleService.currentCycleUuid();
   });
 
+  lastMeasurement = computed(() => {
+    const measurements = this.homeService.measurements();
+    return measurements.length > 0 ? measurements[measurements.length - 1] : null;
+  });
+
+  lastMeasurementHasSigns = computed(() => {
+    const m = this.lastMeasurement();
+    return !!(m?.mucusAppearance || m?.mucusFeeling || m?.cervixPosition || m?.bleeding || m?.intercourse);
+  });
+
+  tempShiftMeasurement = computed(() => {
+    const shiftDay = this.currentCycle()?.firstHigherTemp;
+    if (shiftDay == null) return null;
+    return this.homeService.measurements().find((m) => m.day === shiftDay) ?? null;
+  });
+
+  firstEverTempShift = computed(() => {
+    const cycles = this.cycleService.cycles();
+    if (cycles.length <= 1) return null;
+    // cycles[0] is newest, cycles[last] is oldest — find oldest with a shift recorded
+    for (let i = cycles.length - 1; i >= 0; i--) {
+      if (cycles[i].firstHigherTemp != null) return cycles[i];
+    }
+    return null;
+  });
+
   constructor(private dialog: MatDialog, public homeService: HomeService) {}
 
   ngOnInit(): void {
