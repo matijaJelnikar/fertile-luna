@@ -37,7 +37,7 @@
 <section class="cycle-details">
   <h3>Cycle Details</h3>
   @if (currentCycle()) {
-    <p>Today<br /><span>Day {{ dayOfCycle() }} of {{ currentCycle()!.cycleLength || 28 }}-day cycle</span></p>
+    <p>Last measurement<br /><span>Day {{ dayOfCycle() }} of {{ currentCycle()!.cycleLength || 28 }}-day cycle</span></p>
     <p>
       Bleeding <span class="right">{{ currentCycle()!.bleedingLength }} days <mat-icon>event</mat-icon></span>
     </p>

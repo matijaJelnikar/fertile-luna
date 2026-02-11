@@ -23,7 +23,7 @@ const ANNOTATION_LABELS: Record<string, string> = {
   templateUrl: './temperatures-chart.component.html',
   styleUrls: ['./temperatures-chart.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { style: 'display: block; width: 100%; height: 100%;' },
+  host: { style: 'display: flex; flex-direction: column; width: 100%; height: 100%;' },
 })
 export class TemperaturesChartComponent implements OnInit {
   temperatureData = input<number[]>([]);
@@ -66,7 +66,7 @@ export class TemperaturesChartComponent implements OnInit {
           {
             label: 'Temperature (°C)',
             data: tempData,
-            borderColor: 'rgba(75, 192, 192, 1)',
+            borderColor: 'rgba(54, 162, 235, 1)',
             borderWidth: 2,
             fill: false,
             tension: 0.1,
@@ -75,12 +75,11 @@ export class TemperaturesChartComponent implements OnInit {
             pointRadius: this.buildPointRadii(tempData.length, fertility),
             segment: {
               borderColor: (ctx) => {
-                if (!ctx.p0 || !ctx.p1) return 'rgba(75, 192, 192, 1)';
-                return ctx.p1.y > ctx.p0.y
+                const measurement = this.measurements()[ctx.p0DataIndex];
+                return measurement?.bleeding
                   ? 'rgba(255, 99, 132, 1)'
                   : 'rgba(54, 162, 235, 1)';
               },
-              borderWidth: (ctx) => (ctx.p1.y > ctx.p0.y ? 3 : 2),
             },
           },
           {
@@ -187,15 +186,29 @@ export class TemperaturesChartComponent implements OnInit {
     this.chart = new Chart('temperatureChart', chartData);
   }
 
+  private createVMarker(): HTMLCanvasElement {
+    const canvas = document.createElement('canvas');
+    canvas.width = 14;
+    canvas.height = 14;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return canvas;
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillStyle = '#000';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('V', 7, 8);
+    return canvas;
+  }
+
   private buildPointStyles(
     count: number,
     fertility: FertilityAssessment | null
-  ): (string | undefined)[] {
+  ): (string | HTMLCanvasElement | undefined)[] {
     return Array.from({ length: count }, (_, i) => {
       if (!fertility) return 'circle';
       const annotation = fertility.annotations[i];
       switch (annotation) {
-        case 'mucus-peak': return 'star';
+        case 'mucus-peak': return this.createVMarker();
         case 'post-peak-1':
         case 'post-peak-2':
         case 'post-peak-3': return 'rectRot';
@@ -214,12 +227,12 @@ export class TemperaturesChartComponent implements OnInit {
   ): string[] {
     return Array.from({ length: count }, (_, i) => {
       if (!fertility || fertility.infertilePhaseStartIndex === null) {
-        return 'rgba(75, 192, 192, 1)';
+        return 'rgba(239, 68, 68, 1)'; // red = fertile (no infertile phase confirmed yet)
       }
       if (i >= fertility.infertilePhaseStartIndex) {
         return 'rgba(34, 197, 94, 1)'; // green = infertile/safe
       }
-      return 'rgba(239, 68, 68, 1)'; // red = fertile/unsafe
+      return 'rgba(239, 68, 68, 1)'; // red = fertile
     });
   }
 

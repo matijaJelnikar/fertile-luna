@@ -44,14 +44,10 @@ export class HomeComponent implements OnInit {
   currentCycle = computed(() => this.homeService.currentCycle());
   currentCycleNumber = computed(() => this.currentCycle()?.cycleNumber ?? 1);
   dayOfCycle = computed(() => {
-    const cycle = this.currentCycle();
-    if (!cycle?.startDate) return 0;
-
-    const today = new Date();
-    const startDate = new Date(cycle.startDate);
-    const diffTime = Math.abs(today.getTime() - startDate.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays + 1; // +1 because first day of bleeding is day 1
+    const measurements = this.homeService.measurements();
+    if (measurements.length === 0) return 0;
+    const last = measurements[measurements.length - 1];
+    return last.day ?? measurements.length;
   });
 
   fertilityAssessment = computed(() =>
