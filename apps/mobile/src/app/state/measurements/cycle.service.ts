@@ -35,12 +35,8 @@ export class CycleService {
   addCycle(cycleData: CycleDto) {
     return this.http.post<Cycle>(CycleEndpoints.ADD_CYCLE, cycleData).pipe(
       tap((newCycle) => {
-        this.cycles.update((cycles) => {
-          return [...cycles, newCycle];
-        });
-        if (!this.currentCycleUuid()) {
-          this.currentCycleUuid.set(newCycle.uuid);
-        }
+        this.cycles.update((cycles) => [newCycle, ...cycles]);
+        this.currentCycleUuid.set(newCycle.uuid);
       })
     );
   }

@@ -1,20 +1,21 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import {
   FabComponent,
   TemperaturesChartComponent,
 } from '@basal-temp-log-workspace/components';
-import { MeasurementDto } from '@basal-temp-log-workspace/model';
+import { CycleDto, MeasurementDto } from '@basal-temp-log-workspace/model';
 import { AddMeasurementComponent } from '../../components/add-measurement/add-measurement.component';
+import { NewCycleComponent } from '../../components/new-cycle/new-cycle.component';
 import { MaterialModule } from '../../material.module';
 import { CycleService } from '../../state/measurements/cycle.service';
 import { MeasurementsService } from '../../state/measurements/mesaurements.service';
+import { FertilityService } from '../../state/fertility/fertility.service';
 import { HomeService } from './home.service';
 
 @Component({
   selector: 'app-home',
-  standalone: true,
   imports: [
     CommonModule,
     FabComponent,
@@ -23,11 +24,13 @@ import { HomeService } from './home.service';
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [HomeService],
 })
 export class HomeComponent implements OnInit {
   measurementsService = inject(MeasurementsService);
   cycleService = inject(CycleService);
+  fertilityService = inject(FertilityService);
 
   temperatureData = computed<number[]>(() => {
     return this.homeService.measurements().map((item) => item.temperature);
@@ -35,7 +38,7 @@ export class HomeComponent implements OnInit {
   timestampData = computed<string[]>(() => {
     return this.homeService
       .measurements()
-      .map((item) => new Date(item.date).toLocaleDateString());
+      .map((item, index) => String(item.day ?? index + 1));
   });
 
   currentCycle = computed(() => this.homeService.currentCycle());
@@ -49,6 +52,16 @@ export class HomeComponent implements OnInit {
     const diffTime = Math.abs(today.getTime() - startDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays + 1; // +1 because first day of bleeding is day 1
+  });
+
+  fertilityAssessment = computed(() =>
+    this.fertilityService.calculateFertility(this.homeService.measurements())
+  );
+
+  isLatestCycle = computed(() => {
+    const cycles = this.cycleService.cycles();
+    if (cycles.length === 0) return false;
+    return cycles[0].uuid === this.cycleService.currentCycleUuid();
   });
 
   constructor(private dialog: MatDialog, public homeService: HomeService) {}
@@ -100,6 +113,46 @@ export class HomeComponent implements OnInit {
         .getMeasurementsByCycle(nextCycle.uuid, nextCycle.startDate)
         .subscribe();
     }
+  }
+
+  startNewCycle(): void {
+    const dialogRef = this.dialog.open(NewCycleComponent, {
+      width: '90%',
+      maxWidth: '95vw',
+      height: 'auto',
+      maxHeight: '95vh',
+      panelClass: 'mobile-dialog',
+      autoFocus: false,
+    });
+
+    dialogRef.afterClosed().subscribe((result: Pick<CycleDto, 'startDate' | 'bleedingLength'> | undefined) => {
+      if (!result) return;
+      const currentCycle = this.cycleService.currentCycle();
+      if (!currentCycle) return;
+
+      const newStartDate = new Date(result.startDate);
+      const oldStartDate = new Date(currentCycle.startDate);
+      const diffMs = newStartDate.getTime() - oldStartDate.getTime();
+      const cycleLength = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+      if (cycleLength > 0) {
+        this.cycleService.updateCycle(currentCycle.uuid, { cycleLength }).subscribe();
+      }
+
+      const newCycleData: CycleDto = {
+        startDate: result.startDate,
+        bleedingLength: result.bleedingLength,
+        cycleNumber: (currentCycle.cycleNumber ?? 1) + 1,
+      };
+
+      this.cycleService.addCycle(newCycleData).subscribe({
+        next: (newCycle) => {
+          this.measurementsService
+            .getMeasurementsByCycle(newCycle.uuid, newCycle.startDate)
+            .subscribe();
+        },
+      });
+    });
   }
 
   addRecord(): void {

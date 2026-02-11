@@ -5,3 +5,4 @@ export * from './lib/dto/update-cycle.dto';
 export * from './lib/dto/update-measurement.dto';
 export * from './lib/model/Access-token';
 export * from './lib/model/graph';
+export * from './lib/model/fertility';

@@ -1,13 +1,26 @@
 <section class="temperature-section">
-  <section class="safe-sex">
+  <section
+    class="safe-sex"
+    [attr.aria-label]="'Safe Sex Advisement: ' + fertilityAssessment().riskLevel + ' risk'"
+  >
     <h3>Safe Sex Advisement</h3>
-    <p>Low Risk<br /><span>Based on fertility data</span></p>
+    <p [class]="fertilityAssessment().riskLevel === 'low' ? 'risk-low' : 'risk-high'">
+      {{ fertilityAssessment().riskLevel === 'low' ? 'Low Risk' : 'High Risk' }}
+      <br /><span>Based on fertility data</span>
+    </p>
+    @if (!fertilityAssessment().isDoubleChecked && fertilityAssessment().usedFactors.length > 0) {
+      <p class="single-factor-warning" role="alert">
+        <mat-icon aria-hidden="true">warning</mat-icon>
+        Calculated using {{ fertilityAssessment().usedFactors[0] }} data only
+      </p>
+    }
   </section>
   <div class="chart-placeholder">
     <lib-temperatures-chart
       [temperatureData]="temperatureData()"
       [timestampData]="timestampData()"
       [measurements]="homeService.measurements()"
+      [fertilityAssessment]="fertilityAssessment()"
     ></lib-temperatures-chart>
   </div>
   <div class="cycle-navigation">
@@ -28,6 +41,11 @@
     <p>
       Bleeding <span class="right">{{ currentCycle()!.bleedingLength }} days <mat-icon>event</mat-icon></span>
     </p>
+    @if (isLatestCycle()) {
+      <button mat-stroked-button (click)="startNewCycle()" aria-label="Start a new cycle">
+        <mat-icon>add_circle_outline</mat-icon> New Cycle
+      </button>
+    }
   } @else {
     <p>No cycle data available</p>
   }
