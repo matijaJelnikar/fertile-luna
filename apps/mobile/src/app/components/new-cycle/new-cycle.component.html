@@ -1,0 +1,29 @@
+<h2 mat-dialog-title>Start New Cycle</h2>
+<mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <mat-form-field>
+      <mat-label>Period Start Date</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="startDate" />
+      <mat-hint>MM/DD/YYYY</mat-hint>
+      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker touchUi #picker></mat-datepicker>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Bleeding Length (days)</mat-label>
+      <input
+        #bleedingInput
+        matInput
+        formControlName="bleedingLength"
+        type="number"
+        min="1"
+        max="14"
+        aria-describedby="bleeding-hint"
+      />
+      <mat-hint id="bleeding-hint">1–14 days</mat-hint>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button (click)="close()">Cancel</button>
+  <button mat-button (click)="save()" [disabled]="form.invalid">Start Cycle</button>
+</mat-dialog-actions>
