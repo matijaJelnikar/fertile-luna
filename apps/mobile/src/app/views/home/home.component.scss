@@ -1,18 +1,84 @@
+// --- Variables ---
+$color-risk-low: rgba(34, 197, 94, 1);
+$color-risk-high: rgba(239, 68, 68, 1);
+$color-risk-low-dark: rgba(80, 210, 80, 1);
+$color-risk-high-dark: rgba(240, 90, 70, 1);
+
+$border-radius-default: 12px;
+$gap-default: 12px;
+$padding-card: 12px 14px;
+
+// --- Mixins ---
+@mixin card-base {
+  display: flex;
+  align-items: flex-start;
+  gap: $gap-default;
+  padding: $padding-card;
+  border-radius: $border-radius-default;
+  border: 1px solid var(--mat-sys-outline-variant);
+  background: var(--mat-sys-surface-container-highest);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@mixin card-icon {
+  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
+  color: var(--mat-sys-on-surface-variant);
+  flex-shrink: 0;
+}
+
+@mixin text-reset {
+  margin: 0;
+  padding: 0;
+}
+
+// --- Greeting ---
+
+.greeting-header {
+  padding: 10px 16px 6px;
+  background: var(--mat-sys-background, #ffffff);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.greeting-subtitle {
+  @include text-reset;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--mat-sys-on-surface-variant, #666);
+  text-align: left;
+}
+
+// --- Risk levels ---
+
 .risk-low {
-  color: #16a34a;
+  color: $color-risk-low;
   font-weight: bold;
 }
 
 .risk-high {
-  color: #dc2626;
+  color: $color-risk-high;
   font-weight: bold;
+}
+
+body.dark {
+  .risk-low {
+    color: $color-risk-low-dark;
+  }
+
+  .risk-high {
+    color: $color-risk-high-dark;
+  }
 }
 
 .single-factor-warning {
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #d97706;
+  color: var(--mat-sys-tertiary);
   font-size: 0.85rem;
   margin-top: 4px;
 
@@ -21,6 +87,19 @@
     height: 1rem;
     width: 1rem;
   }
+}
+
+// --- Temperature section ---
+
+.temperature-section {
+  position: sticky;
+  top: 50px;
+  z-index: 9;
+  background: var(--mat-sys-background, #ffffff);
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .chart-placeholder {
@@ -34,13 +113,13 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  gap: 8px;
-}
+  gap: 4px;
 
-.cycle-navigation button {
-  flex: 1;
-  text-align: center;
-  max-width: 150px;
+  button {
+    flex: 1;
+    text-align: center;
+    max-width: 150px;
+  }
 }
 
 .cycle-indicator {
@@ -55,16 +134,39 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
+  gap: 14px;
   width: 100%;
   padding: 0 4px;
   box-sizing: border-box;
 }
 
+.section-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &--secondary {
+    opacity: 0.85;
+  }
+}
+
+.section-label {
+  @include text-reset;
+  padding: 0 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mat-sys-on-surface-variant, #666);
+}
+
 .cycle-stats {
   display: flex;
-  gap: 8px;
+  flex-direction: row;
+  gap: 6px;
   width: 100%;
+  flex-wrap: wrap;
 }
 
 .stat-chip {
@@ -74,18 +176,27 @@
   align-items: center;
   justify-content: center;
   padding: 10px 8px;
-  border-radius: 12px;
-  background: var(--mat-sys-surface-container, #f3f3f3);
-  border: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
+  border-radius: $border-radius-default;
+  background: var(--mat-sys-surface-container-highest);
+  border: 1px solid var(--mat-sys-outline-variant);
   text-align: center;
   min-width: 0;
+
+  &--bleeding {
+    border-color: var(--mat-sys-error);
+
+    .stat-value {
+      color: var(--mat-sys-error);
+    }
+  }
 }
 
 .stat-value {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1;
   color: var(--mat-sys-on-surface, #1c1c1c);
+  margin: 0;
 }
 
 .stat-label {
@@ -105,30 +216,18 @@
 // --- Temperature shift card ---
 
 .temp-shift-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
-  background: var(--mat-sys-surface-container, #f3f3f3);
-  width: 100%;
-  box-sizing: border-box;
+  @include card-base;
 
   mat-icon {
-    font-size: 2rem;
-    width: 2rem;
-    height: 2rem;
-    color: var(--mat-sys-on-surface-variant, #666);
-    flex-shrink: 0;
+    @include card-icon;
   }
 
   &.temp-shift-card--detected {
-    border-color: #16a34a;
-    background: #f0fdf4;
+    border-color: var(--mat-sys-primary);
+    background: var(--mat-sys-primary-container);
 
     mat-icon {
-      color: #16a34a;
+      color: var(--mat-sys-primary);
     }
   }
 }
@@ -136,107 +235,122 @@
 .temp-shift-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
   min-width: 0;
 }
 
 .temp-shift-label {
   font-size: 0.8rem;
   color: var(--mat-sys-on-surface-variant, #666);
-  margin: 0;
+  @include text-reset;
 }
 
 .temp-shift-value {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  color: #16a34a;
-  margin: 0;
+  color: var(--mat-sys-primary);
+  @include text-reset;
 }
 
-.temp-shift-day {
-  font-size: 0.75rem;
-  color: var(--mat-sys-on-surface-variant, #888);
-  margin: 0;
-}
-
+.temp-shift-day,
 .temp-shift-baseline {
   font-size: 0.75rem;
   color: var(--mat-sys-on-surface-variant, #888);
-  margin: 0;
+  @include text-reset;
 }
 
-// --- First ever shift ---
+// --- Earliest shift card ---
 
-.first-ever-shift {
+.earliest-shift-card {
+  @include card-base;
+
+  mat-icon {
+    @include card-icon;
+  }
+}
+
+// --- Fertility card ---
+
+.fertility-card {
+  @include card-base;
+
+  mat-icon {
+    @include card-icon;
+  }
+
+  .temp-shift-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    @include text-reset;
+
+    &.risk-low {
+      color: $color-risk-low;
+    }
+
+    &.risk-high {
+      color: $color-risk-high;
+    }
+  }
+}
+
+body.dark .fertility-card .temp-shift-value {
+  &.risk-low {
+    color: $color-risk-low-dark;
+  }
+
+  &.risk-high {
+    color: $color-risk-high-dark;
+  }
+}
+
+
+// --- Stat card (for insights row) ---
+
+.stat-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  background: var(--mat-sys-surface-container-low, #fafafa);
-  border: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
-  font-size: 0.85rem;
-  color: var(--mat-sys-on-surface-variant, #555);
+  justify-content: center;
+  padding: $padding-card;
+  border-radius: $border-radius-default;
+  background: var(--mat-sys-surface-container-highest);
+  border: 1px solid var(--mat-sys-outline-variant);
+  box-sizing: border-box;
+  text-align: center;
+  gap: 2px;
+  min-height: 100%;
+
+  .stat-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--mat-sys-on-surface);
+    @include text-reset;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--mat-sys-on-surface-variant);
+    @include text-reset;
+  }
+}
+
+// --- Assessment row (fertility + earliest shift side-by-side) ---
+
+.assessment-row {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
   width: 100%;
   box-sizing: border-box;
-
-  mat-icon {
-    font-size: 1.1rem;
-    width: 1.1rem;
-    height: 1.1rem;
-    flex-shrink: 0;
-    color: var(--mat-sys-on-surface-variant, #888);
-  }
-
-  strong {
-    color: var(--mat-sys-on-surface, #1c1c1c);
-  }
-}
-
-// --- Last measurement signs ---
-
-.last-measurement {
-  width: 100%;
-}
-
-.last-measurement-title {
-  font-size: 0.75rem;
-  color: var(--mat-sys-on-surface-variant, #666);
-  margin: 0 0 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.signs-row {
-  display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+
+  > * {
+    flex: 1;
+    min-width: 200px;
+  }
 }
 
-.sign-chip {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-  border-radius: 20px;
-  background: var(--mat-sys-surface-container, #f3f3f3);
-  border: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
-  font-size: 0.8rem;
-  color: var(--mat-sys-on-surface, #1c1c1c);
-
-  mat-icon {
-    font-size: 1rem;
-    width: 1rem;
-    height: 1rem;
-    color: var(--mat-sys-on-surface-variant, #666);
-  }
-
-  &.sign-chip--bleeding {
-    border-color: #fca5a5;
-    background: #fff1f2;
-
-    mat-icon {
-      color: #dc2626;
-    }
+@media (max-width: 600px) {
+  .assessment-row > * {
+    min-width: 140px;
   }
 }

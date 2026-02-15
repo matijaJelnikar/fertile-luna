@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   Post,
   Put,
   Req,
@@ -56,5 +57,11 @@ export class AuthController {
     @Req() req: AuthenticatedRequest
   ) {
     return this.authService.update(req.user.uuid, updateUserDto);
+  }
+
+  @UseGuards(JwtGuard)
+  @Get('user/me')
+  async getMe(@Req() req: AuthenticatedRequest) {
+    return this.authService.getMe(req.user['uuid']);
   }
 }

@@ -2,6 +2,7 @@ export enum LoginFlowEndpoints {
   LOGIN = '/api/auth/login',
   REGISTER = '/api/auth/register',
   USER_UPDATE = '/api/auth/user/update',
+  USER_ME = '/api/auth/user/me',
 }
 
 export enum MeasurementEndpoints {

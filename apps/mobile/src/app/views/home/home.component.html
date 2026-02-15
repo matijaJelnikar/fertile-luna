@@ -1,20 +1,8 @@
+<div class="greeting-header">
+  <p class="greeting-subtitle">{{ greeting() }}</p>
+</div>
+
 <section class="temperature-section">
-  <section
-    class="safe-sex"
-    [attr.aria-label]="'Safe Sex Advisement: ' + fertilityAssessment().riskLevel + ' risk'"
-  >
-    <h3>Safe Sex Advisement</h3>
-    <p [class]="fertilityAssessment().riskLevel === 'low' ? 'risk-low' : 'risk-high'">
-      {{ fertilityAssessment().riskLevel === 'low' ? 'Low Risk' : 'High Risk' }}
-      <br /><span>Based on fertility data</span>
-    </p>
-    @if (!fertilityAssessment().isDoubleChecked && fertilityAssessment().usedFactors.length > 0) {
-      <p class="single-factor-warning" role="alert">
-        <mat-icon aria-hidden="true">warning</mat-icon>
-        Calculated using {{ fertilityAssessment().usedFactors[0] }} data only
-      </p>
-    }
-  </section>
   <div class="chart-placeholder">
     <lib-temperatures-chart
       [temperatureData]="temperatureData()"
@@ -35,89 +23,126 @@
 </section>
 
 <section class="cycle-details">
-  <div class="cycle-stats" role="list" aria-label="Cycle statistics">
-    @if (currentCycle()) {
+  <!-- Current Cycle Section -->
+  <div class="section-group">
+    <h2 class="section-label">This Cycle</h2>
+    <div class="cycle-stats" role="list" aria-label="Current cycle statistics">
+      @if (currentCycle()) {
       <div class="stat-chip" role="listitem">
         <span class="stat-value">{{ dayOfCycle() }}</span>
-        <span class="stat-label">Day of {{ currentCycle()!.cycleLength || 28 }}</span>
+        <span class="stat-label"
+          >Cycle day (of {{ currentCycle()!.cycleLength || 28 }})</span
+        >
       </div>
-      <div class="stat-chip" role="listitem">
+      <div
+        class="stat-chip"
+        [class.stat-chip--bleeding]="currentCycle()!.bleedingLength > 0"
+        role="listitem"
+      >
         <span class="stat-value">{{ currentCycle()!.bleedingLength }}</span>
         <span class="stat-label">Bleeding days</span>
       </div>
-    }
-    <div class="stat-chip" role="listitem">
-      <span class="stat-value">#{{ currentCycleNumber() }}</span>
-      <span class="stat-label">Cycle</span>
-    </div>
-  </div>
-
-  <!-- @if (isLatestCycle() && currentCycle()) {
-    <button mat-stroked-button (click)="startNewCycle()" aria-label="Start a new cycle" class="new-cycle-btn">
-      <mat-icon>add_circle_outline</mat-icon> New Cycle
-    </button>
-  } -->
-
-  <div
-    class="temp-shift-card"
-    [class.temp-shift-card--detected]="currentCycle()?.firstHigherTemp != null"
-    aria-label="Temperature shift status for current cycle"
-  >
-    <mat-icon aria-hidden="true">thermostat</mat-icon>
-    <div class="temp-shift-info">
-      @if (currentCycle()?.firstHigherTemp != null) {
-        <p class="temp-shift-label">Time shift confirmed</p>
-        @if (tempShiftMeasurement()) {
-          <p class="temp-shift-value">{{ tempShiftMeasurement()!.temperature }}°C</p>
-        }
-        <p class="temp-shift-day">Day {{ currentCycle()!.firstHigherTemp }}</p>
-        @if (fertilityAssessment().helperLineTemp) {
-          <p class="temp-shift-baseline">Baseline {{ fertilityAssessment().helperLineTemp }}°C</p>
-        }
-      } @else {
-        <p class="temp-shift-label">No temperature shift detected yet</p>
       }
     </div>
-  </div>
 
-  @if (firstEverTempShift()) {
-    <div class="first-ever-shift" aria-label="First ever temperature shift across all cycles">
-      <mat-icon aria-hidden="true">history</mat-icon>
-      <span>First ever shift: <strong>{{ firstEverTempShift()!.firstHigherTemp }}°C</strong> — Cycle #{{ firstEverTempShift()!.cycleNumber }}</span>
-    </div>
-  }
-
-  @if (lastMeasurementHasSigns()) {
-    <div class="last-measurement" aria-label="Secondary signs from last measurement">
-      <p class="last-measurement-title">Last logged signs</p>
-      <div class="signs-row">
-        @if (lastMeasurement()!.mucusAppearance || lastMeasurement()!.mucusFeeling) {
-          <div class="sign-chip">
-            <mat-icon aria-hidden="true">water_drop</mat-icon>
-            {{ lastMeasurement()!.mucusAppearance ?? lastMeasurement()!.mucusFeeling }}
-          </div>
+    <!-- Current cycle temperature shift -->
+    <div
+      class="temp-shift-card"
+      [class.temp-shift-card--detected]="
+        currentCycle()?.firstHigherTemp !== null
+      "
+      aria-label="Temperature shift status for current cycle"
+    >
+      <mat-icon aria-hidden="true">thermostat</mat-icon>
+      <div class="temp-shift-info">
+        @if (currentCycle()?.firstHigherTemp !== null) {
+        <p class="temp-shift-label">Temp shift confirmed</p>
+        @if (tempShiftMeasurement()) {
+        <p class="temp-shift-value">
+          {{ tempShiftMeasurement()!.temperature }}°C
+        </p>
         }
-        @if (lastMeasurement()!.cervixPosition) {
-          <div class="sign-chip">
-            <mat-icon aria-hidden="true">adjust</mat-icon>
-            {{ lastMeasurement()!.cervixPosition }}
-          </div>
-        }
-        @if (lastMeasurement()!.bleeding) {
-          <div class="sign-chip sign-chip--bleeding">
-            <mat-icon aria-hidden="true">opacity</mat-icon>
-            {{ lastMeasurement()!.bleeding }}
-          </div>
-        }
-        @if (lastMeasurement()!.intercourse) {
-          <div class="sign-chip">
-            <mat-icon aria-hidden="true">favorite</mat-icon>
-            {{ lastMeasurement()!.intercourse }}
-          </div>
+        <p class="temp-shift-day">Day {{ currentCycle()!.firstHigherTemp }}</p>
+        @if (fertilityAssessment().helperLineTemp !== null) {
+        <p class="temp-shift-baseline">
+          Baseline {{ fertilityAssessment().helperLineTemp }}°C
+        </p>
+        } } @else {
+        <p class="temp-shift-label">No temperature shift detected yet</p>
         }
       </div>
     </div>
-  }
+  </div>
+
+  <!-- Insights Section -->
+  <div class="section-group section-group--secondary">
+    <h2 class="section-label">Insights</h2>
+
+    <!-- Fertility assessment and avg cycle side by side -->
+    <div class="assessment-row">
+      <div
+        class="fertility-card"
+        [attr.aria-label]="
+          'Fertility risk assessment: ' +
+          fertilityAssessment().riskLevel +
+          ' risk'
+        "
+      >
+        <mat-icon aria-hidden="true">spa</mat-icon>
+        <div class="temp-shift-info">
+          <p class="temp-shift-label">Fertility assessment</p>
+          <p
+            [class]="
+              'temp-shift-value ' +
+              (fertilityAssessment().riskLevel === 'low'
+                ? 'risk-low'
+                : 'risk-high')
+            "
+          >
+            {{
+              fertilityAssessment().riskLevel === 'low'
+                ? 'Low Risk'
+                : 'High Risk'
+            }}
+          </p>
+          @if (!fertilityAssessment().isDoubleChecked &&
+          fertilityAssessment().usedFactors.length > 0) {
+          <p class="single-factor-warning" role="alert">
+            <mat-icon aria-hidden="true">warning</mat-icon>
+            Using {{ fertilityAssessment().usedFactors[0] }} only
+          </p>
+          }
+        </div>
+      </div>
+
+      <!-- All-time pattern stat -->
+      @if (avgCycleLength() !== null) {
+      <div class="stat-card">
+        <span class="stat-value">{{ avgCycleLength() }}</span>
+        <span class="stat-label">Avg cycle length </span>
+      </div>
+      }
+    </div>
+
+    <!-- Earliest shift -->
+    @if (earliestTempShiftCycle() !== null) {
+    <div
+      class="earliest-shift-card"
+      aria-label="Earliest temperature shift across all cycles"
+    >
+      <mat-icon aria-hidden="true">history</mat-icon>
+      <div class="temp-shift-info">
+        <p class="temp-shift-label">Earliest shift ever</p>
+        <p class="temp-shift-value">
+          Day {{ earliestTempShiftCycle()!.firstHigherTemp }}
+        </p>
+        <p class="temp-shift-day">
+          Cycle #{{ earliestTempShiftCycle()!.cycleNumber }}
+        </p>
+      </div>
+    </div>
+    }
+  </div>
 </section>
 
 <lib-fab

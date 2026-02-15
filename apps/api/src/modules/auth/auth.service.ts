@@ -67,4 +67,13 @@ export class AuthService {
       profileIncomplete: false,
     });
   }
+
+  async getMe(userUuid: UUID): Promise<Omit<User, 'password'>> {
+    const user = await this.usersService.findOneById(userUuid);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const { password, ...safeUser } = user;
+    return safeUser;
+  }
 }
