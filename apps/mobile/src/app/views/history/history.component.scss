@@ -1,0 +1,29 @@
+.actions-cell {
+  text-align: right;
+  white-space: nowrap;
+
+  button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+.no-data-row td {
+  padding: 16px;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+// Available to assistive technology only — the actions column needs a name
+// without adding a visible header.
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

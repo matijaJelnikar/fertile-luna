@@ -1,20 +1,26 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, resource } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import {
   FabComponent,
   TemperaturesChartComponent,
 } from '@basal-temp-log-workspace/components';
-import { CycleDto, MeasurementDto } from '@basal-temp-log-workspace/model';
-import { AddMeasurementComponent } from '../../components/add-measurement/add-measurement.component';
+import { CycleDto } from '@basal-temp-log-workspace/model';
+import {
+  AddMeasurementComponent,
+  MeasurementDialogData,
+} from '../../components/add-measurement/add-measurement.component';
 import { NewCycleComponent } from '../../components/new-cycle/new-cycle.component';
 import { MaterialModule } from '../../material.module';
 import { CycleService } from '../../state/measurements/cycle.service';
-import { MeasurementsService } from '../../state/measurements/mesaurements.service';
 import { FertilityService } from '../../state/fertility/fertility.service';
 import { HomeService } from './home.service';
 import { UserService } from '../../state/user/user.service';
-import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -30,15 +36,9 @@ import { firstValueFrom } from 'rxjs';
   providers: [HomeService],
 })
 export class HomeComponent {
-  measurementsService = inject(MeasurementsService);
   cycleService = inject(CycleService);
   fertilityService = inject(FertilityService);
   userService = inject(UserService);
-
-  // Resource for cycles — loads once on component init
-  private cyclesResource = resource({
-    loader: () => firstValueFrom(this.cycleService.getCycles()),
-  });
 
   // Greeting
   greeting = computed(() => {
@@ -103,18 +103,7 @@ export class HomeComponent {
     });
   });
 
-  constructor(private dialog: MatDialog, public homeService: HomeService) {
-    // Load measurements whenever current cycle changes (e.g., during navigation or initial load)
-    effect(() => {
-      const cycleId = this.cycleService.currentCycleUuid();
-      const cycle = this.cycleService.currentCycle();
-      if (cycleId && cycle) {
-        this.measurementsService
-          .getMeasurementsByCycle(cycleId, cycle.startDate)
-          .subscribe();
-      }
-    });
-  }
+  constructor(private dialog: MatDialog, public homeService: HomeService) {}
 
   previousCycle(): void {
     const cycles = this.cycleService.cycles();
@@ -166,18 +155,16 @@ export class HomeComponent {
         cycleNumber: (currentCycle.cycleNumber ?? 1) + 1,
       };
 
-      this.cycleService.addCycle(newCycleData).subscribe({
-        next: (newCycle) => {
-          this.measurementsService
-            .getMeasurementsByCycle(newCycle.uuid, newCycle.startDate)
-            .subscribe();
-        },
-      });
+      // addCycle selects the new cycle, which drives the measurement reload.
+      this.cycleService.addCycle(newCycleData).subscribe();
     });
   }
 
   addRecord(): void {
-    const data: Partial<MeasurementDto> = { date: new Date() };
+    const data: MeasurementDialogData = {
+      mode: 'create',
+      measurement: { date: new Date() },
+    };
 
     const dialogRef = this.dialog.open(AddMeasurementComponent, {
       width: '90%',

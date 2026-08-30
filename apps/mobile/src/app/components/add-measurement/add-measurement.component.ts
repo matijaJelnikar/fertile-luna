@@ -1,35 +1,60 @@
-import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   ElementRef,
   inject,
   OnInit,
-  ViewChild,
+  viewChild,
 } from '@angular/core';
 import {
   FormControl,
   FormGroup,
-  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { MatButton } from '@angular/material/button';
+import { MatChipListbox, MatChipOption } from '@angular/material/chips';
 import { provideNativeDateAdapter } from '@angular/material/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatDatepicker,
+  MatDatepickerInput,
+  MatDatepickerToggle,
+} from '@angular/material/datepicker';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogActions,
+  MatDialogContent,
+  MatDialogRef,
+  MatDialogTitle,
+} from '@angular/material/dialog';
+import {
+  MatFormField,
+  MatHint,
+  MatLabel,
+} from '@angular/material/form-field';
+import { MatInput } from '@angular/material/input';
 import {
   BleedingOption,
   CervixFeelingOption,
   CervixPositionOption,
   IntercourseOption,
+  Measurement,
   MeasurementDto,
   MucusAppearanceOption,
   MucusFeelingOption,
   PainOption,
+  UpdateMeasurementDto,
 } from '@basal-temp-log-workspace/model';
-import { MaterialModule } from '../../material.module';
+import { TranslateModule } from '@ngx-translate/core';
+
+export interface MeasurementDialogData {
+  mode: 'create' | 'edit';
+  measurement: Partial<Measurement>;
+}
 
 export interface AddMeasurementFormModel {
-  date: FormControl<Date>;
+  date: FormControl<Date | null>;
   temperature: FormControl<number | null>;
   bleeding: FormControl<BleedingOption | null>;
   pain: FormControl<PainOption | null>;
@@ -42,18 +67,34 @@ export interface AddMeasurementFormModel {
 }
 
 @Component({
-  standalone: true,
   selector: 'app-add-measurement',
   templateUrl: './add-measurement.component.html',
   styleUrls: ['./add-measurement.component.scss'],
   providers: [provideNativeDateAdapter()],
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, MaterialModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    ReactiveFormsModule,
+    TranslateModule,
+    MatButton,
+    MatChipListbox,
+    MatChipOption,
+    MatDatepicker,
+    MatDatepickerInput,
+    MatDatepickerToggle,
+    MatDialogActions,
+    MatDialogContent,
+    MatDialogTitle,
+    MatFormField,
+    MatHint,
+    MatInput,
+    MatLabel,
+  ],
 })
 export class AddMeasurementComponent implements OnInit, AfterViewInit {
   readonly dialogRef = inject(MatDialogRef<AddMeasurementComponent>);
-  readonly data = inject<MeasurementDto>(MAT_DIALOG_DATA);
+  readonly data = inject<MeasurementDialogData>(MAT_DIALOG_DATA);
+  readonly isEdit = this.data.mode === 'edit';
 
-  isLoading = true;
   bleedingOptions = Object.values(BleedingOption);
   painOptions = Object.values(PainOption);
   mucusFeelingOptions = Object.values(MucusFeelingOption);
@@ -63,8 +104,12 @@ export class AddMeasurementComponent implements OnInit, AfterViewInit {
   intercourseOptions = Object.values(IntercourseOption);
 
   temperatureForm = new FormGroup<AddMeasurementFormModel>({
-    date: new FormControl(),
-    temperature: new FormControl(null, Validators.required),
+    date: new FormControl(null, Validators.required),
+    temperature: new FormControl(null, [
+      Validators.required,
+      Validators.min(30),
+      Validators.max(45),
+    ]),
     bleeding: new FormControl(null),
     pain: new FormControl(null),
     mucusFeeling: new FormControl(null),
@@ -75,14 +120,20 @@ export class AddMeasurementComponent implements OnInit, AfterViewInit {
     notes: new FormControl(null),
   });
 
-  @ViewChild('temperatureInput') temperatureInput!: ElementRef;
+  private temperatureInput =
+    viewChild.required<ElementRef<HTMLInputElement>>('temperatureInput');
 
   ngOnInit() {
-    this.temperatureForm.patchValue({ ...this.data });
+    const { date, ...rest } = this.data.measurement;
+    this.temperatureForm.patchValue({
+      ...rest,
+      // The API serializes the date as a string; the datepicker needs a real Date.
+      ...(date ? { date: new Date(date) } : {}),
+    });
   }
 
   ngAfterViewInit(): void {
-    this.temperatureInput.nativeElement.focus();
+    this.temperatureInput().nativeElement.focus();
   }
 
   close(): void {
@@ -90,19 +141,44 @@ export class AddMeasurementComponent implements OnInit, AfterViewInit {
   }
 
   save(): void {
-    const formValues = this.temperatureForm.getRawValue();
-    const payload: MeasurementDto = {
-      date: formValues.date,
-      temperature: formValues.temperature!,
-      bleeding: formValues.bleeding || undefined,
-      cervixFeeling: formValues.cervixFeeling || undefined,
-      cervixPosition: formValues.cervixPosition || undefined,
-      intercourse: formValues.intercourse || undefined,
-      mucusAppearance: formValues.mucusAppearance || undefined,
-      mucusFeeling: formValues.mucusFeeling || undefined,
-      notes: formValues.notes || undefined,
-      pain: formValues.pain || undefined,
+    if (this.temperatureForm.invalid) return;
+
+    this.dialogRef.close(
+      this.isEdit ? this.toUpdatePayload() : this.toCreatePayload()
+    );
+  }
+
+  private toCreatePayload(): MeasurementDto {
+    const values = this.temperatureForm.getRawValue();
+    return {
+      date: values.date!,
+      temperature: values.temperature!,
+      bleeding: values.bleeding || undefined,
+      pain: values.pain || undefined,
+      mucusFeeling: values.mucusFeeling || undefined,
+      mucusAppearance: values.mucusAppearance || undefined,
+      cervixPosition: values.cervixPosition || undefined,
+      cervixFeeling: values.cervixFeeling || undefined,
+      intercourse: values.intercourse || undefined,
+      notes: values.notes || undefined,
     };
-    this.dialogRef.close(payload);
+  }
+
+  // An edit sends `null` rather than `undefined` for empty fields, so clearing a
+  // previously recorded observation actually reaches the server.
+  private toUpdatePayload(): UpdateMeasurementDto {
+    const values = this.temperatureForm.getRawValue();
+    return {
+      date: values.date!,
+      temperature: values.temperature!,
+      bleeding: values.bleeding || null,
+      pain: values.pain || null,
+      mucusFeeling: values.mucusFeeling || null,
+      mucusAppearance: values.mucusAppearance || null,
+      cervixPosition: values.cervixPosition || null,
+      cervixFeeling: values.cervixFeeling || null,
+      intercourse: values.intercourse || null,
+      notes: values.notes || null,
+    };
   }
 }

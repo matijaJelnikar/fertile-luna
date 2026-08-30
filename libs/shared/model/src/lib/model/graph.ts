@@ -1,6 +1,6 @@
-import { MeasurementDto } from '../dto/measurement.dto';
+import { Measurement } from '../dto/measurement.dto';
 
 export interface GraphData {
   day?: number;
 }
-export type MeasurementGraphData = MeasurementDto & GraphData;
+export type MeasurementGraphData = Measurement & GraphData;

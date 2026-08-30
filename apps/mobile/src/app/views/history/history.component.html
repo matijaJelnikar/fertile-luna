@@ -1,6 +1,10 @@
 <div class="form-container">
   <div class="table-container">
-    <table mat-table [dataSource]="source()" class="mat-elevation-z8">
+    <table
+      mat-table
+      [dataSource]="historyService.measurements()"
+      class="mat-elevation-z8"
+    >
       <ng-container matColumnDef="temperature">
         <th mat-header-cell *matHeaderCellDef>
           {{ 'temperature' | translate }}
@@ -17,8 +21,43 @@
         </td>
       </ng-container>
 
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>
+          <span class="visually-hidden">{{
+            'measurement.actions' | translate
+          }}</span>
+        </th>
+        <td mat-cell *matCellDef="let element" class="actions-cell">
+          <button
+            mat-icon-button
+            (click)="editMeasurement(element)"
+            [attr.aria-label]="
+              'measurement.edit.aria'
+                | translate : { date: element.date | date : 'mediumDate' }
+            "
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            (click)="deleteMeasurement(element)"
+            [attr.aria-label]="
+              'measurement.delete.aria'
+                | translate : { date: element.date | date : 'mediumDate' }
+            "
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      <tr class="mat-row no-data-row" *matNoDataRow>
+        <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+          {{ 'history.empty' | translate }}
+        </td>
+      </tr>
     </table>
   </div>
 </div>

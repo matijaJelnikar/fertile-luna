@@ -1,7 +1,4 @@
-import {
-  MeasurementDto,
-  UpdateMeasurementDto,
-} from '@basal-temp-log-workspace/model';
+import { MeasurementDto } from '@basal-temp-log-workspace/model';
 import {
   Body,
   Controller,
@@ -16,6 +13,7 @@ import {
 import { UUID } from 'crypto';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { AuthenticatedRequest } from '../auth/types/AuthenticatedRequest';
+import { UpdateMeasurementRequestDto } from './dto/update-measurement.dto';
 import { MeasurementService } from './measurement.service';
 
 @Controller('measurement')
@@ -40,15 +38,21 @@ export class MeasurementController {
   // Get all measurements for a specific cycle
   @UseGuards(JwtGuard)
   @Get('getAll/:cycleId')
-  async getAll(@Param('cycleId') cycleUuid: UUID) {
-    return this.measurementService.getMeasurementsByCycle(cycleUuid);
+  async getAll(
+    @Param('cycleId') cycleUuid: UUID,
+    @Req() req: AuthenticatedRequest
+  ) {
+    return this.measurementService.getMeasurementsByCycle(
+      cycleUuid,
+      req.user.uuid
+    );
   }
 
   // Get a specific measurement by ID
   @UseGuards(JwtGuard)
   @Get(':uuid')
-  async getOne(@Param('uuid') uuid: UUID) {
-    return this.measurementService.getMeasurementById(uuid);
+  async getOne(@Param('uuid') uuid: UUID, @Req() req: AuthenticatedRequest) {
+    return this.measurementService.getMeasurementById(uuid, req.user.uuid);
   }
 
   // Update a specific measurement by ID
@@ -56,18 +60,20 @@ export class MeasurementController {
   @Put(':uuid')
   async update(
     @Param('uuid') uuid: UUID,
-    @Body() updateMeasurementDto: UpdateMeasurementDto
+    @Body() updateMeasurementDto: UpdateMeasurementRequestDto,
+    @Req() req: AuthenticatedRequest
   ) {
     return this.measurementService.updateMeasurement(
       uuid,
-      updateMeasurementDto
+      updateMeasurementDto,
+      req.user.uuid
     );
   }
 
   // Delete a specific measurement by ID
   @UseGuards(JwtGuard)
   @Delete(':uuid')
-  async delete(@Param('uuid') uuid: UUID) {
-    return this.measurementService.deleteMeasurement(uuid);
+  async delete(@Param('uuid') uuid: UUID, @Req() req: AuthenticatedRequest) {
+    return this.measurementService.deleteMeasurement(uuid, req.user.uuid);
   }
 }

@@ -1,11 +1,19 @@
 import { NgClass } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  inject,
+  OnInit,
+  resource,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { tap } from 'rxjs';
+import { firstValueFrom, tap } from 'rxjs';
 import { AuthenticationService } from '../../auth';
 import { MaterialModule } from '../../material.module';
+import { CycleService } from '../../state/measurements/cycle.service';
 
 enum NavigationButton {
   HOME = '/home',
@@ -23,7 +31,14 @@ export class ShellComponent implements OnInit {
   router = inject(Router);
   authService = inject(AuthenticationService);
   destroyRef = inject(DestroyRef);
+  private cycleService = inject(CycleService);
   selectedTab = signal<NavigationButton>(this.router.url as NavigationButton);
+
+  // Cycles are loaded here rather than in a view, so every authenticated route
+  // (home, history) has them regardless of which one is entered first.
+  private cyclesResource = resource({
+    loader: () => firstValueFrom(this.cycleService.getCycles()),
+  });
 
   protected Navigation: typeof NavigationButton = NavigationButton;
 
