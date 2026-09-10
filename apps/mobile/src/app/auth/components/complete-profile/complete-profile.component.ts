@@ -80,8 +80,6 @@ export class CompleteProfileComponent {
       cycleNumber: 1,
       startDate: cycleFormValue.lastPeriodDate as unknown as Date,
       bleedingLength: cycleFormValue.bleedingLength as unknown as number,
-      cycleLength: 28,
-      firstHigherTemp: 0,
     };
 
     forkJoin({

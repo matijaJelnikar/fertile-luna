@@ -8,9 +8,11 @@ export class HomeService {
   measurementService = inject(MeasurementsService);
   cycleService = inject(CycleService);
 
-  measurements = computed(() => {
-    return this.measurementService.measurements();
-  });
+  measurements = computed(() => this.measurementService.measurements());
+
+  placedMeasurements = computed(() =>
+    this.measurementService.placedMeasurements()
+  );
 
   currentCycle = computed(() => {
     return this.cycleService.currentCycle();

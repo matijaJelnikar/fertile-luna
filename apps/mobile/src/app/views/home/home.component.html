@@ -7,7 +7,7 @@
     <lib-temperatures-chart
       [temperatureData]="temperatureData()"
       [timestampData]="timestampData()"
-      [measurements]="homeService.measurements()"
+      [measurements]="homeService.placedMeasurements()"
       [fertilityAssessment]="fertilityAssessment()"
     ></lib-temperatures-chart>
   </div>
@@ -28,12 +28,12 @@
     <h2 class="section-label">This Cycle</h2>
     <div class="cycle-stats" role="list" aria-label="Current cycle statistics">
       @if (currentCycle()) {
+      @if (dayOfCycle() !== null) {
       <div class="stat-chip" role="listitem">
         <span class="stat-value">{{ dayOfCycle() }}</span>
-        <span class="stat-label"
-          >Cycle day (of {{ currentCycle()!.cycleLength || 28 }})</span
-        >
+        <span class="stat-label">Cycle day</span>
       </div>
+      }
       <div
         class="stat-chip"
         [class.stat-chip--bleeding]="currentCycle()!.bleedingLength > 0"
@@ -48,21 +48,15 @@
     <!-- Current cycle temperature shift -->
     <div
       class="temp-shift-card"
-      [class.temp-shift-card--detected]="
-        currentCycle()?.firstHigherTemp !== null
-      "
+      [class.temp-shift-card--detected]="tempShift() !== null"
       aria-label="Temperature shift status for current cycle"
     >
       <mat-icon aria-hidden="true">thermostat</mat-icon>
       <div class="temp-shift-info">
-        @if (currentCycle()?.firstHigherTemp !== null) {
+        @if (tempShift(); as shift) {
         <p class="temp-shift-label">Temp shift confirmed</p>
-        @if (tempShiftMeasurement()) {
-        <p class="temp-shift-value">
-          {{ tempShiftMeasurement()!.temperature }}°C
-        </p>
-        }
-        <p class="temp-shift-day">Day {{ currentCycle()!.firstHigherTemp }}</p>
+        <p class="temp-shift-value">{{ shift.temperature }}°C</p>
+        <p class="temp-shift-day">Day {{ shift.day }}</p>
         @if (fertilityAssessment().helperLineTemp !== null) {
         <p class="temp-shift-baseline">
           Baseline {{ fertilityAssessment().helperLineTemp }}°C
@@ -124,24 +118,7 @@
       }
     </div>
 
-    <!-- Earliest shift -->
-    @if (earliestTempShiftCycle() !== null) {
-    <div
-      class="earliest-shift-card"
-      aria-label="Earliest temperature shift across all cycles"
-    >
-      <mat-icon aria-hidden="true">history</mat-icon>
-      <div class="temp-shift-info">
-        <p class="temp-shift-label">Earliest shift ever</p>
-        <p class="temp-shift-value">
-          Day {{ earliestTempShiftCycle()!.firstHigherTemp }}
-        </p>
-        <p class="temp-shift-day">
-          Cycle #{{ earliestTempShiftCycle()!.cycleNumber }}
-        </p>
-      </div>
-    </div>
-    }
+    <!-- Earliest shift across cycles returns with the rule engine, which evaluates history. -->
   </div>
 </section>
 
