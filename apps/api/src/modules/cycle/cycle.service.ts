@@ -1,4 +1,3 @@
-import { CycleDto, UpdateCycleDto } from '@basal-temp-log-workspace/model';
 import {
   BadRequestException,
   Injectable,
@@ -9,6 +8,8 @@ import { UUID } from 'crypto';
 import { Repository, UpdateResult } from 'typeorm';
 import { Cycle } from '../../entities/cycle.entity';
 import { User } from '../../entities/user.entity';
+import { CreateCycleRequestDto } from './dto/create-cycle.dto';
+import { UpdateCycleRequestDto } from './dto/update-cycle.dto';
 
 @Injectable()
 export class CycleService {
@@ -26,10 +27,11 @@ export class CycleService {
     });
   }
 
-  async findOneById(cycleUuid: UUID, userUuid: UUID): Promise<Cycle | null> {
+  async findOneById(cycleUuid: UUID, userUuid: UUID): Promise<Cycle> {
+    // Filtering on `user` joins the relation for the where clause without selecting it, so the
+    // owner (and their password hash) never rides along into the response.
     const cycle = await this.cycleRepository.findOne({
       where: { uuid: cycleUuid, user: { uuid: userUuid } },
-      relations: ['user'],
     });
 
     if (!cycle) {
@@ -41,7 +43,10 @@ export class CycleService {
     return cycle;
   }
 
-  async create(createCycleDto: CycleDto, userUuid: UUID): Promise<Cycle> {
+  async create(
+    createCycleDto: CreateCycleRequestDto,
+    userUuid: UUID
+  ): Promise<Cycle> {
     const user = await this.userRepository.findOne({
       where: { uuid: userUuid },
     });
@@ -55,20 +60,19 @@ export class CycleService {
       user,
     });
 
-    return this.cycleRepository.save(cycle);
+    const saved = await this.cycleRepository.save(cycle);
+    // The owner was attached only to set the foreign key; their row carries the password hash.
+    delete saved.user;
+
+    return saved;
   }
 
   async update(
     cycleUuid: UUID,
-    updateCycleDto: UpdateCycleDto,
+    updateCycleDto: UpdateCycleRequestDto,
     userUuid: UUID
   ): Promise<UpdateResult> {
-    const cycle = await this.findOneById(cycleUuid, userUuid);
-    if (!cycle) {
-      throw new NotFoundException(
-        'Cycle not found or does not belong to the user'
-      );
-    }
+    await this.findOneById(cycleUuid, userUuid);
 
     return this.cycleRepository.update(cycleUuid, updateCycleDto);
   }
@@ -77,12 +81,7 @@ export class CycleService {
     cycleUuid: UUID,
     userUuid: UUID
   ): Promise<{ affected?: number }> {
-    const cycle = await this.findOneById(cycleUuid, userUuid);
-    if (!cycle) {
-      throw new NotFoundException(
-        'Cycle not found or does not belong to the user'
-      );
-    }
+    await this.findOneById(cycleUuid, userUuid);
 
     return this.cycleRepository.delete(cycleUuid);
   }
