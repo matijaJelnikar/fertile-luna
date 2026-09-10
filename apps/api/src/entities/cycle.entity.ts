@@ -1,11 +1,13 @@
 import { UUID } from 'crypto';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   Index,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Measurement } from './measurement.entity';
 import { User } from './user.entity';
@@ -29,11 +31,22 @@ export class Cycle {
   @Column({ type: 'int' })
   bleedingLength: number;
 
-  @ManyToOne(() => User, (user) => user.cycle, { onDelete: 'CASCADE' })
+  /** Never null in practice: the service sets the owner from the JWT on every create. */
+  @Index()
+  @ManyToOne(() => User, (user) => user.cycle, {
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
   user?: User;
 
   @OneToMany(() => Measurement, (measurement) => measurement.cycle, {
     cascade: ['insert', 'update', 'remove'],
   })
   measurements?: Measurement[];
+
+  @CreateDateColumn()
+  createdAt?: Date;
+
+  @UpdateDateColumn()
+  updatedAt?: Date;
 }

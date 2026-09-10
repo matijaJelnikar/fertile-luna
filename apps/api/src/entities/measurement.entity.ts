@@ -1,4 +1,13 @@
-import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+  UpdateDateColumn,
+} from 'typeorm';
 
 import {
   BleedingOption,
@@ -18,7 +27,7 @@ import { Cycle } from './cycle.entity';
 @Unique('UQ_measurement_cycle_date', ['cycle', 'date'])
 @Index(['cycle', 'date'])
 export class Measurement {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   uuid: UUID;
 
   @Column({ type: 'date' })
@@ -58,6 +67,16 @@ export class Measurement {
   @Column({ type: 'text', nullable: true })
   notes?: string;
 
-  @ManyToOne(() => Cycle, (cycle) => cycle.measurements)
+  /** Never null in practice: an entry is only ever created inside a cycle the caller owns. */
+  @ManyToOne(() => Cycle, (cycle) => cycle.measurements, {
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
   cycle?: Cycle;
+
+  @CreateDateColumn()
+  createdAt?: Date;
+
+  @UpdateDateColumn()
+  updatedAt?: Date;
 }

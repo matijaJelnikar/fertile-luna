@@ -1,24 +1,25 @@
 import { UUID } from 'crypto';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Cycle } from './cycle.entity';
-import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'user' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
   uuid?: UUID;
 
-  @ApiProperty({
-    example: 'testuser@gmail.com',
-    description: 'User email account',
-  })
+  @Index({ unique: true })
   @Column({ type: 'varchar', length: 50 })
   email: string;
 
-  @ApiProperty({
-    example: 'testpass123.',
-    description: 'Users password',
-  })
+  /** Bcrypt hash. Never returned in a response — see `AuthService.getMe`. */
   @Column({ type: 'varchar' })
   password: string;
 
@@ -36,4 +37,10 @@ export class User {
 
   @OneToMany(() => Cycle, (cycle) => cycle.user, { cascade: true })
   cycle?: Cycle[];
+
+  @CreateDateColumn()
+  createdAt?: Date;
+
+  @UpdateDateColumn()
+  updatedAt?: Date;
 }
