@@ -35,7 +35,13 @@ export class UpdateMeasurementRequestDto {
   @IsDate()
   date?: Date;
 
-  @ApiProperty({ required: false, example: 36.6, nullable: true })
+  @ApiProperty({
+    required: false,
+    example: 36.6,
+    nullable: true,
+    minimum: 30,
+    maximum: 45,
+  })
   @IsOptional()
   @IsNumber()
   @Min(30)

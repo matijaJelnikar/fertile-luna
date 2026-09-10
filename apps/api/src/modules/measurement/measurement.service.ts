@@ -1,4 +1,3 @@
-import { MeasurementDto } from '@basal-temp-log-workspace/model';
 import {
   BadRequestException,
   Injectable,
@@ -10,6 +9,7 @@ import { Repository } from 'typeorm';
 import { Measurement } from '../../entities/measurement.entity';
 import { toDateOnly } from '../../utils/date-only';
 import { CycleService } from '../cycle/cycle.service';
+import { CreateMeasurementRequestDto } from './dto/create-measurement.dto';
 import { UpdateMeasurementRequestDto } from './dto/update-measurement.dto';
 
 @Injectable()
@@ -22,7 +22,7 @@ export class MeasurementService {
 
   // A day carries at most one entry, so recording a day that already has one updates it.
   async createMeasurement(
-    measurementData: MeasurementDto,
+    measurementData: CreateMeasurementRequestDto,
     cycleUuid: UUID,
     userUuid: UUID
   ): Promise<Partial<Measurement>> {

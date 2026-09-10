@@ -1,31 +1,32 @@
-import { MeasurementDto } from '@basal-temp-log-workspace/model';
 import {
   Body,
   Controller,
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
   Req,
-  UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UUID } from 'crypto';
-import { JwtGuard } from '../auth/guards/jwt.guard';
 import { AuthenticatedRequest } from '../auth/types/AuthenticatedRequest';
+import { CreateMeasurementRequestDto } from './dto/create-measurement.dto';
 import { UpdateMeasurementRequestDto } from './dto/update-measurement.dto';
 import { MeasurementService } from './measurement.service';
 
+@ApiBearerAuth()
+@ApiTags('measurement')
 @Controller('measurement')
 export class MeasurementController {
   constructor(private readonly measurementService: MeasurementService) {}
 
   // Create a new measurement
-  @UseGuards(JwtGuard)
   @Post('add/:cycleId')
   async add(
-    @Param('cycleId') cycleUuid: UUID,
-    @Body() addMeasurementDto: MeasurementDto,
+    @Param('cycleId', ParseUUIDPipe) cycleUuid: UUID,
+    @Body() addMeasurementDto: CreateMeasurementRequestDto,
     @Req() req: AuthenticatedRequest
   ) {
     return this.measurementService.createMeasurement(
@@ -36,10 +37,9 @@ export class MeasurementController {
   }
 
   // Get all measurements for a specific cycle
-  @UseGuards(JwtGuard)
   @Get('getAll/:cycleId')
   async getAll(
-    @Param('cycleId') cycleUuid: UUID,
+    @Param('cycleId', ParseUUIDPipe) cycleUuid: UUID,
     @Req() req: AuthenticatedRequest
   ) {
     return this.measurementService.getMeasurementsByCycle(
@@ -49,17 +49,18 @@ export class MeasurementController {
   }
 
   // Get a specific measurement by ID
-  @UseGuards(JwtGuard)
   @Get(':uuid')
-  async getOne(@Param('uuid') uuid: UUID, @Req() req: AuthenticatedRequest) {
+  async getOne(
+    @Param('uuid', ParseUUIDPipe) uuid: UUID,
+    @Req() req: AuthenticatedRequest
+  ) {
     return this.measurementService.getMeasurementById(uuid, req.user.uuid);
   }
 
   // Update a specific measurement by ID
-  @UseGuards(JwtGuard)
   @Put(':uuid')
   async update(
-    @Param('uuid') uuid: UUID,
+    @Param('uuid', ParseUUIDPipe) uuid: UUID,
     @Body() updateMeasurementDto: UpdateMeasurementRequestDto,
     @Req() req: AuthenticatedRequest
   ) {
@@ -71,9 +72,11 @@ export class MeasurementController {
   }
 
   // Delete a specific measurement by ID
-  @UseGuards(JwtGuard)
   @Delete(':uuid')
-  async delete(@Param('uuid') uuid: UUID, @Req() req: AuthenticatedRequest) {
+  async delete(
+    @Param('uuid', ParseUUIDPipe) uuid: UUID,
+    @Req() req: AuthenticatedRequest
+  ) {
     return this.measurementService.deleteMeasurement(uuid, req.user.uuid);
   }
 }
