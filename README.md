@@ -1,110 +1,64 @@
-# BasalTempLogWorkspace
+# BasalTempLog
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+A PWA for tracking basal body temperature and menstrual cycles. Log a daily
+temperature, and the app derives cycle day, detects the post-ovulation
+temperature shift, and charts the cycle.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+Nx monorepo: Angular 19 PWA + NestJS 10 API + PostgreSQL.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/node?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
-
-## Add .env file to apps/api/ with this variables:
-JWT_SECRET
-ACCESS_TOKEN_VALIDITY_DURATION_IN_SEC
-DB_HOST
-DB_PORT
-DB_NAME
-DB_USERNAME
-DB_PASSWORD
-
-## Run tasks
-
-To run the dev server for your app, use:
-
-```sh
-npx nx serve api
+```
+apps/mobile   # Angular 19 PWA (Material 19, Chart.js, ngx-translate)
+apps/api      # NestJS 10 API (TypeORM, Passport JWT, Swagger)
+apps/api-e2e  # Jest API e2e tests
+libs/shared   # model (DTOs/types) + components (reusable UI)
 ```
 
-To create a production bundle:
+Domain: a **user** has **cycles**, and each cycle has daily **measurements**.
+Cycle length, end date, and the temperature shift are derived, not stored.
+
+> Health data — basal temperature and cycle dates are special-category data
+> under GDPR. See `.claude/rules/security.md`.
+
+## Setup
 
 ```sh
-npx nx build api
+npm install
 ```
 
-To see all available targets to run for a project, run:
+Create `apps/api/.env` (gitignored):
+
+```
+JWT_SECRET=
+ACCESS_TOKEN_VALIDITY_DURATION_IN_SEC=
+DB_HOST=
+DB_PORT=
+DB_NAME=
+DB_USERNAME=
+DB_PASSWORD=
+```
+
+## Development
 
 ```sh
-npx nx show project api
+npm run start:all            # api + mobile in parallel
+npx nx serve mobile          # dev server, proxies /api via proxy.conf.json
+npx nx serve api             # API on :3000, Swagger at /api/docs
+npx nx test mobile|api       # Jest
+npx nx lint mobile|api       # ESLint (module boundaries enforced)
+npx nx build mobile --configuration=production
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+## Deployment
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Add new projects
-
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
+`docker-compose.yml` runs Postgres, the API, the built frontend, and an nginx
+proxy on `:80`. Environment variables come from a root `.env`.
 
 ```sh
-npx nx g @nx/node:app demo
+docker compose up --build
 ```
 
-To generate a new library, use:
+## Conventions
 
-```sh
-npx nx g @nx/node:lib mylib
-```
-
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
-
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Set up CI!
-
-### Step 1
-
-To connect to Nx Cloud, run the following command:
-
-```sh
-npx nx connect
-```
-
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
-```
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/nx-api/node?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Rules live in `.claude/` — `CLAUDE.md` for the stack overview, and
+`rules/coding.md`, `rules/backend.md`, `rules/security.md` for the details.
+Each rule file lists known deviations in the current code.
