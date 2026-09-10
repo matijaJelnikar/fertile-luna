@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "baseUrl": "../..",
+    "paths": {
+      "@basal-temp-log-workspace/model": ["libs/shared/model/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "../../libs/shared/model/src/**/*.ts"]
+}

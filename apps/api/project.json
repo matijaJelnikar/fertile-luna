@@ -29,6 +29,39 @@
         "build"
       ],
       "command": "docker build -f apps/api/Dockerfile . -t api"
+    },
+    "migration-run": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/api",
+        "command": "node -r ts-node/register -r tsconfig-paths/register ../../node_modules/typeorm/cli.js migration:run -d src/database/data-source.ts",
+        "env": {
+          "TS_NODE_PROJECT": "../../apps/api/tsconfig.typeorm.json",
+          "TS_NODE_TRANSPILE_ONLY": "true"
+        }
+      }
+    },
+    "migration-revert": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/api",
+        "command": "node -r ts-node/register -r tsconfig-paths/register ../../node_modules/typeorm/cli.js migration:revert -d src/database/data-source.ts",
+        "env": {
+          "TS_NODE_PROJECT": "../../apps/api/tsconfig.typeorm.json",
+          "TS_NODE_TRANSPILE_ONLY": "true"
+        }
+      }
+    },
+    "migration-generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/api",
+        "command": "node -r ts-node/register -r tsconfig-paths/register ../../node_modules/typeorm/cli.js migration:generate src/migrations/{args.name} -d src/database/data-source.ts -p",
+        "env": {
+          "TS_NODE_PROJECT": "../../apps/api/tsconfig.typeorm.json",
+          "TS_NODE_TRANSPILE_ONLY": "true"
+        }
+      }
     }
   }
 }
