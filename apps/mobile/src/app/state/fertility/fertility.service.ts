@@ -76,14 +76,21 @@ export class FertilityService {
     if (measurements.length < 7) return null;
 
     for (let i = 6; i < measurements.length; i++) {
-      const baseline = measurements.slice(i - 6, i).map((m) => m.temperature);
+      const baseline = measurements
+        .slice(i - 6, i)
+        .map((m) => m.temperature)
+        .filter((temperature): temperature is number => temperature !== undefined);
+      // A day observed without a measurement cannot take part in the six.
+      if (baseline.length < 6) continue;
+
       const helperLineTemp = Math.max(...baseline);
 
       // Collect consecutive measurements above helper line starting at index i
-      const candidates: number[] = [];
+      const candidates: { index: number; temp: number }[] = [];
       for (let j = i; j < measurements.length; j++) {
-        if (measurements[j].temperature > helperLineTemp) {
-          candidates.push(j);
+        const temp = measurements[j]?.temperature;
+        if (temp !== undefined && temp > helperLineTemp) {
+          candidates.push({ index: j, temp });
         } else {
           break;
         }
@@ -91,13 +98,13 @@ export class FertilityService {
 
       // Standard rule: 3 consecutive above helper line AND 3rd is +0.2
       if (candidates.length >= 3) {
-        const third = measurements[candidates[2]].temperature;
+        const third = candidates[2].temp;
         if (third >= helperLineTemp + 0.2) {
           return {
-            confirmedIndex: candidates[2],
+            confirmedIndex: candidates[2].index,
             helperLineTemp,
             helperLineStartIndex: i - 6,
-            shiftDayIndices: candidates.slice(0, 3),
+            shiftDayIndices: candidates.slice(0, 3).map((c) => c.index),
           };
         }
 
@@ -105,10 +112,10 @@ export class FertilityService {
         if (candidates.length >= 4) {
           // Cannot combine with exception 2 — standard 3 consecutive must all be above
           return {
-            confirmedIndex: candidates[3],
+            confirmedIndex: candidates[3].index,
             helperLineTemp,
             helperLineStartIndex: i - 6,
-            shiftDayIndices: candidates.slice(0, 4),
+            shiftDayIndices: candidates.slice(0, 4).map((c) => c.index),
           };
         }
       }
@@ -116,15 +123,21 @@ export class FertilityService {
       // Exception 2: Exactly one of 3 is at/below helper line
       // Look for a window of 4 from i where exactly one is at/below
       if (measurements.length > i + 3) {
-        const window4 = [i, i + 1, i + 2, i + 3].map((idx) => ({
-          idx,
-          temp: measurements[idx].temperature,
-          above: measurements[idx].temperature > helperLineTemp,
-        }));
+        const window4 = [i, i + 1, i + 2, i + 3].map((idx) => {
+          const temp = measurements[idx]?.temperature;
+          return {
+            idx,
+            temp,
+            above: temp !== undefined && temp > helperLineTemp,
+          };
+        });
         const belowCount = window4.filter((p) => !p.above).length;
 
         if (belowCount === 1) {
-          const validPoints = window4.filter((p) => p.above);
+          const validPoints = window4.filter(
+            (p): p is { idx: number; temp: number; above: boolean } =>
+              p.above && p.temp !== undefined
+          );
           if (validPoints.length >= 3) {
             const thirdValidTemp = validPoints[2].temp;
             if (thirdValidTemp >= helperLineTemp + 0.2) {
