@@ -136,9 +136,9 @@ TypeOrmModule.forRootAsync({
     type: 'postgres',
     host: config.get('DB_HOST'),
     // ...
-    synchronize: config.get('NODE_ENV') !== 'production',
-    migrationsRun: true,
-    migrations: ['dist/migrations/*.js'],
+    synchronize: config.get('NODE_ENV') === 'development',
+    // Migrations run as a deploy step (`nx run api:migration-run`), not while booting.
+    migrationsRun: false,
   }),
   inject: [ConfigService],
 });
@@ -217,10 +217,20 @@ TypeOrmModule.forRootAsync({
 
 ## Known Deviations in This Repo
 
-- `app.module.ts` sets `synchronize: true` unconditionally and there are no migration
-  files — this must be fixed before any production deployment
-- `main.ts` registers `JwtGuard` twice (`useGlobalGuards` **and** `APP_GUARD`); one is enough
-- `main.ts` still carries the scaffold comment "This is not a production server yet"
-- No global exception filter yet — error shapes are inconsistent across modules
-- Both `mysql2` and `pg` are installed; only PostgreSQL is used — `mysql2` is dead weight
-- `Measurement.cycle` has no `onDelete` behaviour, unlike `Cycle.user` (`CASCADE`)
+Everything previously listed here was fixed by `api-contract-hardening`: migrations replaced
+unconditional `synchronize`, the duplicate `JwtGuard` registration and the scaffold comment are
+gone, `AllExceptionsFilter` gives every error one shape, `mysql2` is dropped, and
+`Measurement.cycle` declares `onDelete: 'CASCADE'`.
+
+What remains:
+
+- `AuthService.getMe` and `MeasurementService.toResponse` strip fields by destructuring, which
+  trips `@typescript-eslint/no-unused-vars` as a warning. Harmless, and the rule is not disabled.
+- **There are no migration files yet, deliberately.** Nothing is deployed, the local data is
+  disposable, and the entities are still changing. Local development and the e2e suite build the
+  schema with `synchronize`; `apps/api/src/migrations/` is empty and `migration-run` is a no-op.
+  Generate the first one before the first deployment:
+  `nx run api:migration-generate --name=initial-schema` against an empty database.
+- Migrations are an **explicit deploy step**, never `migrationsRun` at boot — two instances
+  starting at once would race on them. The app does not load migrations at all; only the CLI
+  data source (`src/database/data-source.ts`) does, which is why an ordinary glob works there.
