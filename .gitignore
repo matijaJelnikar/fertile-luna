@@ -45,3 +45,9 @@ Thumbs.db
 apps/api/.env
 
 docs/brainstorming
+
+# OpenSpec working files - local only, not for the public repo
+openspec/
+
+# Claude Code session data
+.claude/projects/
