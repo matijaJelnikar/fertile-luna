@@ -1,45 +1,33 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
-import { Logger, ValidationPipe } from '@nestjs/common';
-import { NestFactory, Reflector } from '@nestjs/core';
+import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
 
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app/app.module';
-import { JwtGuard } from './modules/auth/guards/jwt.guard';
+import { GLOBAL_PREFIX, configureApp } from './app/configure-app';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.useGlobalGuards(new JwtGuard(app.get(Reflector)));
+  const app = configureApp(await NestFactory.create(AppModule));
+  const port = app.get(ConfigService).get<number>('PORT') ?? 3000;
 
-  const globalPrefix = 'api';
-  app.setGlobalPrefix(globalPrefix);
-  const port = process.env.PORT || 3000;
-
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true, // Strips properties that don't have decorators
-      forbidNonWhitelisted: true, // Throws error if unknown properties are present
-      transform: true, // Automatically transforms input to DTO types
-      disableErrorMessages: false, // Ensure validation error messages are shown
-    })
-  );
-
-  // Swagger setup
-  const config = new DocumentBuilder()
+  const swaggerConfig = new DocumentBuilder()
     .setTitle('Basal temp API spec')
     .setDescription('API description')
     .setVersion('1.0')
+    .addBearerAuth()
     .addTag('auth')
+    .addTag('cycle')
+    .addTag('measurement')
     .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup(
+    `${GLOBAL_PREFIX}/docs`,
+    app,
+    SwaggerModule.createDocument(app, swaggerConfig)
+  );
 
   await app.listen(port);
   Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
+    `🚀 Application is running on: http://localhost:${port}/${GLOBAL_PREFIX}`
   );
 }
 
