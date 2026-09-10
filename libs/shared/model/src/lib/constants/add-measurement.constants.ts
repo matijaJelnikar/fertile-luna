@@ -1,4 +1,6 @@
 export enum BleedingOption {
+  /** Recorded with dots rather than dashes on the paper sheet (workbook p. 15). */
+  Spotting = 'Spotting',
   Light = 'Light',
   Medium = 'Medium',
   Heavy = 'Heavy',

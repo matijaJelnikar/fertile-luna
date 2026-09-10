@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UUID } from 'crypto';
 import { Repository } from 'typeorm';
 import { Measurement } from '../../entities/measurement.entity';
+import { toDateOnly } from '../../utils/date-only';
 import { CycleService } from '../cycle/cycle.service';
 import { UpdateMeasurementRequestDto } from './dto/update-measurement.dto';
 
@@ -19,7 +20,7 @@ export class MeasurementService {
     private readonly cycleService: CycleService
   ) {}
 
-  // Create a new measurement
+  // A day carries at most one entry, so recording a day that already has one updates it.
   async createMeasurement(
     measurementData: MeasurementDto,
     cycleUuid: UUID,
@@ -30,18 +31,21 @@ export class MeasurementService {
       throw new BadRequestException('Cycle not found');
     }
 
+    this.assertDisturbanceHasMeasurement(measurementData);
+
+    const existing = await this.findByDay(cycleUuid, measurementData.date);
+    if (existing) {
+      // Omitted fields keep their value; clearing goes through the update endpoint's `null`.
+      const merged = Object.assign(existing, measurementData);
+      return this.toResponse(await this.measurementRepository.save(merged));
+    }
+
     const newMeasurement = this.measurementRepository.create({
       ...measurementData,
       cycle: cycle,
     });
 
-    const savedMeasurement = await this.measurementRepository.save(
-      newMeasurement
-    );
-
-    // Exclude cycle field from response
-    const { cycle: _, ...measurementResponse } = savedMeasurement;
-    return measurementResponse;
+    return this.toResponse(await this.measurementRepository.save(newMeasurement));
   }
 
   // Get all measurements by cycle
@@ -74,6 +78,7 @@ export class MeasurementService {
 
     // `null` values are written through so the client can clear an observation.
     const updatedMeasurement = Object.assign(measurement, updateMeasurementDto);
+    this.assertDisturbanceHasMeasurement(updatedMeasurement);
     await this.measurementRepository.save(updatedMeasurement);
 
     return this.toResponse(updatedMeasurement);
@@ -84,6 +89,29 @@ export class MeasurementService {
     const measurement = await this.findOwnedMeasurement(uuid, userUuid);
 
     await this.measurementRepository.remove(measurement);
+  }
+
+  private assertDisturbanceHasMeasurement(entry: {
+    temperature?: number | null;
+    disturbed?: boolean | null;
+  }): void {
+    if (entry.disturbed && entry.temperature == null) {
+      throw new BadRequestException(
+        'A day without a temperature cannot be marked as disturbed'
+      );
+    }
+  }
+
+  private async findByDay(
+    cycleUuid: UUID,
+    date: Date | string
+  ): Promise<Measurement | null> {
+    return this.measurementRepository
+      .createQueryBuilder('measurement')
+      .innerJoin('measurement.cycle', 'cycle')
+      .where('cycle.uuid = :cycleUuid', { cycleUuid })
+      .andWhere('measurement.date = :date', { date: toDateOnly(date) })
+      .getOne();
   }
 
   // Every lookup is scoped through the owning cycle's user, so a measurement uuid

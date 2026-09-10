@@ -10,6 +10,8 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsArray,
+  IsBoolean,
   IsDate,
   IsEnum,
   IsNumber,
@@ -33,12 +35,23 @@ export class UpdateMeasurementRequestDto {
   @IsDate()
   date?: Date;
 
-  @ApiProperty({ required: false, example: 36.6 })
+  @ApiProperty({ required: false, example: 36.6, nullable: true })
   @IsOptional()
   @IsNumber()
   @Min(30)
   @Max(45)
-  temperature?: number;
+  temperature?: number | null;
+
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  @IsBoolean()
+  disturbed?: boolean | null;
+
+  @ApiProperty({ required: false, type: [String], nullable: true })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  disturbanceReasons?: string[] | null;
 
   @ApiProperty({ required: false, enum: BleedingOption, nullable: true })
   @IsOptional()

@@ -1,9 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
 import {
   BleedingOption,
   CervixFeelingOption,
   CervixPositionOption,
+  DisturbanceReason,
   IntercourseOption,
   MucusAppearanceOption,
   MucusFeelingOption,
@@ -12,7 +13,10 @@ import {
 import { UUID } from 'crypto';
 import { Cycle } from './cycle.entity';
 
+/** One day's observations. At most one per day: a duplicate silently shifts every later day. */
 @Entity()
+@Unique('UQ_measurement_cycle_date', ['cycle', 'date'])
+@Index(['cycle', 'date'])
 export class Measurement {
   @PrimaryGeneratedColumn()
   uuid: UUID;
@@ -20,8 +24,15 @@ export class Measurement {
   @Column({ type: 'date' })
   date: Date;
 
-  @Column({ type: 'float' })
-  temperature: number;
+  @Column({ type: 'float', nullable: true })
+  temperature?: number;
+
+  /** Value kept; the mark tells the engine how to read it (`#R-DIST-02`). */
+  @Column({ type: 'boolean', default: false })
+  disturbed: boolean;
+
+  @Column({ type: 'text', array: true, nullable: true })
+  disturbanceReasons?: DisturbanceReason[];
 
   @Column({ type: 'enum', enum: BleedingOption, nullable: true })
   bleeding?: BleedingOption;
