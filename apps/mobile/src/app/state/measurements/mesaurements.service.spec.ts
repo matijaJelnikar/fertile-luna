@@ -70,7 +70,34 @@ describe('MeasurementsService', () => {
 
     expect(service.measurements().map((m) => m.uuid)).toEqual(['b', 'a']);
     expect(service.measurements()[0].temperature).toBe(36.9);
-    expect(service.measurements()[0].day).toBe(0);
+    // Before the cycle start, so it has no day rather than a substituted one.
+    expect(service.measurements()[0].day).toBeNull();
+    expect(service.placedMeasurements().map((m) => m.uuid)).toEqual(['a']);
+    expect(service.unplaceableMeasurements().map((m) => m.uuid)).toEqual(['b']);
+  });
+
+  it('keeps a day observed without a measurement, ordered by day', () => {
+    loadCycle([
+      { uuid: 'b', date: new Date('2026-08-03'), temperature: 36.8 },
+      { uuid: 'a', date: new Date('2026-08-02') },
+    ]);
+
+    expect(service.measurements().map((m) => m.uuid)).toEqual(['a', 'b']);
+    expect(service.measurements().map((m) => m.day)).toEqual([2, 3]);
+    expect(service.measurements()[0].temperature).toBeUndefined();
+  });
+
+  it('reports entries that cannot be placed instead of dropping them', () => {
+    loadCycle([
+      measurement('early', '2026-07-28', 36.4),
+      measurement('a', '2026-08-01', 36.5),
+    ]);
+
+    expect(service.measurements()).toHaveLength(2);
+    expect(service.placedMeasurements().map((m) => m.uuid)).toEqual(['a']);
+    expect(service.unplaceableMeasurements().map((m) => m.uuid)).toEqual([
+      'early',
+    ]);
   });
 
   it('sends null so a cleared observation reaches the server', () => {

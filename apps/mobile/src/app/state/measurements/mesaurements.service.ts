@@ -1,15 +1,17 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
-  Cycle,
+  CycleWithDerived,
   Measurement,
   MeasurementDto,
   MeasurementGraphData,
+  PlacedMeasurement,
   UpdateMeasurementDto,
 } from '@basal-temp-log-workspace/model';
 import { filter, switchMap, tap } from 'rxjs/operators';
 import { MeasurementEndpoints } from '../../shared/constants/endpoints.constants';
+import { toCycleDay } from './cycle-day';
 import { CycleService } from './cycle.service';
 
 @Injectable({ providedIn: 'root' })
@@ -20,12 +22,21 @@ export class MeasurementsService {
   private state = signal<MeasurementGraphData[]>([]);
   readonly measurements = this.state.asReadonly();
 
+  /** Only these are evaluated or charted; the rest have no day to place them on. */
+  readonly placedMeasurements = computed(() =>
+    this.state().filter((m): m is PlacedMeasurement => m.day !== null)
+  );
+
+  readonly unplaceableMeasurements = computed(() =>
+    this.state().filter((m) => m.day === null)
+  );
+
   constructor() {
     // Single source of loading: whichever view is opened first, the measurements
     // for the selected cycle follow the cycle selection.
     toObservable(this.cycleService.currentCycle)
       .pipe(
-        filter((cycle): cycle is Cycle => !!cycle),
+        filter((cycle): cycle is CycleWithDerived => !!cycle),
         switchMap((cycle) =>
           this.getMeasurementsByCycle(cycle.uuid, cycle.startDate)
         ),
@@ -120,26 +131,7 @@ export class MeasurementsService {
     cycleStartDate?: Date
   ): MeasurementGraphData {
     const date = new Date(measurement.date);
-    return {
-      ...measurement,
-      date,
-      day: this.calculateCycleDay(date, cycleStartDate),
-    };
-  }
-
-  private calculateCycleDay(date: Date, cycleStartDate?: Date): number {
-    if (!cycleStartDate) return 1;
-
-    // Compare at midnight so a time-of-day difference never shifts the day count.
-    const startOfCycle = new Date(cycleStartDate);
-    const startOfMeasurement = new Date(date);
-    startOfCycle.setHours(0, 0, 0, 0);
-    startOfMeasurement.setHours(0, 0, 0, 0);
-
-    const diffTime = startOfMeasurement.getTime() - startOfCycle.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-    return diffDays + 1; // the cycle start date is day 1
+    return { ...measurement, date, day: toCycleDay(date, cycleStartDate) };
   }
 
   private sortByDate(
