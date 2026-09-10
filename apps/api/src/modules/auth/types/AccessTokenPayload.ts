@@ -1,6 +1,7 @@
 import { UUID } from 'crypto';
 
+/** What `AuthService.login` signs, and therefore what every protected request is scoped by. */
 export type AccessTokenPayload = {
-  userId: UUID;
+  uuid: UUID;
   email: string;
 };

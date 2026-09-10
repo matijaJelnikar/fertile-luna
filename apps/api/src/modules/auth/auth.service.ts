@@ -47,9 +47,14 @@ export class AuthService {
       throw new BadRequestException('email already exists');
     }
     const hashedPassword = await bcrypt.hash(user.password, 10);
-    const newUser: User = { ...user, password: hashedPassword };
-    await this.usersService.create(newUser);
-    return this.login(newUser);
+    // The token must be signed from the *persisted* user: only it carries the uuid, and a token
+    // without one leaves every ownership query unscoped.
+    const created = await this.usersService.create({
+      ...user,
+      password: hashedPassword,
+    });
+
+    return this.login(created);
   }
 
   async update(
