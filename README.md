@@ -1,4 +1,4 @@
-# BasalTempLog
+# FertileLuna
 
 A PWA for tracking basal body temperature and menstrual cycles. Log a daily
 temperature, and the app derives cycle day, detects the post-ovulation
