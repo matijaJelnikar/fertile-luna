@@ -6,10 +6,19 @@ export default {
   setupFiles: ['<rootDir>/src/support/test-setup.ts'],
   testEnvironment: 'node',
   transform: {
-    '^.+\\.[tj]s$': ['ts-jest', {
-      tsconfig: '<rootDir>/tsconfig.spec.json',
-    }],
+    '^.+\\.[tj]s$': [
+      'ts-jest',
+      {
+        tsconfig: '<rootDir>/tsconfig.spec.json',
+      },
+    ],
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
+  moduleNameMapper: {
+    '^@basal-temp-log-workspace/model$':
+      '<rootDir>/../../libs/shared/model/src/index.ts',
+  },
+  // One database, shared by every spec: they must not run against each other.
+  maxWorkers: 1,
   coverageDirectory: '../../coverage/api-e2e',
 };

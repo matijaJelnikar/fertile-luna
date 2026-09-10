@@ -1,11 +1,7 @@
-/* eslint-disable */
-var __TEARDOWN_MESSAGE__: string;
+import { createE2eDatabase, loadApiEnv } from './database';
 
-module.exports = async function() {
-  // Start services that that the app needs to run (e.g. database, docker-compose, etc.).
-  console.log('\nSetting up...\n');
-
-  // Hint: Use `globalThis` to pass variables to global teardown.
-  globalThis.__TEARDOWN_MESSAGE__ = '\nTearing down...\n';
+module.exports = async function () {
+  loadApiEnv();
+  console.log('\nCreating the e2e database...\n');
+  await createE2eDatabase();
 };
-

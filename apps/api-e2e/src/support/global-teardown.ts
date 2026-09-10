@@ -1,7 +1,7 @@
-/* eslint-disable */
+import { dropE2eDatabase, loadApiEnv } from './database';
 
-module.exports = async function() {
-  // Put clean up logic here (e.g. stopping services, docker-compose, etc.).
-  // Hint: `globalThis` is shared between setup and teardown.
-  console.log(globalThis.__TEARDOWN_MESSAGE__);
+module.exports = async function () {
+  loadApiEnv();
+  console.log('\nDropping the e2e database...\n');
+  await dropE2eDatabase();
 };
