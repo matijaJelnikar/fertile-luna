@@ -1,39 +1,40 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { RouterTestingModule } from '@angular/router/testing';
-import { ReactiveFormsModule } from '@angular/forms';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { FlexLayoutModule } from '@angular/flex-layout';
+import { of, throwError } from 'rxjs';
 
-import { SharedModule } from '@shared';
-import { MaterialModule } from '@app/material.module';
-import { AuthenticationService, CredentialsService } from '@app/auth';
-import { MockAuthenticationService } from '@app/auth/authentication.service.mock';
-import { MockCredentialsService } from '@app/auth/credentials.service.mock';
-import { I18nModule } from '@app/i18n';
+import { AuthenticationService } from '../../authentication.service';
 import { LoginComponent } from './login.component';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [
-        BrowserAnimationsModule,
-        FlexLayoutModule,
-        MaterialModule,
-        SharedModule,
-        RouterTestingModule,
-        TranslateModule.forRoot(),
-        I18nModule,
-        ReactiveFormsModule,
-      ],
-      declarations: [LoginComponent],
-    }).compileComponents();
-  }));
+  const authenticationService = {
+    login: jest.fn(() =>
+      of({ email: 'me@example.test', token: '123', profileIncomplete: false })
+    ),
+  };
+  const router = { navigate: jest.fn() };
+  const route = { snapshot: { queryParams: {} as Record<string, string> } };
 
-  beforeEach(() => {
+  const fillIn = (email: string, password: string) =>
+    component.loginForm.setValue({ email, password, remember: false });
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    route.snapshot.queryParams = {};
+
+    await TestBed.configureTestingModule({
+      imports: [LoginComponent, NoopAnimationsModule, TranslateModule.forRoot()],
+      providers: [
+        { provide: AuthenticationService, useValue: authenticationService },
+        { provide: Router, useValue: router },
+        { provide: ActivatedRoute, useValue: route },
+      ],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -41,5 +42,47 @@ describe('LoginComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('starts with an invalid, empty form', () => {
+    expect(component.loginForm.valid).toBe(false);
+  });
+
+  it('signs in with what was typed and lands on the default route', () => {
+    fillIn('me@example.test', 'secret');
+
+    component.login();
+
+    expect(authenticationService.login).toHaveBeenCalledWith({
+      email: 'me@example.test',
+      password: 'secret',
+      remember: false,
+    });
+    expect(router.navigate).toHaveBeenCalledWith(['/'], { replaceUrl: true });
+    expect(component.isLoading).toBe(false);
+  });
+
+  it('returns to the route the guard redirected from', () => {
+    route.snapshot.queryParams = { redirect: '/history' };
+    fillIn('me@example.test', 'secret');
+
+    component.login();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/history'], {
+      replaceUrl: true,
+    });
+  });
+
+  it('shows the server`s message and stays put when sign-in fails', () => {
+    authenticationService.login.mockReturnValueOnce(
+      throwError(() => ({ error: { message: 'Invalid credentials' } }))
+    );
+    fillIn('me@example.test', 'wrong');
+
+    component.login();
+
+    expect(component.error).toBe('Invalid credentials');
+    expect(router.navigate).not.toHaveBeenCalled();
+    expect(component.isLoading).toBe(false);
   });
 });

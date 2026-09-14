@@ -1,65 +1,67 @@
 import { TestBed } from '@angular/core/testing';
-import { Router, RouterStateSnapshot, ActivatedRouteSnapshot } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  Router,
+  RouterStateSnapshot,
+} from '@angular/router';
 
+import { AuthenticationGuard } from './authentication.guard';
 import { CredentialsService } from './credentials.service';
 import { MockCredentialsService } from './credentials.service.mock';
-import { AuthenticationGuard } from './authentication.guard';
 
 describe('AuthenticationGuard', () => {
   let authenticationGuard: AuthenticationGuard;
   let credentialsService: MockCredentialsService;
-  let mockRouter: any;
-  let mockSnapshot: RouterStateSnapshot;
+  const router = { navigate: jest.fn() };
+
+  const state = (url: string): RouterStateSnapshot =>
+    ({ url }) as RouterStateSnapshot;
+
+  const canActivate = (url = '/home') =>
+    authenticationGuard.canActivate(new ActivatedRouteSnapshot(), state(url));
 
   beforeEach(() => {
-    mockRouter = {
-      navigate: jasmine.createSpy('navigate'),
-    };
-    mockSnapshot = jasmine.createSpyObj<RouterStateSnapshot>('RouterStateSnapshot', ['toString']);
+    router.navigate.mockClear();
 
     TestBed.configureTestingModule({
       providers: [
         AuthenticationGuard,
         { provide: CredentialsService, useClass: MockCredentialsService },
-        { provide: Router, useValue: mockRouter },
+        { provide: Router, useValue: router },
       ],
     });
 
     authenticationGuard = TestBed.inject(AuthenticationGuard);
-    credentialsService = TestBed.inject(CredentialsService);
+    credentialsService = TestBed.inject(
+      CredentialsService
+    ) as unknown as MockCredentialsService;
   });
 
-  it('should have a canActivate method', () => {
-    expect(typeof authenticationGuard.canActivate).toBe('function');
+  it('lets an authenticated user with a complete profile through', () => {
+    expect(canActivate()).toBe(true);
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 
-  it('should return true if user is authenticated', () => {
-    expect(authenticationGuard.canActivate(new ActivatedRouteSnapshot(), mockSnapshot)).toBe(true);
-  });
-
-  it('should return false and redirect to login if user is not authenticated', () => {
-    // Arrange
+  it('redirects an unauthenticated user to login', () => {
     credentialsService.credentials = null;
 
-    // Act
-    const result = authenticationGuard.canActivate(new ActivatedRouteSnapshot(), mockSnapshot);
-
-    // Assert
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/login'], {
-      queryParams: { redirect: undefined },
+    expect(canActivate('/history')).toBe(false);
+    expect(router.navigate).toHaveBeenCalledWith(['/login'], {
+      queryParams: { redirect: '/history' },
       replaceUrl: true,
     });
-    expect(result).toBe(false);
   });
 
-  it('should save url as queryParam if user is not authenticated', () => {
-    credentialsService.credentials = null;
-    mockRouter.url = '/about';
-    mockSnapshot.url = '/about';
+  it('redirects a user whose profile is incomplete to complete-profile', () => {
+    credentialsService.credentials = {
+      email: 'me@example.test',
+      token: '123',
+      profileIncomplete: true,
+    };
 
-    authenticationGuard.canActivate(new ActivatedRouteSnapshot(), mockSnapshot);
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/login'], {
-      queryParams: { redirect: mockRouter.url },
+    expect(canActivate('/home')).toBe(false);
+    expect(router.navigate).toHaveBeenCalledWith(['/complete-profile'], {
+      queryParams: { redirect: '/home' },
       replaceUrl: true,
     });
   });

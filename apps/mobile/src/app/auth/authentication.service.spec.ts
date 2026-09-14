@@ -1,125 +1,136 @@
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+import { LoginResponse } from '@basal-temp-log-workspace/model';
 
+import { LoginFlowEndpoints } from '../shared/constants/endpoints.constants';
 import { AuthenticationService } from './authentication.service';
-import { Credentials, CredentialsService } from './credentials.service';
+import { CredentialsService } from './credentials.service';
 import { MockCredentialsService } from './credentials.service.mock';
+
+const LOGIN_RESPONSE: LoginResponse = {
+  access_token: 'a-token',
+  profileIncomplete: false,
+} as LoginResponse;
 
 describe('AuthenticationService', () => {
   let authenticationService: AuthenticationService;
   let credentialsService: MockCredentialsService;
+  let http: HttpTestingController;
+
+  const login = (remember?: boolean) => {
+    const request = authenticationService.login({
+      email: 'me@example.test',
+      password: '123',
+      remember,
+    });
+    const subscription = request.subscribe();
+    http.expectOne(LoginFlowEndpoints.LOGIN).flush(LOGIN_RESPONSE);
+    subscription.unsubscribe();
+  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: CredentialsService, useClass: MockCredentialsService },
         AuthenticationService,
       ],
     });
 
     authenticationService = TestBed.inject(AuthenticationService);
-    credentialsService = TestBed.inject(CredentialsService);
+    credentialsService = TestBed.inject(
+      CredentialsService
+    ) as unknown as MockCredentialsService;
     credentialsService.credentials = null;
-    spyOn(credentialsService, 'setCredentials').and.callThrough();
+    http = TestBed.inject(HttpTestingController);
   });
 
+  afterEach(() => http.verify());
+
   describe('login', () => {
-    it('should return credentials', fakeAsync(() => {
-      // Act
-      const request = authenticationService.login({
-        email: 'toto',
+    it('posts the email and password, and never echoes them back', () => {
+      const subscription = authenticationService
+        .login({ email: 'me@example.test', password: '123' })
+        .subscribe();
+
+      const request = http.expectOne(LoginFlowEndpoints.LOGIN);
+      expect(request.request.body).toEqual({
+        email: 'me@example.test',
         password: '123',
       });
-      tick();
 
-      // Assert
-      request.subscribe((credentials) => {
-        expect(credentials).toBeDefined();
-        expect(credentials.token).toBeDefined();
-      });
-    }));
+      request.flush(LOGIN_RESPONSE);
+      subscription.unsubscribe();
+    });
 
-    it('should authenticate user', fakeAsync(() => {
+    it('returns the credentials carrying the issued token', (done) => {
+      authenticationService
+        .login({ email: 'me@example.test', password: '123' })
+        .subscribe((credentials) => {
+          expect(credentials.email).toBe('me@example.test');
+          expect(credentials.token).toBe('a-token');
+          done();
+        });
+
+      http.expectOne(LoginFlowEndpoints.LOGIN).flush(LOGIN_RESPONSE);
+    });
+
+    it('authenticates the user', () => {
       expect(credentialsService.isAuthenticated()).toBe(false);
 
-      // Act
-      const request = authenticationService.login({
-        email: 'toto',
-        password: '123',
-      });
-      tick();
+      login();
 
-      // Assert
-      request.subscribe(() => {
-        expect(credentialsService.isAuthenticated()).toBe(true);
-        expect(credentialsService.credentials).not.toBeNull();
-        expect(
-          (credentialsService.credentials as Credentials).token
-        ).toBeDefined();
-        expect(
-          (credentialsService.credentials as Credentials).token
-        ).not.toBeNull();
-      });
-    }));
+      expect(credentialsService.isAuthenticated()).toBe(true);
+      expect(credentialsService.credentials?.token).toBe('a-token');
+    });
 
-    it('should persist credentials for the session', fakeAsync(() => {
-      // Act
-      const request = authenticationService.login({
-        email: 'toto',
-        password: '123',
-      });
-      tick();
+    it('persists credentials for the session when remember is not asked for', () => {
+      const setCredentials = jest.spyOn(credentialsService, 'setCredentials');
 
-      // Assert
-      request.subscribe(() => {
-        expect(credentialsService.setCredentials).toHaveBeenCalled();
-        expect(
-          (credentialsService.setCredentials as jasmine.Spy).calls.mostRecent()
-            .args[1]
-        ).toBe(undefined);
-      });
-    }));
+      login();
 
-    it('should persist credentials across sessions', fakeAsync(() => {
-      // Act
-      const request = authenticationService.login({
-        email: 'toto',
-        password: '123',
-        remember: true,
-      });
-      tick();
+      expect(setCredentials.mock.calls[0][1]).toBeUndefined();
+    });
 
-      // Assert
-      request.subscribe(() => {
-        expect(credentialsService.setCredentials).toHaveBeenCalled();
-        expect(
-          (credentialsService.setCredentials as jasmine.Spy).calls.mostRecent()
-            .args[1]
-        ).toBe(true);
-      });
-    }));
+    it('persists credentials across sessions when remember is asked for', () => {
+      const setCredentials = jest.spyOn(credentialsService, 'setCredentials');
+
+      login(true);
+
+      expect(setCredentials.mock.calls[0][1]).toBe(true);
+    });
+
+    it('leaves the user unauthenticated when the request fails', (done) => {
+      authenticationService
+        .login({ email: 'me@example.test', password: 'wrong' })
+        .subscribe({
+          error: () => {
+            expect(credentialsService.isAuthenticated()).toBe(false);
+            done();
+          },
+        });
+
+      http
+        .expectOne(LoginFlowEndpoints.LOGIN)
+        .flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
+    });
   });
 
   describe('logout', () => {
-    it('should clear user authentication', fakeAsync(() => {
-      // Arrange
-      const loginRequest = authenticationService.login({
-        email: 'toto',
-        password: '123',
+    it('clears the user authentication', (done) => {
+      login();
+      expect(credentialsService.isAuthenticated()).toBe(true);
+
+      authenticationService.logout().subscribe(() => {
+        expect(credentialsService.isAuthenticated()).toBe(false);
+        expect(credentialsService.credentials).toBeNull();
+        done();
       });
-      tick();
-
-      // Assert
-      loginRequest.subscribe(() => {
-        expect(credentialsService.isAuthenticated()).toBe(true);
-
-        const request = authenticationService.logout();
-        tick();
-
-        request.subscribe(() => {
-          expect(credentialsService.isAuthenticated()).toBe(false);
-          expect(credentialsService.credentials).toBeNull();
-        });
-      });
-    }));
+    });
   });
 });
