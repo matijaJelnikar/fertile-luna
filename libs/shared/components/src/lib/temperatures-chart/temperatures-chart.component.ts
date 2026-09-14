@@ -179,8 +179,11 @@ export class TemperaturesChartComponent implements OnInit {
                 if (measurement.cervixPosition) {
                   labels.push(`Cervix Position: ${measurement.cervixPosition}`);
                 }
-                if (measurement.cervixFeeling) {
-                  labels.push(`Cervix Feeling: ${measurement.cervixFeeling}`);
+                if (measurement.cervixOpenness) {
+                  labels.push(`Cervix openness: ${measurement.cervixOpenness}`);
+                }
+                if (measurement.cervixFirmness) {
+                  labels.push(`Cervix firmness: ${measurement.cervixFirmness}`);
                 }
                 if (measurement.pain) {
                   labels.push(`Pain: ${measurement.pain}`);

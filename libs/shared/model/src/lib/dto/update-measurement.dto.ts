@@ -1,6 +1,7 @@
 import {
   BleedingOption,
-  CervixFeelingOption,
+  CervixFirmnessOption,
+  CervixOpennessOption,
   CervixPositionOption,
   IntercourseOption,
   MucusAppearanceOption,
@@ -26,7 +27,8 @@ export type UpdateMeasurementDto = Partial<Pick<MeasurementDto, 'date'>> & {
   mucusFeeling?: MucusFeelingOption | null;
   mucusAppearance?: MucusAppearanceOption | null;
   cervixPosition?: CervixPositionOption | null;
-  cervixFeeling?: CervixFeelingOption | null;
+  cervixOpenness?: CervixOpennessOption | null;
+  cervixFirmness?: CervixFirmnessOption | null;
   intercourse?: IntercourseOption | null;
   notes?: string | null;
 };

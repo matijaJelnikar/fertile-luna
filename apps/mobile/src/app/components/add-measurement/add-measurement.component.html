@@ -86,14 +86,28 @@
     </div>
 
     <div class="chip-group">
-      <span class="chip-group-label" id="cervixFeelingLabel">{{
-        'measurement.cervix.feeling' | translate
+      <span class="chip-group-label" id="cervixOpennessLabel">{{
+        'measurement.cervix.openness' | translate
       }}</span>
       <mat-chip-listbox
-        formControlName="cervixFeeling"
-        aria-labelledby="cervixFeelingLabel"
+        formControlName="cervixOpenness"
+        aria-labelledby="cervixOpennessLabel"
       >
-        @for (option of cervixFeelingOptions; track option) {
+        @for (option of cervixOpennessOptions; track option) {
+        <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
+        }
+      </mat-chip-listbox>
+    </div>
+
+    <div class="chip-group">
+      <span class="chip-group-label" id="cervixFirmnessLabel">{{
+        'measurement.cervix.firmness' | translate
+      }}</span>
+      <mat-chip-listbox
+        formControlName="cervixFirmness"
+        aria-labelledby="cervixFirmnessLabel"
+      >
+        @for (option of cervixFirmnessOptions; track option) {
         <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
         }
       </mat-chip-listbox>

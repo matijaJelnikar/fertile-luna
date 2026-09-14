@@ -1,43 +1,58 @@
 {
   "anchor": "R-MUCUS-02",
-  "alsoExercises": ["R-MUCUS-03", "R-MUCUS-01"],
-  "title": "Vaja 16 — the peak and the count of three, as the workbook marks them",
+  "alsoExercises": ["R-MUCUS-01", "R-MUCUS-03", "R-FIRST-01", "R-DIST-02"],
+  "title": "Vaja 16 — a full cycle with the workbook's own stated answer",
   "source": {
-    "reference": "openspec/reference/sensiplan-rules.md#r-mucus-02--peak-day-vrhunec-sluzi",
-    "figure": "Vaja 16, docs/brainstorming/app-rewrite/sensiplan.pdf p03 (book p. 85)"
+    "reference": "openspec/reference/sensiplan-rules.md#vaja-16s-stated-answer--the-one-outcome-we-did-not-derive",
+    "exercise": "docs/brainstorming/app-rewrite/sensiplan.pdf p03 (book p. 85)",
+    "answer": "docs/brainstorming/app-rewrite/vaja16.pdf, Resitev (book p. 87)"
   },
   "provenance": {
     "fromTheBook": [
       "the mucus symbol for each of cycle days 5..18",
-      "the V marking the peak on day 15",
-      "the marks 1, 2, 3 on days 16, 17, 18"
+      "the V marking the peak on day 15 and the marks 1, 2, 3 on days 16, 17, 18",
+      "the Obcutek/otip and Videz observations for days 5..18",
+      "bleeding on days 1..4",
+      "the plodni dnevi row marked P on days 1..18",
+      "the stated answer: fertility from day 1, because this is a first observed cycle",
+      "the stated answer: day 5's temperature is disturbed and must be bracketed"
     ],
-    "oursByConstruction": [],
-    "howVerified": "The 'Sluz (v kraticah)' row was aligned against the 'Dan cikla' row at two magnifications, correcting for the page skew. Both alignments put V over the last of five consecutive S+ days and 1, 2, 3 over the three vl days that follow.",
-    "notTranscribed": "The temperature row, the Obcutek/Videz rows, the Motnje entries and the 'plodni dnevi' row are all filled in on the page but are not transcribed here: the sheet is photographed at an angle across a curve in the page and their columns were not verified to the standard above. See sensiplan-rule-capture task 2.3."
+    "approximate": [
+      "every temperature: read off the printed 36.0-37.5 axis to the nearest 0.05 C. The shape is reliable, each value is not. No temperature-evaluation outcome is asserted from them, because the workbook's answer does not state one."
+    ],
+    "howVerified": "The sluz row was aligned against the Dan cikla row at three magnifications. As an independent check, classifying the Obcutek/Videz rows through the R-MUCUS-01 table reproduces all fourteen printed symbols."
   },
   "days": [
-    { "day": 5, "mucus": "O" },
-    { "day": 6, "mucus": "O" },
-    { "day": 7, "mucus": "vl" },
-    { "day": 8, "mucus": "vl" },
-    { "day": 9, "mucus": "S" },
-    { "day": 10, "mucus": "S" },
-    { "day": 11, "mucus": "S+" },
-    { "day": 12, "mucus": "S+" },
-    { "day": 13, "mucus": "S+" },
-    { "day": 14, "mucus": "S+" },
-    { "day": 15, "mucus": "S+" },
-    { "day": 16, "mucus": "vl" },
-    { "day": 17, "mucus": "vl" },
-    { "day": 18, "mucus": "vl" }
+    { "day": 1, "bleeding": "heavy", "temperature": 36.8 },
+    { "day": 2, "bleeding": "heavy", "temperature": 36.5 },
+    { "day": 3, "bleeding": "heavy", "temperature": 36.4 },
+    { "day": 4, "bleeding": "light", "temperature": 36.4 },
+    { "day": 5, "temperature": 37.05, "disturbed": true, "disturbanceNote": "sestanek, pozno spat", "sensation": "nothing", "appearance": "nothing", "mucus": "O" },
+    { "day": 6, "temperature": 36.5, "sensation": "nothing", "appearance": "nothing", "mucus": "O" },
+    { "day": 7, "temperature": 36.45, "sensation": "vlazen", "appearance": "nothing", "mucus": "vl" },
+    { "day": 8, "temperature": 36.4, "sensation": "vlazen", "appearance": "nothing", "mucus": "vl" },
+    { "day": 9, "temperature": 36.45, "sensation": "nothing", "appearance": "belkasta", "mucus": "S" },
+    { "day": 10, "temperature": 36.5, "sensation": "nothing", "appearance": "belkasta", "mucus": "S" },
+    { "day": 11, "temperature": 36.55, "sensation": "moker", "appearance": "belkasta", "mucus": "S+" },
+    { "day": 12, "temperature": 36.4, "sensation": "moker", "appearance": "tekoca", "mucus": "S+" },
+    { "day": 13, "temperature": 36.6, "sensation": "moker", "appearance": "nothing", "mucus": "S+" },
+    { "day": 14, "temperature": 36.55, "sensation": "moker", "appearance": "nothing", "mucus": "S+" },
+    { "day": 15, "temperature": 36.6, "sensation": "moker", "appearance": "prozorna", "mucus": "S+" },
+    { "day": 16, "temperature": 36.45, "sensation": "vlazen", "appearance": "nothing", "mucus": "vl" },
+    { "day": 17, "temperature": 36.75, "sensation": "vlazen", "appearance": "nothing", "mucus": "vl" },
+    { "day": 18, "temperature": 36.8, "sensation": "vlazen", "appearance": "nothing", "mucus": "vl" }
   ],
   "expected": {
+    "classification": "Every day's `mucus` symbol above is the one the sheet prints. Deriving it from `sensation` and `appearance` through the R-MUCUS-01 table must reproduce all fourteen. Days 11, 13 and 14 are the discriminating ones: only the wet-sensation short-circuit yields S+ there.",
     "peakDay": 15,
     "postPeakCount": { "1": 16, "2": 17, "3": 18 },
     "mucusEvaluationCompletesOnDay": 18,
-    "notes": "The peak is the LAST day at the best quality reached, not the first: days 11-15 are all S+, and the V is on 15. It becomes identifiable only on day 16, when the quality drops to vl. The count of three runs over calendar days, not over days of any particular category.",
+    "disturbedDays": [5],
+    "preOvulatoryInfertileDays": [],
+    "fertileFromDay": 1,
+    "fertileDaysMarked": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
     "temperatureEvaluation": null,
-    "fertilePhase": null
+    "postOvulatoryInfertilePhaseStartsOnDay": null,
+    "notes": "The workbook's answer covers only the start of the cycle. It states two things: fertility runs from day 1 because this is a first observed cycle with no evaluated predecessor (R-FIRST-01's precondition), and day 5's temperature is bracketed (R-DIST-02). It draws no helper line, no triangles and no P/, so no temperature evaluation is asserted here. Day 5 is also the trap: at 37.05 it would wreck a helper line if the engine failed to exclude it."
   }
 }

@@ -1,0 +1,52 @@
+{
+  "anchor": "R-MUCUS-02",
+  "alsoExercises": ["R-MUCUS-01"],
+  "title": "Individually best quality — two sequences whose peaks sit at different symbols",
+  "source": {
+    "reference": "openspec/reference/sensiplan-rules.md#r-mucus-02--peak-day-vrhunec-sluzi",
+    "figure": "docs/brainstorming/app-rewrite/sluz.pdf, \"Vrhunec sluzi\""
+  },
+  "provenance": {
+    "fromTheBook": [
+      "both symbol sequences, printed",
+      "a V drawn over one day of each"
+    ],
+    "oursByConstruction": ["day numbers: the examples are fragments and print none"],
+    "howVerified": "The two V marks are printed at the same horizontal offset, the seventh symbol of each line. That reading also follows from the stated rule, which puts the peak on the last day at the best quality the sequence reaches — S+ in the first, S in the second."
+  },
+  "cases": [
+    {
+      "name": "a cycle that reaches S+",
+      "days": [
+        { "day": 1, "mucus": "su" },
+        { "day": 2, "mucus": "vl" },
+        { "day": 3, "mucus": "S" },
+        { "day": 4, "mucus": "S" },
+        { "day": 5, "mucus": "S+" },
+        { "day": 6, "mucus": "S+" },
+        { "day": 7, "mucus": "S+" },
+        { "day": 8, "mucus": "S" },
+        { "day": 9, "mucus": "su" },
+        { "day": 10, "mucus": "su" }
+      ],
+      "expected": { "peakDay": 7, "bestQualityReached": "S+" }
+    },
+    {
+      "name": "a cycle that never reaches S+",
+      "days": [
+        { "day": 1, "mucus": "su" },
+        { "day": 2, "mucus": "vl" },
+        { "day": 3, "mucus": "vl" },
+        { "day": 4, "mucus": "vl" },
+        { "day": 5, "mucus": "S" },
+        { "day": 6, "mucus": "S" },
+        { "day": 7, "mucus": "S" },
+        { "day": 8, "mucus": "vl" },
+        { "day": 9, "mucus": "su" },
+        { "day": 10, "mucus": "su" }
+      ],
+      "expected": { "peakDay": 7, "bestQualityReached": "S" }
+    }
+  ],
+  "notes": "The pair is the point: the peak is the last day at the best quality THIS cycle reached, not at a fixed symbol. An engine that only names a peak once it has seen S+ fails the second case."
+}

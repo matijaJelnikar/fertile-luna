@@ -1,4 +1,8 @@
-import { MucusFeelingOption } from '../constants/add-measurement.constants';
+import {
+  CervixFirmnessOption,
+  CervixOpennessOption,
+  MucusFeelingOption,
+} from '../constants/add-measurement.constants';
 import { DisturbanceReason } from '../model/disturbance';
 import { hasObservation, MeasurementDto } from './measurement.dto';
 
@@ -39,6 +43,27 @@ describe('measurement entry', () => {
 
     expect(entry.temperature).toBe(36.42);
     expect(hasObservation(entry)).toBe(true);
+  });
+
+  it('records cervix firmness apart from openness, as `R-CERVIX-01` needs both', () => {
+    const closedButSoft: MeasurementDto = {
+      date: new Date('2026-09-07'),
+      cervixOpenness: CervixOpennessOption.Closed,
+      cervixFirmness: CervixFirmnessOption.Soft,
+    };
+
+    expect(hasObservation(closedButSoft)).toBe(true);
+    // Neither observation implies the other: closed does not mean firm.
+    expect(closedButSoft.cervixFirmness).toBe(CervixFirmnessOption.Soft);
+  });
+
+  it('counts a day with only cervix firmness as an entry', () => {
+    expect(
+      hasObservation({
+        date: new Date('2026-09-07'),
+        cervixFirmness: CervixFirmnessOption.Firm,
+      })
+    ).toBe(true);
   });
 
   it('carries several reasons for one day, and free text beside Other', () => {

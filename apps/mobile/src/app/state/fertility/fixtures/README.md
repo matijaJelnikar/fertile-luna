@@ -31,29 +31,37 @@ tests of our reading, and they should not borrow the book's authority by living 
 
 ## What is here
 
-Both files transcribe printed symbols, so neither is a reconstruction.
+`vaja-16-mucus-evaluation.json` is the fixture worth having, and since the workbook's **Rešitev**
+page (book p. 87) was captured it now carries an answer the book states rather than one we derived:
+fertility from day 1 because this is a first observed cycle, and day 5's temperature bracketed as
+disturbed. Its mucus row, the `V` on day 15 and the marks `1 2 3` on days 16–18 are printed on the
+exercise sheet.
 
-`vaja-16-mucus-evaluation.json` is the fixture worth having: its outcome is **marked by the workbook
-itself** — a `V` over cycle day 15 and the marks `1 2 3` over days 16–18. The mucus row was aligned
-against the "Dan cikla" row at two magnifications to correct for the page skew, and both alignments
-agree. As a cross-check, the peak derived independently from `R-MUCUS-02` (the last day at the best
-category reached) lands on day 15 too.
+Two things it does **not** carry, on purpose:
 
-Its temperature row, cervix rows and "plodni dnevi" row are filled in on the page but are **not**
-transcribed: the sheet is photographed at an angle and those columns were not verified to the same
-standard.
+- **No temperature evaluation.** The answer draws no helper line, no triangles and no `P/`, because
+  the exercise asks only about the start of the cycle. Supplying one from our own reading would
+  destroy the property that makes the file worth having.
+- **Exact temperatures.** They are read off the printed axis to the nearest 0.05 °C and are marked
+  `approximate` in the file. The shape is reliable — day 5 spikes to about 37.0 against a run of
+  36.4–36.5 — and that shape is the point: an engine that fails to exclude day 5 builds its helper
+  line on a value the book explicitly brackets.
 
-`slika-6-mucus-sequence.json` carries the symbol sequence with **no expected peak**. `R-MUCUS-02`
-would put it on day 8, but the figure marks no `V`, and filling in our own answer would cost the
-fixture the one property that makes it worth having.
+`r-mucus-02-individually-best.json` holds the two sequences the handbook prints side by side, whose
+peaks sit at different symbols. It is what stops an engine from waiting for `S⁺` before it will name
+a peak.
+
+`slika-6-mucus-sequence.json` carries a symbol sequence with **no expected peak**. `R-MUCUS-02` would
+put it on day 8, but the figure marks no `V`, and filling in our own answer would cost the fixture
+the one property that makes it worth having.
 
 ## Status
 
-**The gap worth closing:** Vaja 16's temperature row and the workbook's **stated answer** for that
-exercise — the helper line, the triangles and the `P/` day. That answer is the only outcome in the
-whole reference that we would not have derived ourselves, which is exactly what makes it able to
-catch a misreading of everything else. The solutions page is not among the photographed pages. See
-`sensiplan-rule-capture` task 2.3.
+The mucus rules are now checked against the book rather than only read from it: classifying Vaja 16's
+own observation rows through the `R-MUCUS-01` table reproduces all fourteen of that exercise's
+printed symbols, including three days that only the wet-sensation short-circuit explains.
 
-`R-MUCUS-01`'s classification table is likewise uncaptured, so nothing here can test mapping an
-observation onto a symbol — only reasoning over symbols already assigned.
+**The gap that remains:** no captured exercise states a *temperature* answer. `R-TEMP-01`…`R-TEMP-04`
+and `R-COMBI-01` rest entirely on our reading of the prose, and nothing here can catch a misreading
+of them. An exercise whose solution draws a helper line, triangles and a `P/` day is the thing to
+capture next — see `sensiplan-rule-capture` task 2.3.

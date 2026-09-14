@@ -1,6 +1,7 @@
 import {
   BleedingOption,
-  CervixFeelingOption,
+  CervixFirmnessOption,
+  CervixOpennessOption,
   CervixPositionOption,
   IntercourseOption,
   MucusAppearanceOption,
@@ -23,7 +24,9 @@ export type MeasurementDto = {
   mucusFeeling?: MucusFeelingOption;
   mucusAppearance?: MucusAppearanceOption;
   cervixPosition?: CervixPositionOption;
-  cervixFeeling?: CervixFeelingOption;
+  cervixOpenness?: CervixOpennessOption;
+  /** `R-CERVIX-01` needs closed **and** firm, so firmness is its own observation. */
+  cervixFirmness?: CervixFirmnessOption;
   intercourse?: IntercourseOption;
   notes?: string;
 };
@@ -39,6 +42,7 @@ export const hasObservation = (measurement: Partial<MeasurementDto>): boolean =>
   measurement.mucusFeeling != null ||
   measurement.mucusAppearance != null ||
   measurement.cervixPosition != null ||
-  measurement.cervixFeeling != null ||
+  measurement.cervixOpenness != null ||
+  measurement.cervixFirmness != null ||
   measurement.intercourse != null ||
   (measurement.notes != null && measurement.notes.trim() !== '');

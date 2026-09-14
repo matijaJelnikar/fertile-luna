@@ -11,7 +11,8 @@ import {
 
 import {
   BleedingOption,
-  CervixFeelingOption,
+  CervixFirmnessOption,
+  CervixOpennessOption,
   CervixPositionOption,
   DisturbanceReason,
   IntercourseOption,
@@ -62,8 +63,12 @@ export class Measurement {
   @Column({ type: 'enum', enum: CervixPositionOption, nullable: true })
   cervixPosition?: CervixPositionOption;
 
-  @Column({ type: 'enum', enum: CervixFeelingOption, nullable: true })
-  cervixFeeling?: CervixFeelingOption;
+  @Column({ type: 'enum', enum: CervixOpennessOption, nullable: true })
+  cervixOpenness?: CervixOpennessOption;
+
+  /** Recorded apart from openness: `R-CERVIX-01` needs the cervix closed **and** firm. */
+  @Column({ type: 'enum', enum: CervixFirmnessOption, nullable: true })
+  cervixFirmness?: CervixFirmnessOption;
 
   @Column({ type: 'enum', enum: IntercourseOption, nullable: true })
   intercourse?: IntercourseOption;

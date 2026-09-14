@@ -1,6 +1,7 @@
 import {
   BleedingOption,
-  CervixFeelingOption,
+  CervixFirmnessOption,
+  CervixOpennessOption,
   CervixPositionOption,
   DisturbanceReason,
   IntercourseOption,
@@ -97,10 +98,15 @@ export class UpdateMeasurementRequestDto {
   @IsEnum(CervixPositionOption)
   cervixPosition?: CervixPositionOption | null;
 
-  @ApiProperty({ required: false, enum: CervixFeelingOption, nullable: true })
+  @ApiProperty({ required: false, enum: CervixOpennessOption, nullable: true })
   @IsOptional()
-  @IsEnum(CervixFeelingOption)
-  cervixFeeling?: CervixFeelingOption | null;
+  @IsEnum(CervixOpennessOption)
+  cervixOpenness?: CervixOpennessOption | null;
+
+  @ApiProperty({ required: false, enum: CervixFirmnessOption, nullable: true })
+  @IsOptional()
+  @IsEnum(CervixFirmnessOption)
+  cervixFirmness?: CervixFirmnessOption | null;
 
   @ApiProperty({ required: false, enum: IntercourseOption, nullable: true })
   @IsOptional()

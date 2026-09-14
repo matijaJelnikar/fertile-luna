@@ -36,7 +36,8 @@ import {
 import { MatInput } from '@angular/material/input';
 import {
   BleedingOption,
-  CervixFeelingOption,
+  CervixFirmnessOption,
+  CervixOpennessOption,
   CervixPositionOption,
   IntercourseOption,
   Measurement,
@@ -61,7 +62,8 @@ export interface AddMeasurementFormModel {
   mucusFeeling: FormControl<MucusFeelingOption | null>;
   mucusAppearance: FormControl<MucusAppearanceOption | null>;
   cervixPosition: FormControl<CervixPositionOption | null>;
-  cervixFeeling: FormControl<CervixFeelingOption | null>;
+  cervixOpenness: FormControl<CervixOpennessOption | null>;
+  cervixFirmness: FormControl<CervixFirmnessOption | null>;
   intercourse: FormControl<IntercourseOption | null>;
   notes: FormControl<string | null>;
 }
@@ -100,7 +102,8 @@ export class AddMeasurementComponent implements OnInit, AfterViewInit {
   mucusFeelingOptions = Object.values(MucusFeelingOption);
   mucusAppearanceOptions = Object.values(MucusAppearanceOption);
   cervixPositionOptions = Object.values(CervixPositionOption);
-  cervixFeelingOptions = Object.values(CervixFeelingOption);
+  cervixOpennessOptions = Object.values(CervixOpennessOption);
+  cervixFirmnessOptions = Object.values(CervixFirmnessOption);
   intercourseOptions = Object.values(IntercourseOption);
 
   temperatureForm = new FormGroup<AddMeasurementFormModel>({
@@ -115,7 +118,8 @@ export class AddMeasurementComponent implements OnInit, AfterViewInit {
     mucusFeeling: new FormControl(null),
     mucusAppearance: new FormControl(null),
     cervixPosition: new FormControl(null),
-    cervixFeeling: new FormControl(null),
+    cervixOpenness: new FormControl(null),
+    cervixFirmness: new FormControl(null),
     intercourse: new FormControl(null),
     notes: new FormControl(null),
   });
@@ -158,7 +162,8 @@ export class AddMeasurementComponent implements OnInit, AfterViewInit {
       mucusFeeling: values.mucusFeeling || undefined,
       mucusAppearance: values.mucusAppearance || undefined,
       cervixPosition: values.cervixPosition || undefined,
-      cervixFeeling: values.cervixFeeling || undefined,
+      cervixOpenness: values.cervixOpenness || undefined,
+      cervixFirmness: values.cervixFirmness || undefined,
       intercourse: values.intercourse || undefined,
       notes: values.notes || undefined,
     };
@@ -176,7 +181,8 @@ export class AddMeasurementComponent implements OnInit, AfterViewInit {
       mucusFeeling: values.mucusFeeling || null,
       mucusAppearance: values.mucusAppearance || null,
       cervixPosition: values.cervixPosition || null,
-      cervixFeeling: values.cervixFeeling || null,
+      cervixOpenness: values.cervixOpenness,
+      cervixFirmness: values.cervixFirmness || null,
       intercourse: values.intercourse || null,
       notes: values.notes || null,
     };

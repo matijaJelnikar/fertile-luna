@@ -178,6 +178,36 @@ describe('A daily entry round-trips', () => {
     );
   });
 
+  it('round-trips cervix openness and firmness as separate observations', async () => {
+    const created = await authed(app, user)
+      .post(`/api/measurement/add/${cycleUuid}`)
+      .send({
+        date: '2026-04-12',
+        cervixPosition: 'Low',
+        cervixOpenness: 'Closed',
+        cervixFirmness: 'Soft',
+      })
+      .expect(201);
+
+    const read = await authed(app, user)
+      .get(`/api/measurement/${created.body.uuid}`)
+      .expect(200);
+
+    // Closed does not imply firm: `R-CERVIX-01` needs both, so both are stored.
+    expect(read.body).toMatchObject({
+      cervixPosition: 'Low',
+      cervixOpenness: 'Closed',
+      cervixFirmness: 'Soft',
+    });
+  });
+
+  it('rejects a cervix firmness outside the vocabulary', async () => {
+    await authed(app, user)
+      .post(`/api/measurement/add/${cycleUuid}`)
+      .send({ date: '2026-04-13', cervixFirmness: 'Squishy' })
+      .expect(400);
+  });
+
   it('refuses to mark a day without a temperature as disturbed', async () => {
     await authed(app, user)
       .post(`/api/measurement/add/${cycleUuid}`)
