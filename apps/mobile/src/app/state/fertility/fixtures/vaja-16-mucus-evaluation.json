@@ -1,0 +1,43 @@
+{
+  "anchor": "R-MUCUS-02",
+  "alsoExercises": ["R-MUCUS-03", "R-MUCUS-01"],
+  "title": "Vaja 16 — the peak and the count of three, as the workbook marks them",
+  "source": {
+    "reference": "openspec/reference/sensiplan-rules.md#r-mucus-02--peak-day-vrhunec-sluzi",
+    "figure": "Vaja 16, docs/brainstorming/app-rewrite/sensiplan.pdf p03 (book p. 85)"
+  },
+  "provenance": {
+    "fromTheBook": [
+      "the mucus symbol for each of cycle days 5..18",
+      "the V marking the peak on day 15",
+      "the marks 1, 2, 3 on days 16, 17, 18"
+    ],
+    "oursByConstruction": [],
+    "howVerified": "The 'Sluz (v kraticah)' row was aligned against the 'Dan cikla' row at two magnifications, correcting for the page skew. Both alignments put V over the last of five consecutive S+ days and 1, 2, 3 over the three vl days that follow.",
+    "notTranscribed": "The temperature row, the Obcutek/Videz rows, the Motnje entries and the 'plodni dnevi' row are all filled in on the page but are not transcribed here: the sheet is photographed at an angle across a curve in the page and their columns were not verified to the standard above. See sensiplan-rule-capture task 2.3."
+  },
+  "days": [
+    { "day": 5, "mucus": "O" },
+    { "day": 6, "mucus": "O" },
+    { "day": 7, "mucus": "vl" },
+    { "day": 8, "mucus": "vl" },
+    { "day": 9, "mucus": "S" },
+    { "day": 10, "mucus": "S" },
+    { "day": 11, "mucus": "S+" },
+    { "day": 12, "mucus": "S+" },
+    { "day": 13, "mucus": "S+" },
+    { "day": 14, "mucus": "S+" },
+    { "day": 15, "mucus": "S+" },
+    { "day": 16, "mucus": "vl" },
+    { "day": 17, "mucus": "vl" },
+    { "day": 18, "mucus": "vl" }
+  ],
+  "expected": {
+    "peakDay": 15,
+    "postPeakCount": { "1": 16, "2": 17, "3": 18 },
+    "mucusEvaluationCompletesOnDay": 18,
+    "notes": "The peak is the LAST day at the best quality reached, not the first: days 11-15 are all S+, and the V is on 15. It becomes identifiable only on day 16, when the quality drops to vl. The count of three runs over calendar days, not over days of any particular category.",
+    "temperatureEvaluation": null,
+    "fertilePhase": null
+  }
+}

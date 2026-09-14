@@ -16,6 +16,8 @@ export type MeasurementDto = {
   /** Kept at its measured value; the engine excludes it from evaluation (`#R-DIST-02`). */
   disturbed?: boolean;
   disturbanceReasons?: DisturbanceReason[];
+  /** Free text, for `DisturbanceReason.Other` — the book's row is free-form (`#R-DIST-01`). */
+  disturbanceNote?: string;
   bleeding?: BleedingOption;
   pain?: PainOption;
   mucusFeeling?: MucusFeelingOption;

@@ -1,4 +1,5 @@
 import { INestApplication } from '@nestjs/common';
+import { DisturbanceReason } from '@basal-temp-log-workspace/model';
 import {
   TestUser,
   authed,
@@ -91,8 +92,10 @@ describe('A daily entry round-trips', () => {
         date: '2026-04-07',
         temperature: 37.1,
         disturbed: true,
-        // Free text until `R-DIST-01` is captured and this becomes a union.
-        disturbanceReasons: ['illness', 'poor sleep'],
+        disturbanceReasons: [
+          DisturbanceReason.Illness,
+          DisturbanceReason.PoorSleep,
+        ],
       })
       .expect(201);
 
@@ -103,7 +106,7 @@ describe('A daily entry round-trips', () => {
     expect(read.body).toMatchObject({
       date: '2026-04-07',
       disturbed: true,
-      disturbanceReasons: ['illness', 'poor sleep'],
+      disturbanceReasons: ['Illness', 'Poor sleep'],
       // The mark says how to read the value; it never replaces it.
       temperature: 37.1,
     });
@@ -116,7 +119,7 @@ describe('A daily entry round-trips', () => {
         date: '2026-04-08',
         temperature: 36.7,
         disturbed: true,
-        disturbanceReasons: ['alcohol'],
+        disturbanceReasons: [DisturbanceReason.Alcohol],
       })
       .expect(201);
 
@@ -134,6 +137,45 @@ describe('A daily entry round-trips', () => {
       disturbanceReasons: null,
       temperature: 36.7,
     });
+  });
+
+  it('carries Other beside its free text, which is what keeps the book`s row reachable', async () => {
+    const created = await authed(app, user)
+      .post(`/api/measurement/add/${cycleUuid}`)
+      .send({
+        date: '2026-04-10',
+        temperature: 36.9,
+        disturbed: true,
+        disturbanceReasons: [DisturbanceReason.Other],
+        // The workbook's own exercise records "karneval"; no enumeration would hold it.
+        disturbanceNote: 'karneval',
+      })
+      .expect(201);
+
+    const read = await authed(app, user)
+      .get(`/api/measurement/${created.body.uuid}`)
+      .expect(200);
+
+    expect(read.body).toMatchObject({
+      disturbanceReasons: ['Other'],
+      disturbanceNote: 'karneval',
+    });
+  });
+
+  it('rejects a reason outside the vocabulary', async () => {
+    await authed(app, user)
+      .post(`/api/measurement/add/${cycleUuid}`)
+      .send({
+        date: '2026-04-11',
+        temperature: 36.5,
+        disturbed: true,
+        disturbanceReasons: ['hangover'],
+      })
+      .expect(400);
+
+    expect((await entriesForCycle()).map((entry) => entry.date)).not.toContain(
+      '2026-04-11'
+    );
   });
 
   it('refuses to mark a day without a temperature as disturbed', async () => {

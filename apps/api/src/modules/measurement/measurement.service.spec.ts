@@ -1,7 +1,10 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { MucusFeelingOption } from '@basal-temp-log-workspace/model';
+import {
+  DisturbanceReason,
+  MucusFeelingOption,
+} from '@basal-temp-log-workspace/model';
 import { UUID } from 'crypto';
 import { Measurement } from '../../entities/measurement.entity';
 import { CycleService } from '../cycle/cycle.service';
@@ -128,7 +131,7 @@ describe('MeasurementService', () => {
           date: new Date('2026-08-02'),
           temperature: 36.42,
           disturbed: true,
-          disturbanceReasons: ['late measurement'],
+          disturbanceReasons: [DisturbanceReason.LateMeasurement],
         },
         CYCLE_UUID,
         USER

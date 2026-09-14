@@ -2,6 +2,7 @@ import {
   BleedingOption,
   CervixFeelingOption,
   CervixPositionOption,
+  DisturbanceReason,
   IntercourseOption,
   MucusAppearanceOption,
   MucusFeelingOption,
@@ -18,6 +19,7 @@ import {
   IsOptional,
   IsString,
   Max,
+  MaxLength,
   Min,
 } from 'class-validator';
 
@@ -53,11 +55,22 @@ export class UpdateMeasurementRequestDto {
   @IsBoolean()
   disturbed?: boolean | null;
 
-  @ApiProperty({ required: false, type: [String], nullable: true })
+  @ApiProperty({
+    required: false,
+    enum: DisturbanceReason,
+    isArray: true,
+    nullable: true,
+  })
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  disturbanceReasons?: string[] | null;
+  @IsEnum(DisturbanceReason, { each: true })
+  disturbanceReasons?: DisturbanceReason[] | null;
+
+  @ApiProperty({ required: false, maxLength: 200, nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  disturbanceNote?: string | null;
 
   @ApiProperty({ required: false, enum: BleedingOption, nullable: true })
   @IsOptional()

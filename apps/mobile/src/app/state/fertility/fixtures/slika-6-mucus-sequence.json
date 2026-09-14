@@ -1,0 +1,29 @@
+{
+  "anchor": "R-MUCUS-01",
+  "title": "Slika 6 — the five-symbol mucus scale in sequence",
+  "source": {
+    "reference": "openspec/reference/sensiplan-rules.md#r-mucus-01--mucus-classification",
+    "figure": "Slika 6, docs/brainstorming/app-rewrite/sensiplan.pdf p04"
+  },
+  "provenance": {
+    "fromTheBook": ["the ten symbols, in order"],
+    "oursByConstruction": ["day numbers: the figure is a fragment and prints none"],
+    "notTranscribed": "The figure carries no V. Its caption is 'Vrhunec sluzi', so the peak is what it illustrates, but the page does not mark which day it falls on."
+  },
+  "days": [
+    { "day": 1, "mucus": "su" },
+    { "day": 2, "mucus": "su" },
+    { "day": 3, "mucus": "vl" },
+    { "day": 4, "mucus": "S" },
+    { "day": 5, "mucus": "S" },
+    { "day": 6, "mucus": "S+" },
+    { "day": 7, "mucus": "S+" },
+    { "day": 8, "mucus": "S+" },
+    { "day": 9, "mucus": "vl" },
+    { "day": 10, "mucus": "O" }
+  ],
+  "expected": {
+    "peakDay": null,
+    "notes": "Deliberately left null. R-MUCUS-02 would put the peak on day 8, the last S+, but the book does not mark it here and filling in our own answer would cost this fixture the one property that makes it worth having. Use vaja-16-mucus-evaluation.json for a book-stated peak."
+  }
+}

@@ -20,6 +20,7 @@ import {
   IsOptional,
   IsString,
   Max,
+  MaxLength,
   Min,
 } from 'class-validator';
 
@@ -49,11 +50,17 @@ export class CreateMeasurementRequestDto implements MeasurementDto {
   @IsBoolean()
   disturbed?: boolean;
 
-  @ApiProperty({ required: false, type: [String] })
+  @ApiProperty({ required: false, enum: DisturbanceReason, isArray: true })
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
+  @IsEnum(DisturbanceReason, { each: true })
   disturbanceReasons?: DisturbanceReason[];
+
+  @ApiProperty({ required: false, maxLength: 200 })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  disturbanceNote?: string;
 
   @ApiProperty({ required: false, enum: BleedingOption })
   @IsOptional()

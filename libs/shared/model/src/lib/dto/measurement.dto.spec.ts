@@ -1,4 +1,5 @@
 import { MucusFeelingOption } from '../constants/add-measurement.constants';
+import { DisturbanceReason } from '../model/disturbance';
 import { hasObservation, MeasurementDto } from './measurement.dto';
 
 describe('measurement entry', () => {
@@ -33,10 +34,24 @@ describe('measurement entry', () => {
       date: new Date('2026-09-07'),
       temperature: 36.42,
       disturbed: true,
-      disturbanceReasons: ['late measurement'],
+      disturbanceReasons: [DisturbanceReason.LateMeasurement],
     };
 
     expect(entry.temperature).toBe(36.42);
     expect(hasObservation(entry)).toBe(true);
+  });
+
+  it('carries several reasons for one day, and free text beside Other', () => {
+    const entry: MeasurementDto = {
+      date: new Date('2026-09-07'),
+      temperature: 36.8,
+      disturbed: true,
+      disturbanceReasons: [DisturbanceReason.PoorSleep, DisturbanceReason.Other],
+      // The book's own worked exercise records "karneval"; no enumeration would hold it.
+      disturbanceNote: 'karneval',
+    };
+
+    expect(entry.disturbanceReasons).toHaveLength(2);
+    expect(entry.disturbanceNote).toBe('karneval');
   });
 });

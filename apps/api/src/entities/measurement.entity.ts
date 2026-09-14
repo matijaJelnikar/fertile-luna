@@ -40,8 +40,12 @@ export class Measurement {
   @Column({ type: 'boolean', default: false })
   disturbed: boolean;
 
-  @Column({ type: 'text', array: true, nullable: true })
+  @Column({ type: 'enum', enum: DisturbanceReason, array: true, nullable: true })
   disturbanceReasons?: DisturbanceReason[];
+
+  /** Free text for `DisturbanceReason.Other`; the method's own row is free-form (`#R-DIST-01`). */
+  @Column({ type: 'text', nullable: true })
+  disturbanceNote?: string;
 
   @Column({ type: 'enum', enum: BleedingOption, nullable: true })
   bleeding?: BleedingOption;

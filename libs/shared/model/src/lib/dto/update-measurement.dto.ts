@@ -20,6 +20,7 @@ export type UpdateMeasurementDto = Partial<Pick<MeasurementDto, 'date'>> & {
   temperature?: number | null;
   disturbed?: boolean | null;
   disturbanceReasons?: DisturbanceReason[] | null;
+  disturbanceNote?: string | null;
   bleeding?: BleedingOption | null;
   pain?: PainOption | null;
   mucusFeeling?: MucusFeelingOption | null;
