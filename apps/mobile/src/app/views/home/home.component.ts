@@ -16,6 +16,7 @@ import {
   MeasurementDialogData,
 } from '../../components/add-measurement/add-measurement.component';
 import { NewCycleComponent } from '../../components/new-cycle/new-cycle.component';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MaterialModule } from '../../material.module';
 import { toCycleDay } from '../../state/measurements/cycle-day';
 import { CycleService } from '../../state/measurements/cycle.service';
@@ -30,6 +31,7 @@ import { UserService } from '../../state/user/user.service';
     FabComponent,
     TemperaturesChartComponent,
     MaterialModule,
+    TranslateModule,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
@@ -41,10 +43,13 @@ export class HomeComponent {
   fertilityService = inject(FertilityService);
   userService = inject(UserService);
 
-  // Greeting
+  private translate = inject(TranslateService);
+
   greeting = computed(() => {
     const name = this.userService.username();
-    return name ? `Hey, ${name}` : 'Hey there';
+    return name
+      ? this.translate.instant('home.greeting.named', { name })
+      : this.translate.instant('home.greeting');
   });
 
   // Computed signals from home service
@@ -80,9 +85,27 @@ export class HomeComponent {
     );
   });
 
-  fertilityAssessment = computed(() =>
-    this.fertilityService.calculateFertility(this.homeService.measurements())
+  evaluation = computed(() =>
+    this.fertilityService.evaluate(this.homeService.measurements())
   );
+
+  /**
+   * What the method can say about this cycle right now. A description of method state, never a
+   * risk and never advice (`#R-COMBI-01`, `#R-COMBI-02`).
+   */
+  phaseStateKey = computed(() => {
+    const { postOvulatory, temperature, mucus } = this.evaluation();
+    if (postOvulatory.status === 'satisfied') return 'home.phase.infertile.confirmed';
+    if (temperature.status === 'satisfied') return 'home.phase.awaiting.mucus';
+    if (mucus.status === 'satisfied') return 'home.phase.awaiting.temperature';
+    return 'home.phase.awaiting.both';
+  });
+
+  /** The day the post-ovulatory infertile phase begins, once both signs are in. */
+  infertileFromDay = computed(() => {
+    const { postOvulatory } = this.evaluation();
+    return postOvulatory.status === 'satisfied' ? postOvulatory.result.infertileFromDay : null;
+  });
 
   isLatestCycle = computed(() => {
     const cycles = this.cycleService.cycles();
@@ -93,9 +116,11 @@ export class HomeComponent {
 
   // The shift is the evaluation's output, never a stored field.
   tempShift = computed(() => {
-    const range = this.fertilityAssessment().helperLineRange;
-    if (!range) return null;
-    return this.charted()[range[1]] ?? null;
+    const { temperature } = this.evaluation();
+    if (temperature.status !== 'satisfied') return null;
+    const { completedOnDay, helperLineTemperature } = temperature.result;
+    const day = this.charted().find((entry) => entry.day === completedOnDay) ?? null;
+    return day ? { ...day, helperLineTemperature } : null;
   });
 
   constructor(private dialog: MatDialog, public homeService: HomeService) {}

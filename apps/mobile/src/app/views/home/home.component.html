@@ -8,16 +8,18 @@
       [temperatureData]="temperatureData()"
       [timestampData]="timestampData()"
       [measurements]="homeService.placedMeasurements()"
-      [fertilityAssessment]="fertilityAssessment()"
+      [evaluation]="evaluation()"
     ></lib-temperatures-chart>
   </div>
   <div class="cycle-navigation">
     <button mat-button (click)="previousCycle()">
-      <mat-icon>chevron_left</mat-icon> Previous
+      <mat-icon>chevron_left</mat-icon> {{ 'home.cycle.previous' | translate }}
     </button>
-    <span class="cycle-indicator">Cycle {{ currentCycleNumber() }}</span>
+    <span class="cycle-indicator">
+      {{ 'home.cycle' | translate }} {{ currentCycleNumber() }}
+    </span>
     <button mat-button (click)="nextCycle()">
-      Next <mat-icon>chevron_right</mat-icon>
+      {{ 'home.cycle.next' | translate }} <mat-icon>chevron_right</mat-icon>
     </button>
   </div>
 </section>
@@ -25,13 +27,13 @@
 <section class="cycle-details">
   <!-- Current Cycle Section -->
   <div class="section-group">
-    <h2 class="section-label">This Cycle</h2>
+    <h2 class="section-label">{{ 'home.section.this.cycle' | translate }}</h2>
     <div class="cycle-stats" role="list" aria-label="Current cycle statistics">
       @if (currentCycle()) {
       @if (dayOfCycle() !== null) {
       <div class="stat-chip" role="listitem">
         <span class="stat-value">{{ dayOfCycle() }}</span>
-        <span class="stat-label">Cycle day</span>
+        <span class="stat-label">{{ 'home.cycle.day' | translate }}</span>
       </div>
       }
       <div
@@ -40,7 +42,7 @@
         role="listitem"
       >
         <span class="stat-value">{{ currentCycle()!.bleedingLength }}</span>
-        <span class="stat-label">Bleeding days</span>
+        <span class="stat-label">{{ 'home.bleeding.days' | translate }}</span>
       </div>
       }
     </div>
@@ -54,15 +56,18 @@
       <mat-icon aria-hidden="true">thermostat</mat-icon>
       <div class="temp-shift-info">
         @if (tempShift(); as shift) {
-        <p class="temp-shift-label">Temp shift confirmed</p>
+        <p class="temp-shift-label">{{ 'home.temperature.evaluated' | translate }}</p>
         <p class="temp-shift-value">{{ shift.temperature }}°C</p>
-        <p class="temp-shift-day">Day {{ shift.day }}</p>
-        @if (fertilityAssessment().helperLineTemp !== null) {
-        <p class="temp-shift-baseline">
-          Baseline {{ fertilityAssessment().helperLineTemp }}°C
+        <p class="temp-shift-day">
+          {{ 'home.cycle.day' | translate }} {{ shift.day }}
         </p>
-        } } @else {
-        <p class="temp-shift-label">No temperature shift detected yet</p>
+        <p class="temp-shift-baseline">
+          {{ 'home.helper.line' | translate }} {{ shift.helperLineTemperature }}°C
+        </p>
+        } @else {
+        <p class="temp-shift-label">
+          {{ 'home.temperature.not.evaluated' | translate }}
+        </p>
         }
       </div>
     </div>
@@ -70,40 +75,27 @@
 
   <!-- Insights Section -->
   <div class="section-group section-group--secondary">
-    <h2 class="section-label">Insights</h2>
+    <h2 class="section-label">{{ 'home.section.insights' | translate }}</h2>
 
     <!-- Fertility assessment and avg cycle side by side -->
     <div class="assessment-row">
       <div
-        class="fertility-card"
-        [attr.aria-label]="
-          'Fertility risk assessment: ' +
-          fertilityAssessment().riskLevel +
-          ' risk'
-        "
+        class="phase-card"
+        [attr.aria-label]="'home.phase.label' | translate"
       >
         <mat-icon aria-hidden="true">spa</mat-icon>
         <div class="temp-shift-info">
-          <p class="temp-shift-label">Fertility assessment</p>
+          <p class="temp-shift-label">{{ 'home.phase.label' | translate }}</p>
+          <!-- Method state, never a risk: the method states a phase boundary, not a probability. -->
           <p
-            [class]="
-              'temp-shift-value ' +
-              (fertilityAssessment().riskLevel === 'low'
-                ? 'risk-low'
-                : 'risk-high')
-            "
+            class="temp-shift-value"
+            [class.phase-confirmed]="infertileFromDay() !== null"
           >
-            {{
-              fertilityAssessment().riskLevel === 'low'
-                ? 'Low Risk'
-                : 'High Risk'
-            }}
+            {{ phaseStateKey() | translate }}
           </p>
-          @if (!fertilityAssessment().isDoubleChecked &&
-          fertilityAssessment().usedFactors.length > 0) {
-          <p class="single-factor-warning" role="alert">
-            <mat-icon aria-hidden="true">warning</mat-icon>
-            Using {{ fertilityAssessment().usedFactors[0] }} only
+          @if (infertileFromDay(); as from) {
+          <p class="phase-detail">
+            {{ 'home.phase.infertile.from' | translate }} {{ from }}
           </p>
           }
         </div>
@@ -113,7 +105,7 @@
       @if (avgCycleLength() !== null) {
       <div class="stat-card">
         <span class="stat-value">{{ avgCycleLength() }}</span>
-        <span class="stat-label">Avg cycle length </span>
+        <span class="stat-label">{{ 'home.avg.cycle.length' | translate }}</span>
       </div>
       }
     </div>

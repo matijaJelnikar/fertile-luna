@@ -2,9 +2,10 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
+  CycleEvaluation,
   CycleWithDerived,
-  FertilityAssessment,
   MeasurementGraphData,
 } from '@basal-temp-log-workspace/model';
 import { of } from 'rxjs';
@@ -46,14 +47,13 @@ const MEASUREMENTS: MeasurementGraphData[] = [
   { uuid: 'm-2', date: new Date('2026-04-02'), temperature: 36.5, day: 2 },
 ];
 
-const NO_ASSESSMENT: FertilityAssessment = {
-  riskLevel: 'high',
-  isDoubleChecked: false,
-  usedFactors: [],
-  helperLineTemp: null,
-  helperLineRange: null,
-  infertilePhaseStartIndex: null,
-  annotations: {},
+const NOTHING_EVALUATED: CycleEvaluation = {
+  temperature: { status: 'unevaluable', missing: 'too-few-values' },
+  mucus: { status: 'unevaluable', missing: 'not-recorded' },
+  preOvulatory: { status: 'unevaluable', missing: 'no-evaluated-previous-cycle' },
+  postOvulatory: { status: 'unevaluable', missing: 'awaiting-second-sign' },
+  markers: [],
+  unplaceableEntries: 0,
 };
 
 describe('HomeComponent', () => {
@@ -73,7 +73,7 @@ describe('HomeComponent', () => {
     setCurrentCycle: jest.fn(),
     startNewCycle: jest.fn(() => of({})),
   };
-  const fertilityService = { calculateFertility: jest.fn(() => NO_ASSESSMENT) };
+  const fertilityService = { evaluate: jest.fn(() => NOTHING_EVALUATED) };
   const userService = { username: signal<string | null>('Ana') };
   const dialog = { open: jest.fn() };
 
@@ -82,7 +82,7 @@ describe('HomeComponent', () => {
     cycleService.currentCycleUuid.set('cycle-2');
 
     await TestBed.configureTestingModule({
-      imports: [HomeComponent, NoopAnimationsModule],
+      imports: [HomeComponent, NoopAnimationsModule, TranslateModule.forRoot()],
       providers: [
         { provide: CycleService, useValue: cycleService },
         { provide: FertilityService, useValue: fertilityService },
@@ -101,6 +101,11 @@ describe('HomeComponent', () => {
         },
       })
       .compileComponents();
+
+    TestBed.inject(TranslateService).setTranslation('en', {
+      home: { greeting: { named: 'Hey, {{name}}' } },
+    });
+    TestBed.inject(TranslateService).use('en');
 
     fixture = TestBed.createComponent(HomeComponent);
     component = fixture.componentInstance;
@@ -126,6 +131,16 @@ describe('HomeComponent', () => {
 
   it('reports no shift while the evaluation has found none', () => {
     expect(component.tempShift()).toBeNull();
+  });
+
+  it('describes method state, and never a risk', () => {
+    expect(component.phaseStateKey()).toBe('home.phase.awaiting.both');
+    expect(component.infertileFromDay()).toBeNull();
+
+    const rendered = fixture.nativeElement.textContent.toLowerCase();
+    for (const word of ['risk', 'safe', 'unsafe', 'danger']) {
+      expect(rendered).not.toContain(word);
+    }
   });
 
   it('steps back to the previous cycle', () => {

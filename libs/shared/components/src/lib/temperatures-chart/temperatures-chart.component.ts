@@ -1,21 +1,38 @@
 import { ChangeDetectionStrategy, Component, effect, input, OnInit } from '@angular/core';
 import { Chart, ChartConfiguration, ChartDataset, registerables } from 'chart.js';
 import {
-  FertilityAssessment,
+  CycleEvaluation,
+  DayMarkerKind,
   MeasurementGraphData,
 } from '@basal-temp-log-workspace/model';
 
 Chart.register(...registerables);
 
-const ANNOTATION_LABELS: Record<string, string> = {
-  'mucus-peak': 'Mucus Peak (V)',
-  'post-peak-1': 'Post-Peak Day 1',
-  'post-peak-2': 'Post-Peak Day 2',
-  'post-peak-3': 'Post-Peak Day 3',
-  'temp-shift-1': 'Temp Shift Day 1',
-  'temp-shift-2': 'Temp Shift Day 2',
-  'temp-shift-3': 'Temp Shift Day 3',
-  'temp-shift-4': 'Temp Shift Day 4',
+const MARKER_LABELS: Record<DayMarkerKind, string> = {
+  'mucus-peak': 'Mucus peak (V)',
+  'post-peak-1': 'Post-peak day 1',
+  'post-peak-2': 'Post-peak day 2',
+  'post-peak-3': 'Post-peak day 3',
+  'temperature-counted-1': 'Higher temperature 1',
+  'temperature-counted-2': 'Higher temperature 2',
+  'temperature-counted-3': 'Higher temperature 3',
+  'temperature-counted-4': 'Higher temperature 4',
+  'temperature-uncounted': 'Not counted',
+  disturbed: 'Disturbed — not taken into account',
+};
+
+/**
+ * Markers are addressed by **cycle day**, never by array position: a day without a temperature is
+ * charted as a gap, so position and day stop agreeing the moment one entry is missing.
+ */
+const markersByDay = (
+  evaluation: CycleEvaluation | null
+): ReadonlyMap<number, DayMarkerKind[]> => {
+  const byDay = new Map<number, DayMarkerKind[]>();
+  for (const marker of evaluation?.markers ?? []) {
+    byDay.set(marker.day, [...(byDay.get(marker.day) ?? []), marker.kind]);
+  }
+  return byDay;
 };
 
 @Component({
@@ -29,7 +46,7 @@ export class TemperaturesChartComponent implements OnInit {
   temperatureData = input<number[]>([]);
   timestampData = input<string[]>([]);
   measurements = input<MeasurementGraphData[]>([]);
-  fertilityAssessment = input<FertilityAssessment | null>(null);
+  evaluation = input<CycleEvaluation | null>(null);
 
   chart!: Chart;
 
@@ -40,7 +57,7 @@ export class TemperaturesChartComponent implements OnInit {
       const tempData = this.temperatureData();
       const timeData = this.timestampData();
       this.measurements();
-      const fertility = this.fertilityAssessment();
+      const fertility = this.evaluation();
 
       // Chart colors optimized for both light and dark modes
       const isDarkMode = document.body.classList.contains('dark');
@@ -59,7 +76,7 @@ export class TemperaturesChartComponent implements OnInit {
   }
 
   ngOnInit() {
-    const fertility = this.fertilityAssessment();
+    const fertility = this.evaluation();
     const tempData = this.temperatureData();
     const timeData = this.timestampData();
 
@@ -155,16 +172,15 @@ export class TemperaturesChartComponent implements OnInit {
                 const labels: string[] = [];
                 labels.push(`Temperature: ${measurement.temperature}°C`);
 
-                const fertility = this.fertilityAssessment();
-                if (fertility?.annotations[index]) {
-                  labels.push(`Marker: ${ANNOTATION_LABELS[fertility.annotations[index]]}`);
+                const fertility = this.evaluation();
+                for (const kind of markersByDay(fertility).get(measurement.day ?? -1) ?? []) {
+                  labels.push(MARKER_LABELS[kind]);
                 }
 
-                if (fertility?.helperLineTemp !== null && fertility?.helperLineRange) {
-                  const [start, end] = fertility.helperLineRange;
-                  if (index >= start && index <= end + 3) {
-                    labels.push(`Helper line: ${fertility.helperLineTemp}°C`);
-                  }
+                if (fertility?.temperature.status === 'satisfied') {
+                  labels.push(
+                    `Helper line: ${fertility.temperature.result.helperLineTemperature}°C`
+                  );
                 }
 
                 if (measurement.bleeding) {
@@ -223,62 +239,68 @@ export class TemperaturesChartComponent implements OnInit {
 
   private buildPointStyles(
     count: number,
-    fertility: FertilityAssessment | null
+    fertility: CycleEvaluation | null
   ): (string | HTMLCanvasElement | undefined)[] {
+    const byDay = markersByDay(fertility);
     return Array.from({ length: count }, (_, i) => {
-      if (!fertility) return 'circle';
-      const annotation = fertility.annotations[i];
-      switch (annotation) {
-        case 'mucus-peak': return this.createVMarker();
-        case 'post-peak-1':
-        case 'post-peak-2':
-        case 'post-peak-3': return 'rectRot';
-        case 'temp-shift-1':
-        case 'temp-shift-2':
-        case 'temp-shift-3':
-        case 'temp-shift-4': return 'triangle';
-        default: return 'circle';
-      }
+      const kinds = byDay.get(this.dayAt(i)) ?? [];
+      if (kinds.includes('mucus-peak')) return this.createVMarker();
+      if (kinds.some((k) => k.startsWith('post-peak'))) return 'rectRot';
+      if (kinds.some((k) => k.startsWith('temperature-counted'))) return 'triangle';
+      // A bracketed value is drawn, because the woman measured it — it is simply not counted.
+      if (kinds.includes('disturbed')) return 'crossRot';
+      return 'circle';
     });
   }
 
+  /**
+   * Phase colouring, by cycle day. These are the method's own phases, not a risk: a day is either
+   * inside an evaluated infertile phase or it is not.
+   */
   private buildPointColors(
     count: number,
-    fertility: FertilityAssessment | null,
-    primaryColor: string,
-    errorColor: string
+    fertility: CycleEvaluation | null,
+    infertileColor: string,
+    fertileColor: string
   ): string[] {
+    const postOvulatory =
+      fertility?.postOvulatory.status === 'satisfied'
+        ? fertility.postOvulatory.result.infertileFromDay
+        : null;
+    const preOvulatory =
+      fertility?.preOvulatory.status === 'satisfied'
+        ? fertility.preOvulatory.result.lastInfertileDay
+        : null;
+
     return Array.from({ length: count }, (_, i) => {
-      if (!fertility || fertility.infertilePhaseStartIndex === null) {
-        return errorColor; // red = fertile (no infertile phase confirmed yet)
-      }
-      if (i >= fertility.infertilePhaseStartIndex) {
-        return primaryColor; // green = infertile/safe
-      }
-      return errorColor; // red = fertile
+      const day = this.dayAt(i);
+      if (preOvulatory !== null && day <= preOvulatory) return infertileColor;
+      if (postOvulatory !== null && day >= postOvulatory) return infertileColor;
+      return fertileColor;
     });
   }
 
-  private buildPointRadii(
-    count: number,
-    fertility: FertilityAssessment | null
-  ): number[] {
-    return Array.from({ length: count }, (_, i) => {
-      if (!fertility) return 4;
-      return fertility.annotations[i] ? 7 : 4;
-    });
+  private buildPointRadii(count: number, fertility: CycleEvaluation | null): number[] {
+    const byDay = markersByDay(fertility);
+    return Array.from({ length: count }, (_, i) => (byDay.has(this.dayAt(i)) ? 7 : 4));
   }
 
+  /** The Hilfslinie, drawn across the six days it was taken from and the raised days that follow. */
   private buildHelperLineData(
     count: number,
-    fertility: FertilityAssessment | null
+    fertility: CycleEvaluation | null
   ): (number | null)[] {
-    if (!fertility?.helperLineTemp || !fertility.helperLineRange) {
-      return Array(count).fill(null);
-    }
-    const [start, end] = fertility.helperLineRange;
-    return Array.from({ length: count }, (_, i) =>
-      i >= start && i <= end + 3 ? fertility.helperLineTemp : null
-    );
+    if (fertility?.temperature.status !== 'satisfied') return Array(count).fill(null);
+
+    const { helperLineTemperature, helperLineDays, completedOnDay } = fertility.temperature.result;
+    const from = helperLineDays[0];
+    return Array.from({ length: count }, (_, i) => {
+      const day = this.dayAt(i);
+      return day >= from && day <= completedOnDay ? helperLineTemperature : null;
+    });
+  }
+
+  private dayAt(index: number): number {
+    return this.measurements()[index]?.day ?? -1;
   }
 }
