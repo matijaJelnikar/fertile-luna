@@ -12,6 +12,8 @@ import { TranslateModule } from '@ngx-translate/core';
 export interface ConfirmDialogData {
   titleKey: string;
   messageKey: string;
+  /** Interpolation for the message, so a confirmation can name what it is about to change. */
+  messageParams?: Record<string, unknown>;
   confirmKey?: string;
   cancelKey?: string;
 }
@@ -28,7 +30,9 @@ export interface ConfirmDialogData {
   ],
   template: `
     <h2 mat-dialog-title>{{ data.titleKey | translate }}</h2>
-    <mat-dialog-content>{{ data.messageKey | translate }}</mat-dialog-content>
+    <mat-dialog-content>
+      {{ data.messageKey | translate: data.messageParams }}
+    </mat-dialog-content>
     <mat-dialog-actions>
       <button mat-button (click)="dialogRef.close(false)">
         {{ (data.cancelKey ?? 'common.cancel') | translate }}

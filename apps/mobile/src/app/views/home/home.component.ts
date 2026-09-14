@@ -147,6 +147,10 @@ export class HomeComponent {
 
   startNewCycle(): void {
     const dialogRef = this.dialog.open(NewCycleComponent, {
+      data: {
+        openCycleNumber: this.currentCycle()?.cycleNumber ?? null,
+        openCycleStartDate: this.currentCycle()?.startDate ?? null,
+      },
       width: '90%',
       maxWidth: '95vw',
       height: 'auto',
@@ -170,6 +174,10 @@ export class HomeComponent {
     const data: MeasurementDialogData = {
       mode: 'create',
       measurement: { date: new Date() },
+      cycleStartDate: this.currentCycle()?.startDate ?? null,
+      // Given to the form so choosing a day that already has an entry opens it for editing
+      // instead of starting a second one.
+      existingEntries: this.homeService.measurements(),
     };
 
     const dialogRef = this.dialog.open(AddMeasurementComponent, {

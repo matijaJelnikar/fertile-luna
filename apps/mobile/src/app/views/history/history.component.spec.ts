@@ -7,6 +7,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { AddMeasurementComponent } from '../../components/add-measurement/add-measurement.component';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
+import { CycleService } from '../../state/measurements/cycle.service';
 import { HistoryComponent } from './history.component';
 import { HistoryService } from './history.service';
 
@@ -23,6 +24,7 @@ describe('HistoryComponent', () => {
     deleteMeasurement: jest.fn(() => of({})),
   };
   const dialog = { open: jest.fn() };
+  const cycleService = { currentCycle: signal({ startDate: new Date('2026-08-01') }) };
 
   const openDialogReturning = (result: unknown) =>
     dialog.open.mockReturnValue({ afterClosed: () => of(result) });
@@ -42,7 +44,10 @@ describe('HistoryComponent', () => {
         NoopAnimationsModule,
         TranslateModule.forRoot(),
       ],
-      providers: [{ provide: MatDialog, useValue: dialog }],
+      providers: [
+        { provide: MatDialog, useValue: dialog },
+        { provide: CycleService, useValue: cycleService },
+      ],
     })
       .overrideComponent(HistoryComponent, {
         set: { providers: [{ provide: HistoryService, useValue: historyService }] },
@@ -68,7 +73,12 @@ describe('HistoryComponent', () => {
     expect(dialog.open).toHaveBeenCalledWith(
       AddMeasurementComponent,
       expect.objectContaining({
-        data: { mode: 'edit', measurement: MEASUREMENTS[1] },
+        data: expect.objectContaining({
+          mode: 'edit',
+          measurement: MEASUREMENTS[1],
+          // The form needs the cycle start to place the day it is editing.
+          cycleStartDate: new Date('2026-08-01'),
+        }),
       })
     );
     expect(historyService.updateMeasurement).toHaveBeenCalledWith('m-2', {

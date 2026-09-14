@@ -1,15 +1,15 @@
-<h2 mat-dialog-title>Start New Cycle</h2>
+<h2 mat-dialog-title>{{ 'cycle.new.title' | translate }}</h2>
 <mat-dialog-content>
   <form [formGroup]="form" (ngSubmit)="save()">
     <mat-form-field>
-      <mat-label>Period Start Date</mat-label>
+      <mat-label>{{ 'cycle.start.date' | translate }}</mat-label>
       <input matInput [matDatepicker]="picker" formControlName="startDate" />
-      <mat-hint>MM/DD/YYYY</mat-hint>
+      <mat-hint>{{ 'cycle.start.date.hint' | translate }}</mat-hint>
       <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-datepicker touchUi #picker></mat-datepicker>
     </mat-form-field>
     <mat-form-field appearance="outline">
-      <mat-label>Bleeding Length (days)</mat-label>
+      <mat-label>{{ 'cycle.bleeding.length' | translate }}</mat-label>
       <input
         #bleedingInput
         matInput
@@ -19,11 +19,23 @@
         max="14"
         aria-describedby="bleeding-hint"
       />
-      <mat-hint id="bleeding-hint">1–14 days</mat-hint>
+      <mat-hint id="bleeding-hint">{{ 'cycle.bleeding.length.hint' | translate }}</mat-hint>
     </mat-form-field>
+
+    @if (closingCycle(); as closing) {
+    <p class="closing-note" role="status">
+      @if (closing.number !== null) {
+      {{ 'cycle.closing.numbered' | translate: { number: closing.number, date: closing.endsOn | date } }}
+      } @else {
+      {{ 'cycle.closing' | translate: { date: closing.endsOn | date } }}
+      }
+    </p>
+    }
   </form>
 </mat-dialog-content>
 <mat-dialog-actions>
-  <button mat-button (click)="close()">Cancel</button>
-  <button mat-button (click)="save()" [disabled]="form.invalid">Start Cycle</button>
+  <button mat-button (click)="close()">{{ 'common.cancel' | translate }}</button>
+  <button mat-button (click)="save()" [disabled]="form.invalid">
+    {{ 'cycle.new.confirm' | translate }}
+  </button>
 </mat-dialog-actions>

@@ -29,6 +29,7 @@ import {
   ConfirmDialogComponent,
   ConfirmDialogData,
 } from '../../components/confirm-dialog/confirm-dialog.component';
+import { CycleService } from '../../state/measurements/cycle.service';
 import { HistoryService } from './history.service';
 
 const MOBILE_DIALOG_CONFIG = {
@@ -66,12 +67,17 @@ const MOBILE_DIALOG_CONFIG = {
 })
 export class HistoryComponent {
   private dialog = inject(MatDialog);
+  private cycleService = inject(CycleService);
   historyService = inject(HistoryService);
 
   displayedColumns: string[] = ['temperature', 'timestamp', 'actions'];
 
   editMeasurement(measurement: MeasurementGraphData): void {
-    const data: MeasurementDialogData = { mode: 'edit', measurement };
+    const data: MeasurementDialogData = {
+      mode: 'edit',
+      measurement,
+      cycleStartDate: this.cycleService.currentCycle()?.startDate ?? null,
+    };
 
     this.dialog
       .open(AddMeasurementComponent, { ...MOBILE_DIALOG_CONFIG, data })
@@ -88,6 +94,11 @@ export class HistoryComponent {
     const data: ConfirmDialogData = {
       titleKey: 'measurement.delete.title',
       messageKey: 'measurement.delete.message',
+      // A confirmation that does not say which day it is about is not a confirmation.
+      messageParams: {
+        date: new Date(measurement.date).toLocaleDateString(),
+        day: measurement.day ?? '—',
+      },
       confirmKey: 'measurement.delete.confirm',
     };
 
