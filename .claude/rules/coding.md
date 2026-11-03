@@ -28,6 +28,7 @@ ngx-translate · Chart.js · PWA/service worker · Jest.
 - Arrow functions over anonymous functions
 - Comments explain WHY, not HOW
 - TODO/FIXME comments must include a reason: `// TODO: reason`
+- Don't put verbose comments to the code, the code should be self explanatory. When it's not you can add a short comment
 
 ### Typing
 - Type everything — avoid `any`, use `unknown` if the type is uncertain
