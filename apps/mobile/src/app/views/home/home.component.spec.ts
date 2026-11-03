@@ -10,7 +10,6 @@ import {
 } from '@basal-temp-log-workspace/model';
 import { of } from 'rxjs';
 
-import { NewCycleComponent } from '../../components/new-cycle/new-cycle.component';
 import { FertilityService } from '../../state/fertility/fertility.service';
 import { CycleService } from '../../state/measurements/cycle.service';
 import { UserService } from '../../state/user/user.service';
@@ -51,7 +50,7 @@ describe('HomeComponent', () => {
     measurements: signal(MEASUREMENTS),
     placedMeasurements: signal(MEASUREMENTS),
     currentCycle: signal<CycleWithDerived | null>(CYCLE),
-    addMeasurement: jest.fn(() => of({})),
+    record: jest.fn(() => of({})),
   };
   const cycleService = {
     cycles: signal([CYCLE, PREVIOUS]),
@@ -165,37 +164,20 @@ describe('HomeComponent', () => {
     expect(cycleService.setCurrentCycle).not.toHaveBeenCalled();
   });
 
-  it('starts a new cycle with what the dialog returned', () => {
-    dialog.open.mockReturnValue({
-      afterClosed: () => of({ startDate: new Date('2026-05-01'), bleedingLength: 4 }),
-    });
-
-    component.startNewCycle();
-
-    expect(dialog.open).toHaveBeenCalledWith(
-      NewCycleComponent,
-      expect.anything()
-    );
-    expect(cycleService.startNewCycle).toHaveBeenCalledWith({
-      startDate: new Date('2026-05-01'),
-      bleedingLength: 4,
-    });
-  });
-
-  it('starts nothing when the new-cycle dialog is dismissed', () => {
-    dialog.open.mockReturnValue({ afterClosed: () => of(undefined) });
-
-    component.startNewCycle();
-
-    expect(cycleService.startNewCycle).not.toHaveBeenCalled();
-  });
-
   it('records the day the add dialog returned', () => {
     const entry = { date: new Date('2026-04-03'), temperature: 36.7 };
     dialog.open.mockReturnValue({ afterClosed: () => of(entry) });
 
     component.addRecord();
 
-    expect(homeService.addMeasurement).toHaveBeenCalledWith(entry);
+    expect(homeService.record).toHaveBeenCalledWith(entry);
+  });
+
+  it('records nothing when the add dialog is dismissed', () => {
+    dialog.open.mockReturnValue({ afterClosed: () => of(undefined) });
+
+    component.addRecord();
+
+    expect(homeService.record).not.toHaveBeenCalled();
   });
 });

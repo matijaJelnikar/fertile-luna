@@ -76,4 +76,47 @@ describe('NewCycleComponent', () => {
 
     expect(dialogRef.close).toHaveBeenCalledWith();
   });
+
+  it('refuses a start on or before the open cycle`s first day, which would leave it no days', async () => {
+    await setup({ openCycleStartDate: new Date(2026, 7, 1) });
+
+    component.form.setValue({ startDate: new Date(2026, 7, 1), bleedingLength: 5 });
+    fixture.detectChanges();
+    component.save();
+
+    expect(component.startsTooEarly()).toBe(true);
+    expect(component.closingCycle()).toBeNull();
+    expect(dialogRef.close).not.toHaveBeenCalled();
+  });
+
+  describe('when offered because bleeding was recorded', () => {
+    const offered: NewCycleDialogData = {
+      openCycleNumber: 3,
+      openCycleStartDate: new Date(2026, 7, 1),
+      suggestedStartDate: new Date(2026, 7, 29),
+    };
+
+    it('starts from the day the bleeding was recorded', async () => {
+      await setup(offered);
+
+      expect(component.form.controls.startDate.value).toEqual(new Date(2026, 7, 29));
+      expect(fixture.nativeElement.querySelector('.offer-note')).toBeTruthy();
+    });
+
+    it('says why it is asking, and declining keeps the day where it was', async () => {
+      await setup(offered);
+
+      const [decline] = fixture.nativeElement.querySelectorAll('mat-dialog-actions button');
+      expect(decline.textContent.trim()).toBe('cycle.new.decline');
+
+      decline.click();
+      expect(dialogRef.close).toHaveBeenCalledWith();
+    });
+  });
+
+  it('asks nothing about bleeding when opened by hand', async () => {
+    await setup({ openCycleStartDate: new Date(2026, 7, 1) });
+
+    expect(fixture.nativeElement.querySelector('.offer-note')).toBeNull();
+  });
 });

@@ -11,7 +11,7 @@ import {
 } from '@basal-temp-log-workspace/model';
 import { filter, switchMap, tap } from 'rxjs/operators';
 import { MeasurementEndpoints } from '../../shared/constants/endpoints.constants';
-import { toCycleDay } from './cycle-day';
+import { toCalendarDay, toCycleDay } from './cycle-day';
 import { CycleService } from './cycle.service';
 
 @Injectable({ providedIn: 'root' })
@@ -73,7 +73,8 @@ export class MeasurementsService {
     return this.http
       .post<Measurement>(
         `${MeasurementEndpoints.ADD_MEASUREMENT}/${cycleId}`,
-        measurementData
+        // A calendar day, like the cycle start: a UTC timestamp can land on the previous day.
+        { ...measurementData, date: toCalendarDay(measurementData.date) }
       )
       .pipe(
         tap((newMeasurement) => {
@@ -95,7 +96,9 @@ export class MeasurementsService {
     return this.http
       .put<Measurement>(
         `${MeasurementEndpoints.UPDATE_MEASUREMENT}/${measurementId}`,
-        measurementData
+        measurementData.date
+          ? { ...measurementData, date: toCalendarDay(measurementData.date) }
+          : measurementData
       )
       .pipe(
         tap((updatedMeasurement) => {

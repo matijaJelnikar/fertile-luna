@@ -134,5 +134,27 @@ describe('CycleService', () => {
       expect(onError).toHaveBeenCalled();
       httpMock.expectNone(CycleEndpoints.ADD_CYCLE);
     });
+
+    it('refuses a start on the open cycle`s own first day, which would leave it no days', () => {
+      service.cycles.set([cycle('c1', '2026-01-13', 1)]);
+      const onError = jest.fn();
+
+      service
+        .startNewCycle({ startDate: new Date('2026-01-13'), bleedingLength: 4 })
+        .subscribe({ error: onError });
+
+      expect(onError).toHaveBeenCalled();
+      httpMock.expectNone(CycleEndpoints.ADD_CYCLE);
+    });
+
+    it('sends the start as the calendar day picked, not a UTC timestamp', () => {
+      service
+        .startNewCycle({ startDate: new Date(2026, 1, 10), bleedingLength: 4 })
+        .subscribe();
+
+      const request = httpMock.expectOne(CycleEndpoints.ADD_CYCLE);
+      expect(request.request.body.startDate).toBe('2026-02-10');
+      request.flush(cycle('c1', '2026-02-10', 1));
+    });
   });
 });

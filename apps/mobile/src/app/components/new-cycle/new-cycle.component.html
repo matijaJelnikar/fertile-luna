@@ -1,10 +1,18 @@
 <h2 mat-dialog-title>{{ 'cycle.new.title' | translate }}</h2>
 <mat-dialog-content>
+  @if (data.suggestedStartDate) {
+  <p class="offer-note">
+    {{ 'cycle.new.from.bleeding' | translate: { date: data.suggestedStartDate | date } }}
+  </p>
+  }
   <form [formGroup]="form" (ngSubmit)="save()">
     <mat-form-field>
       <mat-label>{{ 'cycle.start.date' | translate }}</mat-label>
       <input matInput [matDatepicker]="picker" formControlName="startDate" />
       <mat-hint>{{ 'cycle.start.date.hint' | translate }}</mat-hint>
+      @if (startsTooEarly()) {
+      <mat-error>{{ 'cycle.start.date.not.after.open' | translate }}</mat-error>
+      }
       <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-datepicker touchUi #picker></mat-datepicker>
     </mat-form-field>
@@ -34,7 +42,9 @@
   </form>
 </mat-dialog-content>
 <mat-dialog-actions>
-  <button mat-button (click)="close()">{{ 'common.cancel' | translate }}</button>
+  <button mat-button (click)="close()">
+    {{ (data.suggestedStartDate ? 'cycle.new.decline' : 'common.cancel') | translate }}
+  </button>
   <button mat-button (click)="save()" [disabled]="form.invalid">
     {{ 'cycle.new.confirm' | translate }}
   </button>

@@ -12,6 +12,20 @@ const CYCLE_UUID = 'cycle-1' as UUID;
 describe('CycleService', () => {
   let service: CycleService;
 
+  const queryBuilder = {
+    where: jest.fn(),
+    andWhere: jest.fn(),
+    orderBy: jest.fn(),
+    getOne: jest.fn(),
+    update: jest.fn(),
+    set: jest.fn(),
+    execute: jest.fn(),
+  };
+  const manager = {
+    create: jest.fn(),
+    save: jest.fn(),
+    createQueryBuilder: jest.fn(),
+  };
   const cycleRepository = {
     find: jest.fn(),
     findOne: jest.fn(),
@@ -19,11 +33,19 @@ describe('CycleService', () => {
     save: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
+    manager: { transaction: jest.fn() },
   };
   const userRepository = { findOne: jest.fn() };
 
   beforeEach(async () => {
     jest.resetAllMocks();
+    for (const step of ['where', 'andWhere', 'orderBy', 'update', 'set'] as const) {
+      queryBuilder[step].mockReturnValue(queryBuilder);
+    }
+    manager.createQueryBuilder.mockReturnValue(queryBuilder);
+    manager.create.mockImplementation((_entity, value) => ({ ...value }));
+    manager.save.mockImplementation(async (value) => ({ uuid: 'cycle-2', ...value }));
+    cycleRepository.manager.transaction.mockImplementation((run) => run(manager));
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -80,22 +102,18 @@ describe('CycleService', () => {
 
   describe('create', () => {
     const dto = { startDate: new Date('2026-01-01'), bleedingLength: 5 };
+    const user = { uuid: USER, password: 'hash' };
 
     it('attaches the authenticated user as the owner', async () => {
-      const user = { uuid: USER, password: 'hash' };
       userRepository.findOne.mockResolvedValue(user);
-      cycleRepository.create.mockImplementation((value) => ({ ...value }));
-      cycleRepository.save.mockImplementation(async (value) => value);
 
       await service.create(dto, USER);
 
-      expect(cycleRepository.create).toHaveBeenCalledWith({ ...dto, user });
+      expect(manager.create).toHaveBeenCalledWith(Cycle, { ...dto, user });
     });
 
     it('returns the cycle without the owner it was saved with', async () => {
-      userRepository.findOne.mockResolvedValue({ uuid: USER, password: 'hash' });
-      cycleRepository.create.mockImplementation((value) => ({ ...value }));
-      cycleRepository.save.mockImplementation(async (value) => value);
+      userRepository.findOne.mockResolvedValue(user);
 
       const created = await service.create(dto, USER);
 
@@ -109,7 +127,32 @@ describe('CycleService', () => {
       await expect(service.create(dto, USER)).rejects.toBeInstanceOf(
         BadRequestException
       );
-      expect(cycleRepository.save).not.toHaveBeenCalled();
+      expect(cycleRepository.manager.transaction).not.toHaveBeenCalled();
+    });
+
+    it('moves the days recorded from its start on out of the cycle open until then', async () => {
+      userRepository.findOne.mockResolvedValue(user);
+      queryBuilder.getOne.mockResolvedValue({ uuid: CYCLE_UUID });
+
+      await service.create(dto, USER);
+
+      // The previous cycle is looked up by owner, among cycles starting before the new one.
+      expect(queryBuilder.where).toHaveBeenCalledWith(expect.any(String), { userUuid: USER });
+      expect(queryBuilder.set).toHaveBeenCalledWith({ cycle: { uuid: 'cycle-2' } });
+      expect(queryBuilder.where).toHaveBeenLastCalledWith(expect.any(String), {
+        previous: CYCLE_UUID,
+        startDay: '2026-01-01',
+      });
+      expect(queryBuilder.execute).toHaveBeenCalled();
+    });
+
+    it('moves nothing when it is the first cycle', async () => {
+      userRepository.findOne.mockResolvedValue(user);
+      queryBuilder.getOne.mockResolvedValue(null);
+
+      await service.create(dto, USER);
+
+      expect(queryBuilder.update).not.toHaveBeenCalled();
     });
   });
 

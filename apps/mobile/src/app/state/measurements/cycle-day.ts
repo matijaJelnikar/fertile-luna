@@ -25,3 +25,17 @@ const atMidnight = (value: Date | string): Date => {
   date.setHours(0, 0, 0, 0);
   return date;
 };
+
+/**
+ * A calendar day as `YYYY-MM-DD`, for every date-only field sent to the API.
+ *
+ * A `Date` serializes in UTC, which moves a local midnight east of Greenwich onto the previous day —
+ * so a cycle picked to start on the 10th would be stored as starting on the 9th. Local date parts
+ * are the day the user chose. A string is already the day the API returned.
+ */
+export const toCalendarDay = (value: Date | string): string => {
+  if (typeof value === 'string') return value.slice(0, 10);
+  return [value.getFullYear(), value.getMonth() + 1, value.getDate()]
+    .map((part) => String(part).padStart(2, '0'))
+    .join('-');
+};

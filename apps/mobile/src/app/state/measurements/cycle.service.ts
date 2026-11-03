@@ -7,7 +7,7 @@ import {
 } from '@basal-temp-log-workspace/model';
 import { tap, throwError } from 'rxjs';
 import { CycleEndpoints } from '../../shared/constants/endpoints.constants';
-import { toCycleDay } from './cycle-day';
+import { toCalendarDay, toCycleDay } from './cycle-day';
 
 @Injectable({ providedIn: 'root' })
 export class CycleService {
@@ -76,9 +76,11 @@ export class CycleService {
    */
   startNewCycle(cycleData: Pick<CycleDto, 'startDate' | 'bleedingLength'>) {
     const open = this.openCycle();
-    if (open && toCycleDay(cycleData.startDate, open.startDate) === null) {
+    // On the open cycle's own first day or before it, the open cycle would be left with no days.
+    const day = open ? toCycleDay(cycleData.startDate, open.startDate) : null;
+    if (open && (day === null || day <= 1)) {
       return throwError(
-        () => new Error('A new cycle cannot start before the open one')
+        () => new Error('A new cycle must start after the open one began')
       );
     }
 
@@ -89,7 +91,8 @@ export class CycleService {
   }
 
   addCycle(cycleData: CycleDto) {
-    return this.http.post<Cycle>(CycleEndpoints.ADD_CYCLE, cycleData).pipe(
+    const body = { ...cycleData, startDate: toCalendarDay(cycleData.startDate) };
+    return this.http.post<Cycle>(CycleEndpoints.ADD_CYCLE, body).pipe(
       tap((newCycle) => {
         this.cycles.update((cycles) => [newCycle, ...cycles]);
         this.currentCycleUuid.set(newCycle.uuid);

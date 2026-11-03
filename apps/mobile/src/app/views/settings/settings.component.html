@@ -11,4 +11,9 @@
     </mat-slide-toggle>
     <mat-icon aria-hidden="true">dark_mode</mat-icon>
   </div>
+
+  <button mat-stroked-button type="button" (click)="startNewCycle()">
+    <mat-icon aria-hidden="true">add_circle_outline</mat-icon>
+    {{ 'settings.cycle.start' | translate }}
+  </button>
 </div>

@@ -10,12 +10,12 @@ import {
   FabComponent,
   TemperaturesChartComponent,
 } from '@basal-temp-log-workspace/components';
-import { CycleDto } from '@basal-temp-log-workspace/model';
+import { MeasurementDto } from '@basal-temp-log-workspace/model';
+import { filter, switchMap } from 'rxjs';
 import {
   AddMeasurementComponent,
   MeasurementDialogData,
 } from '../../components/add-measurement/add-measurement.component';
-import { NewCycleComponent } from '../../components/new-cycle/new-cycle.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MaterialModule } from '../../material.module';
 import { toCycleDay } from '../../state/measurements/cycle-day';
@@ -145,31 +145,6 @@ export class HomeComponent {
     }
   }
 
-  startNewCycle(): void {
-    const dialogRef = this.dialog.open(NewCycleComponent, {
-      data: {
-        openCycleNumber: this.currentCycle()?.cycleNumber ?? null,
-        openCycleStartDate: this.currentCycle()?.startDate ?? null,
-      },
-      width: '90%',
-      maxWidth: '95vw',
-      height: 'auto',
-      maxHeight: '95vh',
-      panelClass: 'mobile-dialog',
-      autoFocus: false,
-    });
-
-    dialogRef
-      .afterClosed()
-      .subscribe(
-        (result: Pick<CycleDto, 'startDate' | 'bleedingLength'> | undefined) => {
-          if (!result) return;
-          // Starting the new cycle closes the previous one; nothing is written to it.
-          this.cycleService.startNewCycle(result).subscribe();
-        }
-      );
-  }
-
   addRecord(): void {
     const data: MeasurementDialogData = {
       mode: 'create',
@@ -190,20 +165,16 @@ export class HomeComponent {
       data: data,
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        const addMeasurement$ = this.homeService.addMeasurement(result);
-        if (addMeasurement$) {
-          addMeasurement$.subscribe({
-            next: () => {
-              console.log('Measurement added successfully');
-            },
-            error: (err) => {
-              console.error('Error adding measurement:', err);
-            },
-          });
-        }
-      }
-    });
+    dialogRef
+      .afterClosed()
+      .pipe(
+        filter((result): result is MeasurementDto => !!result),
+        // May offer to start a new cycle on the day, when it records menstrual bleeding.
+        switchMap((result) => this.homeService.record(result))
+      )
+      .subscribe({
+        // The error only — never the entry, which is health data.
+        error: (err: unknown) => console.error('Error adding measurement:', err),
+      });
   }
 }

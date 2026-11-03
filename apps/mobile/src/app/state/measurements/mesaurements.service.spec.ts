@@ -110,6 +110,22 @@ describe('MeasurementsService', () => {
     request.flush(measurement('a', '2026-08-01', 36.4));
   });
 
+  it('sends the day as the calendar day picked, not a UTC timestamp', () => {
+    loadCycle([]);
+
+    service
+      .addMeasurement(CYCLE.uuid, { date: new Date(2026, 7, 2), temperature: 36.5 }, CYCLE.startDate)
+      .subscribe();
+    const created = httpMock.expectOne(`/api/measurement/add/${CYCLE.uuid}`);
+    expect(created.request.body).toEqual({ date: '2026-08-02', temperature: 36.5 });
+    created.flush(measurement('a', '2026-08-02', 36.5));
+
+    service.updateMeasurement('a', { date: new Date(2026, 7, 3) }).subscribe();
+    const updated = httpMock.expectOne('/api/measurement/a');
+    expect(updated.request.body).toEqual({ date: '2026-08-03' });
+    updated.flush(measurement('a', '2026-08-03', 36.5));
+  });
+
   it('removes the deleted measurement from state', () => {
     loadCycle([
       measurement('a', '2026-08-01', 36.4),

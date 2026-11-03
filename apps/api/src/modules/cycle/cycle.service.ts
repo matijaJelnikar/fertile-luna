@@ -6,7 +6,9 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { UUID } from 'crypto';
 import { Repository, UpdateResult } from 'typeorm';
+import { DateUtils } from 'typeorm/util/DateUtils';
 import { Cycle } from '../../entities/cycle.entity';
+import { Measurement } from '../../entities/measurement.entity';
 import { User } from '../../entities/user.entity';
 import { CreateCycleRequestDto } from './dto/create-cycle.dto';
 import { UpdateCycleRequestDto } from './dto/update-cycle.dto';
@@ -43,6 +45,11 @@ export class CycleService {
     return cycle;
   }
 
+  /**
+   * Creates a cycle and, in the same transaction, moves the days already recorded from its start on
+   * out of the cycle that was open until then. A cycle ends the day before the next one begins
+   * (`R-CYCLE-01`), so leaving them behind would file a day in a cycle that no longer contains it.
+   */
   async create(
     createCycleDto: CreateCycleRequestDto,
     userUuid: UUID
@@ -55,16 +62,40 @@ export class CycleService {
       throw new BadRequestException('User not found');
     }
 
-    const cycle = this.cycleRepository.create({
-      ...createCycleDto,
-      user,
+    // The calendar day exactly as the `date` column will store it. A `Date` parameter is a
+    // timestamp, and compared with a `date` column it would shift by the database's timezone.
+    const startDay = DateUtils.mixedDateToDateString(createCycleDto.startDate);
+
+    return this.cycleRepository.manager.transaction(async (manager) => {
+      const previous = await manager
+        .createQueryBuilder(Cycle, 'cycle')
+        .where('"cycle"."userUuid" = :userUuid', { userUuid })
+        .andWhere('"cycle"."startDate" < :startDay', { startDay })
+        .orderBy('"cycle"."startDate"', 'DESC')
+        .getOne();
+
+      const saved = await manager.save(
+        manager.create(Cycle, { ...createCycleDto, user })
+      );
+
+      if (previous) {
+        // The new cycle has no entries yet, so the (cycle, date) uniqueness cannot collide.
+        await manager
+          .createQueryBuilder()
+          .update(Measurement)
+          .set({ cycle: { uuid: saved.uuid } })
+          .where('"cycleUuid" = :previous AND "date" >= :startDay', {
+            previous: previous.uuid,
+            startDay,
+          })
+          .execute();
+      }
+
+      // The owner was attached only to set the foreign key; their row carries the password hash.
+      delete saved.user;
+
+      return saved;
     });
-
-    const saved = await this.cycleRepository.save(cycle);
-    // The owner was attached only to set the foreign key; their row carries the password hash.
-    delete saved.user;
-
-    return saved;
   }
 
   async update(
