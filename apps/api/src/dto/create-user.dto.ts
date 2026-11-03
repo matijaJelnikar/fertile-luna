@@ -49,6 +49,18 @@ export class CreateUserDto {
   @IsOptional()
   birthDate?: Date;
 
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    type: String,
+    format: 'date',
+    description: 'When hormonal contraception was stopped; null clears it',
+  })
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  contraceptionStoppedOn?: Date | null;
+
   @ApiProperty({ required: false, example: 62 })
   @IsInt()
   @IsOptional()

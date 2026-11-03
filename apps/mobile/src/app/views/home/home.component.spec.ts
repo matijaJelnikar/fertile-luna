@@ -24,7 +24,13 @@ const CYCLE = {
   length: null,
 } as CycleWithDerived;
 
-const PREVIOUS = { ...CYCLE, uuid: 'cycle-1', cycleNumber: 1, length: 28 };
+const PREVIOUS = {
+  ...CYCLE,
+  uuid: 'cycle-1',
+  cycleNumber: 1,
+  startDate: new Date('2026-03-04'),
+  length: 28,
+};
 
 const MEASUREMENTS: MeasurementGraphData[] = [
   { uuid: 'm-1', date: new Date('2026-04-01'), temperature: 36.4, day: 1 },
@@ -60,13 +66,17 @@ describe('HomeComponent', () => {
     startNewCycle: jest.fn(() => of({})),
   };
   const fertilityService = { evaluate: jest.fn(() => NOTHING_EVALUATED) };
-  const userService = { username: signal<string | null>('Ana') };
+  const userService = {
+    username: signal<string | null>('Ana'),
+    contraceptionStoppedOn: signal<string | null>(null),
+  };
   const dialog = { open: jest.fn() };
 
   beforeEach(async () => {
     jest.clearAllMocks();
     fertilityService.evaluate.mockReturnValue(NOTHING_EVALUATED);
     cycleService.currentCycleUuid.set('cycle-2');
+    userService.contraceptionStoppedOn.set(null);
 
     await TestBed.configureTestingModule({
       imports: [HomeComponent, NoopAnimationsModule, TranslateModule.forRoot()],
@@ -110,7 +120,17 @@ describe('HomeComponent', () => {
   it('hands the sheet the entries and the evaluation, and derives nothing itself', () => {
     const sheet = fixture.nativeElement.querySelector('lib-temperatures-chart');
     expect(sheet).toBeTruthy();
-    expect(fertilityService.evaluate).toHaveBeenCalledWith(MEASUREMENTS);
+    expect(fertilityService.evaluate).toHaveBeenCalledWith(MEASUREMENTS, [], {});
+  });
+
+  it('evaluates the first cycle after stopping hormonal contraception under its own rule', () => {
+    // Stopped four days before this cycle began, and after the previous one did.
+    userService.contraceptionStoppedOn.set('2026-03-28');
+    fixture.detectChanges();
+
+    expect(fertilityService.evaluate).toHaveBeenLastCalledWith(MEASUREMENTS, [], {
+      afterHormonalContraception: { bleedingInFirstWeek: true },
+    });
   });
 
   it('names the cervix as the awaited sign when no mucus is recorded', () => {

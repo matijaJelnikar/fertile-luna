@@ -16,4 +16,22 @@
     <mat-icon aria-hidden="true">add_circle_outline</mat-icon>
     {{ 'settings.cycle.start' | translate }}
   </button>
+
+  <mat-form-field appearance="outline">
+    <mat-label>{{ 'settings.contraception.stopped' | translate }}</mat-label>
+    <input
+      matInput
+      [matDatepicker]="stoppedPicker"
+      [value]="contraceptionStoppedOn()"
+      (dateChange)="onContraceptionStoppedOnChange($event.value)"
+    />
+    <mat-hint>{{ 'settings.contraception.hint' | translate }}</mat-hint>
+    <mat-datepicker-toggle matIconSuffix [for]="stoppedPicker" />
+    <mat-datepicker touchUi #stoppedPicker />
+  </mat-form-field>
+  @if (contraceptionStoppedOn()) {
+  <button mat-button type="button" (click)="onContraceptionStoppedOnChange(null)">
+    {{ 'settings.contraception.clear' | translate }}
+  </button>
+  }
 </div>

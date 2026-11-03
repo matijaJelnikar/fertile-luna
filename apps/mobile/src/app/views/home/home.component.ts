@@ -21,6 +21,7 @@ import { MaterialModule } from '../../material.module';
 import { toCycleDay } from '../../state/measurements/cycle-day';
 import { CycleService } from '../../state/measurements/cycle.service';
 import { FertilityService } from '../../state/fertility/fertility.service';
+import { evaluationContextFor } from '../../state/fertility/life-phase';
 import { HomeService } from './home.service';
 import { UserService } from '../../state/user/user.service';
 
@@ -78,8 +79,19 @@ export class HomeComponent {
     );
   });
 
+  /** Whether this cycle is the first after stopping hormonal contraception (`#R-LIFE-02`). */
+  private evaluationContext = computed(() =>
+    evaluationContextFor(
+      this.currentCycle(),
+      this.cycleService.cycles(),
+      this.userService.contraceptionStoppedOn()
+    )
+  );
+
   evaluation = computed(() =>
-    this.fertilityService.evaluate(this.homeService.measurements())
+    // TODO: pass the prior cycles' entries — until this screen loads them, R-FIRST-01 and R-FIRST-02
+    // report insufficient history for every cycle.
+    this.fertilityService.evaluate(this.homeService.measurements(), [], this.evaluationContext())
   );
 
   /**

@@ -7,6 +7,7 @@ import { of } from 'rxjs';
 
 import { NewCycleDialogService } from '../../components/new-cycle/new-cycle-dialog.service';
 import { ThemeService } from '../../services/theme.service';
+import { UserService } from '../../state/user/user.service';
 import { SettingsComponent } from './settings.component';
 
 describe('SettingsComponent', () => {
@@ -16,20 +17,30 @@ describe('SettingsComponent', () => {
   const isDark = signal(false);
   const theme = { isDark, set: jest.fn((value: boolean) => isDark.set(value)) };
 
+  const contraceptionStoppedOn = signal<string | null>(null);
+  const user = {
+    contraceptionStoppedOn,
+    setContraceptionStoppedOn: jest.fn(() => of({})),
+  };
+
   const newCycleDialog = { start: jest.fn() };
   const router = { navigate: jest.fn() };
 
+  const clearButton = (): HTMLButtonElement | null =>
+    fixture.nativeElement.querySelector('button[mat-button]');
   const startCycleButton = (): HTMLButtonElement =>
     fixture.nativeElement.querySelector('button[mat-stroked-button]');
 
   beforeEach(async () => {
     jest.clearAllMocks();
     isDark.set(false);
+    contraceptionStoppedOn.set(null);
 
     await TestBed.configureTestingModule({
       imports: [SettingsComponent, NoopAnimationsModule, TranslateModule.forRoot()],
       providers: [
         { provide: ThemeService, useValue: theme },
+        { provide: UserService, useValue: user },
         { provide: NewCycleDialogService, useValue: newCycleDialog },
         { provide: Router, useValue: router },
       ],
@@ -82,6 +93,33 @@ describe('SettingsComponent', () => {
       startCycleButton().click();
 
       expect(router.navigate).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('the date hormonal contraception was stopped', () => {
+    it('shows the stored date as that calendar day', () => {
+      contraceptionStoppedOn.set('2026-02-01');
+
+      const shown = component.contraceptionStoppedOn();
+      expect([shown?.getFullYear(), shown?.getMonth(), shown?.getDate()]).toEqual([2026, 1, 1]);
+    });
+
+    it('saves a picked date through the user service', () => {
+      const picked = new Date(2026, 1, 1);
+
+      component.onContraceptionStoppedOnChange(picked);
+
+      expect(user.setContraceptionStoppedOn).toHaveBeenCalledWith(picked);
+    });
+
+    it('offers to clear a recorded date, and clears it', () => {
+      expect(clearButton()).toBeNull();
+
+      contraceptionStoppedOn.set('2026-02-01');
+      fixture.detectChanges();
+      clearButton()?.click();
+
+      expect(user.setContraceptionStoppedOn).toHaveBeenCalledWith(null);
     });
   });
 });

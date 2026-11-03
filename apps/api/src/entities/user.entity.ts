@@ -35,6 +35,13 @@ export class User {
   @Column({ type: 'float', nullable: true })
   weight?: number;
 
+  /**
+   * When hormonal contraception was stopped, if it was. The first cycle beginning on or after this
+   * date is evaluated under its own rule (`R-LIFE-02`), so it is recorded once rather than per cycle.
+   */
+  @Column({ type: 'date', nullable: true })
+  contraceptionStoppedOn?: Date | null;
+
   @OneToMany(() => Cycle, (cycle) => cycle.user, { cascade: true })
   cycle?: Cycle[];
 
