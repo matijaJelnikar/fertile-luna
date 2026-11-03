@@ -1,41 +1,73 @@
-<div>
-  <h2>{{ 'settings' | translate }}</h2>
-  <div class="flex items-center gap-1.5">
-    <mat-icon aria-hidden="true">light_mode</mat-icon>
-    <mat-slide-toggle
-      [checked]="isDarkMode()"
-      (change)="onDarkModeChange($event.checked)"
-      color="primary"
-      [attr.aria-label]="'settings.dark.mode' | translate"
-    >
-    </mat-slide-toggle>
-    <mat-icon aria-hidden="true">dark_mode</mat-icon>
-  </div>
+@let sectionClass =
+  'flex flex-col gap-3 rounded-xl border border-outline-variant bg-surface-container-low p-4';
+@let headingClass =
+  'm-0 text-xs font-semibold tracking-widest text-on-surface-variant uppercase';
 
-  <button mat-stroked-button type="button" (click)="startNewCycle()">
-    <mat-icon aria-hidden="true">add_circle_outline</mat-icon>
-    {{ 'settings.cycle.start' | translate }}
-  </button>
+<div class="flex flex-col gap-4 px-2 py-4">
+  <h2 class="m-0 text-2xl font-semibold">{{ 'settings' | translate }}</h2>
 
-  <mat-form-field appearance="outline">
-    <mat-label>{{ 'settings.contraception.stopped' | translate }}</mat-label>
-    <input
-      matInput
-      [matDatepicker]="stoppedPicker"
-      [value]="contraceptionStoppedOn()"
-      (dateChange)="onContraceptionStoppedOnChange($event.value)"
-    />
-    <mat-hint>{{ 'settings.contraception.hint' | translate }}</mat-hint>
-    <mat-datepicker-toggle matIconSuffix [for]="stoppedPicker" />
-    <mat-datepicker touchUi #stoppedPicker />
-  </mat-form-field>
-  @if (contraceptionStoppedOn()) {
+  <section [class]="sectionClass" aria-labelledby="appearanceHeading">
+    <h3 id="appearanceHeading" [class]="headingClass">
+      {{ 'settings.section.appearance' | translate }}
+    </h3>
+    <div class="flex items-center justify-between gap-4">
+      <span id="darkModeLabel">{{ 'settings.dark.mode' | translate }}</span>
+      <div class="flex items-center gap-1.5">
+        <mat-icon aria-hidden="true">light_mode</mat-icon>
+        <mat-slide-toggle
+          [checked]="isDarkMode()"
+          (change)="onDarkModeChange($event.checked)"
+          color="primary"
+          aria-labelledby="darkModeLabel"
+        />
+        <mat-icon aria-hidden="true">dark_mode</mat-icon>
+      </div>
+    </div>
+  </section>
+
+  <section [class]="sectionClass" aria-labelledby="cycleHeading">
+    <h3 id="cycleHeading" [class]="headingClass">
+      {{ 'settings.section.cycle' | translate }}
+    </h3>
+    <p class="m-0 text-sm text-on-surface-variant">
+      {{ 'settings.cycle.start.hint' | translate }}
+    </p>
     <button
-      mat-button
+      mat-stroked-button
       type="button"
-      (click)="onContraceptionStoppedOnChange(null)"
+      class="self-start"
+      (click)="startNewCycle()"
     >
-      {{ 'settings.contraception.clear' | translate }}
+      <mat-icon aria-hidden="true">add_circle_outline</mat-icon>
+      {{ 'settings.cycle.start' | translate }}
     </button>
-  }
+  </section>
+
+  <section [class]="sectionClass" aria-labelledby="contraceptionHeading">
+    <h3 id="contraceptionHeading" [class]="headingClass">
+      {{ 'settings.section.contraception' | translate }}
+    </h3>
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-label>{{ 'settings.contraception.stopped' | translate }}</mat-label>
+      <input
+        matInput
+        [matDatepicker]="stoppedPicker"
+        [value]="contraceptionStoppedOn()"
+        (dateChange)="onContraceptionStoppedOnChange($event.value)"
+      />
+      <mat-hint>{{ 'settings.contraception.hint' | translate }}</mat-hint>
+      <mat-datepicker-toggle matIconSuffix [for]="stoppedPicker" />
+      <mat-datepicker touchUi #stoppedPicker />
+    </mat-form-field>
+    @if (contraceptionStoppedOn()) {
+      <button
+        mat-button
+        type="button"
+        class="mt-2 self-start"
+        (click)="onContraceptionStoppedOnChange(null)"
+      >
+        {{ 'settings.contraception.clear' | translate }}
+      </button>
+    }
+  </section>
 </div>
