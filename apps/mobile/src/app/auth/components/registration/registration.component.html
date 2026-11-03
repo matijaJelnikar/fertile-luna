@@ -1,19 +1,21 @@
-<div class="registration-wrapper">
+<div class="flex size-full flex-col">
   <div
     class="registration-image"
     style="background-image: url('resources/fertileluna_background.png')"
   ></div>
 
-  <div class="registration-form">
+  <div class="p-4">
     <form [formRoot]="registrationForm" novalidate>
-      <div class="registration-error">
+      <div class="h-4 text-center font-bold text-error">
         @if (error()) {
           {{ error() }}
         }
       </div>
       <br />
-      <h1>{{ 'register' | translate }}</h1>
-      <mat-form-field [appearance]="'outline'">
+      <h1 class="text-center font-semibold text-primary">
+        {{ 'register' | translate }}
+      </h1>
+      <mat-form-field class="w-full pb-4" [appearance]="'outline'">
         <input
           type="email"
           matInput
@@ -32,7 +34,7 @@
         }
       </mat-form-field>
 
-      <mat-form-field [appearance]="'outline'">
+      <mat-form-field class="w-full pb-4" [appearance]="'outline'">
         <input
           type="password"
           matInput
@@ -62,8 +64,8 @@
         <span>{{ 'sign.up.label' | translate }}</span>
       </button>
 
-      <div class="back-to-login">
-        <a mat-button href="/login">{{
+      <div class="flex items-center justify-center pt-4">
+        <a mat-button routerLink="/login">{{
           'register.back.to.login' | translate
         }}</a>
       </div>

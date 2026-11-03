@@ -1,44 +1,48 @@
-<div class="shell-container">
-  <mat-toolbar class="toolbar-container">
-    <div class="title">
-      <h1 class="mat-headline-1">{{ 'app.name' | translate }}</h1>
-    </div>
-    <div class="user-avatar">
-      <div class="user-dropdown">
-        <button
-          type="button"
-          class="user-icon"
-          [matMenuTriggerFor]="menu"
-          [attr.aria-label]="'profile.avatar' | translate"
-        >
-          <span
-            class="user-avatar"
-            aria-hidden="true"
-            [style.background-image]="'url(resources/avatar_woman.png)'"
-          ></span>
-        </button>
+<div class="flex h-screen flex-col">
+  <mat-toolbar class="toolbar">
+    <h1 class="mat-headline-1 tracking-wide text-on-primary-container">
+      {{ 'app.name' | translate }}
+    </h1>
+    <button
+      type="button"
+      class="absolute right-1.5 size-10 cursor-pointer rounded-full border-0 bg-transparent p-0"
+      [matMenuTriggerFor]="menu"
+      [attr.aria-label]="'profile.avatar' | translate"
+    >
+      <span
+        class="inline-block size-10 rounded-full bg-surface-container bg-cover bg-center align-middle"
+        aria-hidden="true"
+        [style.background-image]="'url(resources/avatar_woman.png)'"
+      ></span>
+    </button>
 
-        <mat-menu #menu="matMenu">
-          <button mat-menu-item (click)="logout()">
-            <mat-icon aria-hidden="true">logout</mat-icon>
-            {{ 'common.logout' | translate }}
-          </button>
-        </mat-menu>
-      </div>
-    </div>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="logout()">
+        <mat-icon aria-hidden="true">logout</mat-icon>
+        {{ 'common.logout' | translate }}
+      </button>
+    </mat-menu>
   </mat-toolbar>
 
-  <main class="main-content">
+  <main
+    class="box-border flex-1 overflow-x-hidden overflow-y-auto p-2 pt-22 pb-21.5"
+  >
     <router-outlet />
   </main>
 
-  <nav class="bottom-nav-wrapper" [attr.aria-label]="'nav.label' | translate">
-    <div class="bottom-nav-container">
+  <nav
+    class="fixed bottom-0 flex h-19.5 w-full justify-center bg-surface shadow-[0_-2px_4px_var(--mat-sys-outline-variant)]"
+    [attr.aria-label]="'nav.label' | translate"
+  >
+    <div class="flex gap-3">
       @for (item of navItems; track item.path) {
         <a
-          class="nav-button"
+          class="flex cursor-pointer flex-col items-center rounded-lg px-4 py-2.5 no-underline"
           [routerLink]="item.path"
-          routerLinkActive="selected"
+          routerLinkActive
+          #link="routerLinkActive"
+          [class.text-primary]="link.isActive"
+          [class.text-on-surface]="!link.isActive"
           ariaCurrentWhenActive="page"
         >
           <mat-icon aria-hidden="true">{{ item.icon }}</mat-icon>

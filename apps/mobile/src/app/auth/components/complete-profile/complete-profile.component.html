@@ -1,44 +1,48 @@
-<mat-toolbar class="toolbar-container">
-  <div class="title">
-    <h1 class="mat-headline-1">{{ 'app.name' | translate }}</h1>
-  </div>
-  <div class="user-avatar">
-    <div class="user-dropdown">
-      <mat-icon class="user-icon" [matMenuTriggerFor]="menu" [tabindex]="0">
-        <mat-icon
-          class="user-avatar"
-          [style.background-image]="'url(resources/avatar_woman.png)'"
-          role="img"
-          [attr.aria-label]="'profile.avatar' | translate"
-        ></mat-icon>
-      </mat-icon>
+<mat-toolbar class="toolbar">
+  <h1 class="mat-headline-1 tracking-wide text-on-primary-container">
+    {{ 'app.name' | translate }}
+  </h1>
+  <button
+    type="button"
+    class="absolute right-1.5 size-10 cursor-pointer rounded-full border-0 bg-transparent p-0"
+    [matMenuTriggerFor]="menu"
+    [attr.aria-label]="'profile.avatar' | translate"
+  >
+    <span
+      class="inline-block size-10 rounded-full bg-surface-container bg-cover bg-center align-middle"
+      aria-hidden="true"
+      [style.background-image]="'url(resources/avatar_woman.png)'"
+    ></span>
+  </button>
 
-      <mat-menu #menu="matMenu">
-        <button mat-menu-item (click)="logout()">
-          <mat-icon aria-hidden="true">logout</mat-icon>
-          {{ 'common.logout' | translate }}
-        </button>
-      </mat-menu>
-    </div>
-  </div>
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="logout()">
+      <mat-icon aria-hidden="true">logout</mat-icon>
+      {{ 'common.logout' | translate }}
+    </button>
+  </mat-menu>
 </mat-toolbar>
 <mat-stepper [linear]="isLinear" #stepper [orientation]="'vertical'">
   <!-- Step 1: Fill out name -->
   <mat-step [completed]="profileForm().valid()">
     <form [formRoot]="profileForm" novalidate>
-      <ng-template matStepLabel>{{ 'profile.step.name' | translate }}</ng-template>
+      <ng-template matStepLabel>{{
+        'profile.step.name' | translate
+      }}</ng-template>
 
-      <mat-form-field appearance="fill" class="full-width">
+      <mat-form-field appearance="fill" class="w-full">
         <mat-label>{{ 'username' | translate }}</mat-label>
         <input type="text" matInput [formField]="profileForm.username" />
-        @if (profileForm.username().invalid() && profileForm.username().touched()) {
+        @if (
+          profileForm.username().invalid() && profileForm.username().touched()
+        ) {
           <mat-error>
             <span>{{ 'username.required' | translate }}</span>
           </mat-error>
         }
       </mat-form-field>
 
-      <mat-form-field appearance="fill" class="full-width">
+      <mat-form-field appearance="fill" class="w-full">
         <mat-label>{{ 'birth.date' | translate }}</mat-label>
         <input
           matInput
@@ -50,20 +54,29 @@
           [for]="birthDatePicker"
         ></mat-datepicker-toggle>
         <mat-datepicker touchUi #birthDatePicker></mat-datepicker>
-        @if (profileForm.birthDate().invalid() && profileForm.birthDate().touched()) {
+        @if (
+          profileForm.birthDate().invalid() && profileForm.birthDate().touched()
+        ) {
           <mat-error>
             <span>{{ 'birth.date.required' | translate }}</span>
           </mat-error>
         }
       </mat-form-field>
 
-      <mat-form-field appearance="fill" class="full-width">
+      <mat-form-field appearance="fill" class="w-full">
         <mat-label>{{ 'weight' | translate }}</mat-label>
         <input type="number" matInput [formField]="profileForm.weight" />
       </mat-form-field>
 
-      <div class="button-group">
-        <button mat-button matStepperNext type="button" [disabled]="profileForm().invalid()">
+      <div
+        class="mt-4 flex flex-col gap-2.5 min-[600px]:flex-row min-[600px]:justify-between"
+      >
+        <button
+          mat-button
+          matStepperNext
+          type="button"
+          [disabled]="profileForm().invalid()"
+        >
           {{ 'common.next' | translate }}
         </button>
       </div>
@@ -73,9 +86,11 @@
   <!-- Step 2: Fill cycle info -->
   <mat-step [completed]="cycleForm().valid()">
     <form [formRoot]="cycleForm" novalidate>
-      <ng-template matStepLabel>{{ 'profile.step.cycle' | translate }}</ng-template>
+      <ng-template matStepLabel>{{
+        'profile.step.cycle' | translate
+      }}</ng-template>
 
-      <mat-form-field appearance="fill" class="full-width">
+      <mat-form-field appearance="fill" class="w-full">
         <mat-label>{{ 'profile.last.period' | translate }}</mat-label>
         <input
           matInput
@@ -89,14 +104,23 @@
         <mat-datepicker touchUi #lastPeriodPicker></mat-datepicker>
       </mat-form-field>
 
-      <mat-form-field appearance="fill" class="full-width">
+      <mat-form-field appearance="fill" class="w-full">
         <mat-label>{{ 'profile.bleeding.length' | translate }}</mat-label>
         <input type="number" matInput [formField]="cycleForm.bleedingLength" />
       </mat-form-field>
 
-      <div class="button-group">
-        <button mat-button matStepperPrevious type="button">{{ 'common.back' | translate }}</button>
-        <button mat-button matStepperNext type="button" [disabled]="cycleForm().invalid()">
+      <div
+        class="mt-4 flex flex-col gap-2.5 min-[600px]:flex-row min-[600px]:justify-between"
+      >
+        <button mat-button matStepperPrevious type="button">
+          {{ 'common.back' | translate }}
+        </button>
+        <button
+          mat-button
+          matStepperNext
+          type="button"
+          [disabled]="cycleForm().invalid()"
+        >
           {{ 'common.next' | translate }}
         </button>
       </div>
@@ -105,14 +129,25 @@
 
   <!-- Step 3: Completion -->
   <mat-step>
-    <ng-template matStepLabel>{{ 'profile.step.done' | translate }}</ng-template>
+    <ng-template matStepLabel>{{
+      'profile.step.done' | translate
+    }}</ng-template>
     <p>{{ 'profile.done' | translate }}</p>
     @if (error()) {
-      <p class="error" role="alert">{{ 'profile.failed' | translate }}</p>
+      <p class="text-error" role="alert">{{ 'profile.failed' | translate }}</p>
     }
-    <div class="button-group">
-      <button mat-button matStepperPrevious type="button">{{ 'common.back' | translate }}</button>
-      <button mat-button type="button" [disabled]="!canSubmit()" (click)="submit()">
+    <div
+      class="mt-4 flex flex-col gap-2.5 min-[600px]:flex-row min-[600px]:justify-between"
+    >
+      <button mat-button matStepperPrevious type="button">
+        {{ 'common.back' | translate }}
+      </button>
+      <button
+        mat-button
+        type="button"
+        [disabled]="!canSubmit()"
+        (click)="submit()"
+      >
         {{ 'common.submit' | translate }}
       </button>
     </div>

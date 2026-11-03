@@ -1,11 +1,17 @@
 <h2 mat-dialog-title>
-  {{ (isEdit ? 'measurement.edit.title' : 'measurement.add.title') | translate }}
+  {{
+    (isEdit ? 'measurement.edit.title' : 'measurement.add.title') | translate
+  }}
 </h2>
 <mat-dialog-content>
-  <form [formRoot]="temperatureForm" novalidate>
+  <form class="flex flex-col gap-5" [formRoot]="temperatureForm" novalidate>
     <mat-form-field>
       <mat-label>{{ 'measurement.date' | translate }}</mat-label>
-      <input matInput [matDatepicker]="picker" [formField]="temperatureForm.date" />
+      <input
+        matInput
+        [matDatepicker]="picker"
+        [formField]="temperatureForm.date"
+      />
       <mat-hint>{{ 'measurement.date.hint' | translate }}</mat-hint>
       <mat-datepicker-toggle
         matIconSuffix
@@ -15,21 +21,21 @@
     </mat-form-field>
 
     @if (cycleDay(); as day) {
-    <p class="form-note" role="status">
-      {{ 'measurement.cycle.day' | translate }} {{ day }}
-    </p>
+      <p class="m-0 mb-1 text-xs text-on-surface-variant" role="status">
+        {{ 'measurement.cycle.day' | translate }} {{ day }}
+      </p>
     }
 
     @if (dateOutsideCycle()) {
-    <p class="form-error" role="alert">
-      {{ 'measurement.date.before.cycle' | translate }}
-    </p>
+      <p class="m-0 mb-1 text-xs text-error" role="alert">
+        {{ 'measurement.date.before.cycle' | translate }}
+      </p>
     }
 
     @if (editingExistingDay()) {
-    <p class="form-note" role="status">
-      {{ 'measurement.editing.existing' | translate }}
-    </p>
+      <p class="m-0 mb-1 text-xs text-on-surface-variant" role="status">
+        {{ 'measurement.editing.existing' | translate }}
+      </p>
     }
 
     <mat-form-field appearance="outline">
@@ -45,36 +51,47 @@
     </mat-form-field>
 
     <!-- The value stays; the mark only says how the engine must read it (`#R-DIST-02`). -->
-    <div class="disturbance">
+    <div class="mb-2 flex flex-col gap-1.5">
       <mat-checkbox [formField]="temperatureForm.disturbed">
         {{ 'measurement.disturbed' | translate }}
       </mat-checkbox>
       @if (!canMarkDisturbed()) {
-      <p class="form-note">{{ 'measurement.disturbed.needs.temperature' | translate }}</p>
+        <p class="m-0 mb-1 text-xs text-on-surface-variant">
+          {{ 'measurement.disturbed.needs.temperature' | translate }}
+        </p>
       }
 
       @if (showDisturbanceReasons()) {
-      <div class="chip-group">
-        <span class="chip-group-label" id="disturbanceReasonsLabel">{{
-          'measurement.disturbance.reasons' | translate
-        }}</span>
-        <mat-chip-listbox
-          multiple
-          [formField]="temperatureForm.disturbanceReasons"
-          aria-labelledby="disturbanceReasonsLabel"
-        >
-          @for (option of disturbanceReasonOptions; track option) {
-          <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
-          }
-        </mat-chip-listbox>
-      </div>
+        <div class="flex flex-col gap-2">
+          <span
+            class="text-sm text-on-surface-variant"
+            id="disturbanceReasonsLabel"
+            >{{ 'measurement.disturbance.reasons' | translate }}</span
+          >
+          <mat-chip-listbox
+            multiple
+            [formField]="temperatureForm.disturbanceReasons"
+            aria-labelledby="disturbanceReasonsLabel"
+          >
+            @for (option of disturbanceReasonOptions; track option) {
+              <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
+            }
+          </mat-chip-listbox>
+        </div>
 
-      @if (showDisturbanceNote()) {
-      <mat-form-field appearance="outline">
-        <mat-label>{{ 'measurement.disturbance.note' | translate }}</mat-label>
-        <input matInput [formField]="temperatureForm.disturbanceNote" type="text" />
-      </mat-form-field>
-      } }
+        @if (showDisturbanceNote()) {
+          <mat-form-field appearance="outline">
+            <mat-label>{{
+              'measurement.disturbance.note' | translate
+            }}</mat-label>
+            <input
+              matInput
+              [formField]="temperatureForm.disturbanceNote"
+              type="text"
+            />
+          </mat-form-field>
+        }
+      }
     </div>
 
     <app-chip-choice
@@ -131,9 +148,9 @@
     </mat-form-field>
 
     @if (nothingRecorded()) {
-    <p class="form-error" role="alert">
-      {{ 'measurement.nothing.recorded' | translate }}
-    </p>
+      <p class="m-0 mb-1 text-xs text-error" role="alert">
+        {{ 'measurement.nothing.recorded' | translate }}
+      </p>
     }
   </form>
 </mat-dialog-content>

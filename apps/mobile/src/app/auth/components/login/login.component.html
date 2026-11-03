@@ -1,20 +1,22 @@
-<div class="login-wrapper">
+<div class="flex size-full flex-col">
   <div
     class="login-image"
     style="background-image: url('resources/fertileluna_background.png')"
   ></div>
 
-  <div class="login-form">
+  <div class="p-4">
     <form [formRoot]="loginForm" novalidate>
-      <div class="login-error">
+      <div class="h-4 text-center font-bold text-error">
         @if (error()) {
           {{ error() || 'login.credentials.incorrect' | translate }}
         }
       </div>
 
-      <h1>{{ 'login.label' | translate }}</h1>
+      <h1 class="text-center font-semibold text-primary">
+        {{ 'login.label' | translate }}
+      </h1>
 
-      <mat-form-field [appearance]="'outline'">
+      <mat-form-field class="w-full pb-4" [appearance]="'outline'">
         <input
           type="text"
           matInput
@@ -30,7 +32,7 @@
         }
       </mat-form-field>
 
-      <mat-form-field [appearance]="'outline'">
+      <mat-form-field class="w-full pb-4" [appearance]="'outline'">
         <input
           type="password"
           matInput
@@ -46,11 +48,15 @@
         }
       </mat-form-field>
 
-      <mat-slide-toggle color="primary" [formField]="loginForm.remember">
+      <mat-slide-toggle
+        class="mb-4"
+        color="primary"
+        [formField]="loginForm.remember"
+      >
         {{ 'remember.me' | translate }}
       </mat-slide-toggle>
 
-      <div class="submit-button">
+      <div>
         <button
           mat-flat-button
           color="secondary"
@@ -61,9 +67,11 @@
         </button>
       </div>
 
-      <div class="register-row">
+      <div class="pt-4 text-center">
         <span>{{ 'dont.have.an.account' | translate }}</span>
-        <a mat-button href="/register">{{ 'sign.up.label' | translate }}</a>
+        <a mat-button routerLink="/register">{{
+          'sign.up.label' | translate
+        }}</a>
       </div>
     </form>
   </div>

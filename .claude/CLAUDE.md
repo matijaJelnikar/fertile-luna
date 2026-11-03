@@ -5,15 +5,15 @@ performant, and accessible code following the conventions in this repo.
 
 ## Stack (do not drift from it)
 
-| Area | Choice |
-|------|--------|
-| Runtime | Node 26 |
-| Monorepo | Nx 23 |
-| Frontend | Angular **22**, Angular Material 22 (M3), SCSS, ngx-translate 18, SVG charts, PWA |
-| Backend | NestJS 11 on Express 5, TypeORM 0.3, PostgreSQL, Passport JWT, Swagger |
-| Shared | `libs/shared/model` (DTOs/types), `libs/shared/components` (UI) |
-| Tests | Jest 30 (unit + `apps/api-e2e`) |
-| Language | TypeScript 6.0 (not 7 — Angular 22 needs `<6.1`) |
+| Area     | Choice                                                                                             |
+| -------- | -------------------------------------------------------------------------------------------------- |
+| Runtime  | Node 26                                                                                            |
+| Monorepo | Nx 23                                                                                              |
+| Frontend | Angular **22**, Angular Material 22 (M3), Tailwind CSS 4 + SCSS, ngx-translate 18, SVG charts, PWA |
+| Backend  | NestJS 11 on Express 5, TypeORM 0.3, PostgreSQL, Passport JWT, Swagger                             |
+| Shared   | `libs/shared/model` (DTOs/types), `libs/shared/components` (UI)                                    |
+| Tests    | Jest 30 (unit + `apps/api-e2e`)                                                                    |
+| Language | TypeScript 6.0 (not 7 — Angular 22 needs `<6.1`)                                                   |
 
 Angular is on **v22**. The app still runs with zone.js (`provideZoneChangeDetection`).
 NestJS stays on 11 until `@nx/nest` supports 12.
@@ -41,10 +41,12 @@ rules. Don't copy those patterns; migrate them when you touch the surrounding co
 ## Non-Negotiables
 
 ### TypeScript
+
 - Strict type checking; prefer inference when the type is obvious
 - Avoid `any` — use `unknown` when the type is uncertain
 
 ### Angular
+
 - Standalone components; never set `standalone: true` (it's the default) or `false`
 - `ChangeDetectionStrategy.OnPush` on every component — if it breaks under OnPush, it's a bug
 - `inject()` over constructor injection (frontend); NestJS keeps constructor injection
@@ -59,18 +61,21 @@ rules. Don't copy those patterns; migrate them when you touch the surrounding co
 - Import individual Material components — never a `MaterialModule` barrel
 
 ### State
+
 - Signals for local and shared state; `computed()` for derived; `linkedSignal()` for writable derived
 - Never `mutate` a signal — use `set()` / `update()`; expose services' state as `asReadonly()`
 - `effect()` is for side effects only — **never** `.subscribe()` inside an `effect()`
   (use `resource()` / `rxResource()`, or `toObservable()` + `switchMap()` + `takeUntilDestroyed()`)
 
 ### Backend
+
 - Thin controllers, business logic in services, a validated DTO on every endpoint
 - Routes are protected by default (`JwtGuard` via `APP_GUARD`); opt out with `@Public()`
 - Scope every query by the authenticated user — never trust an id from the request body
 - `ConfigService`, not `process.env`; NestJS `Logger`, not `console.log`
 
 ### Accessibility
+
 - MUST pass all AXE checks
 - MUST meet WCAG AA minimums: focus management, color contrast, ARIA attributes
 - No hardcoded user-facing strings — use ngx-translate keys

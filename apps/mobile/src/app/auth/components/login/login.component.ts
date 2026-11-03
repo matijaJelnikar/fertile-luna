@@ -9,7 +9,7 @@ import { MatAnchor, MatButton } from '@angular/material/button';
 import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { lastValueFrom } from 'rxjs';
 
@@ -22,12 +22,14 @@ import {
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
+  host: { class: 'flex h-screen flex-col items-center bg-surface' },
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormField,
     FormRoot,
     TranslatePipe,
     MatAnchor,
+    RouterLink,
     MatButton,
     MatError,
     MatFormField,

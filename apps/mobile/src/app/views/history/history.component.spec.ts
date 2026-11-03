@@ -24,25 +24,24 @@ describe('HistoryComponent', () => {
     deleteMeasurement: jest.fn(() => of({})),
   };
   const dialog = { open: jest.fn() };
-  const cycleService = { currentCycle: signal({ startDate: new Date('2026-08-01') }) };
+  const cycleService = {
+    currentCycle: signal({ startDate: new Date('2026-08-01') }),
+  };
 
   const openDialogReturning = (result: unknown) =>
     dialog.open.mockReturnValue({ afterClosed: () => of(result) });
 
   const rowButtons = (row: number) =>
-    fixture.nativeElement.querySelectorAll('tbody tr')[row].querySelectorAll(
-      'button'
-    ) as NodeListOf<HTMLButtonElement>;
+    fixture.nativeElement
+      .querySelectorAll('tbody tr')
+      [row].querySelectorAll('button') as NodeListOf<HTMLButtonElement>;
 
   beforeEach(async () => {
     jest.clearAllMocks();
     historyService.measurements.set(MEASUREMENTS);
 
     await TestBed.configureTestingModule({
-      imports: [
-        HistoryComponent,
-        NoopAnimationsModule,
-      ],
+      imports: [HistoryComponent, NoopAnimationsModule],
       providers: [
         provideTranslateService(),
         { provide: MatDialog, useValue: dialog },
@@ -50,7 +49,9 @@ describe('HistoryComponent', () => {
       ],
     })
       .overrideComponent(HistoryComponent, {
-        set: { providers: [{ provide: HistoryService, useValue: historyService }] },
+        set: {
+          providers: [{ provide: HistoryService, useValue: historyService }],
+        },
       })
       .compileComponents();
 

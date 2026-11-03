@@ -35,11 +35,7 @@ import {
   MatDialogRef,
   MatDialogTitle,
 } from '@angular/material/dialog';
-import {
-  MatFormField,
-  MatHint,
-  MatLabel,
-} from '@angular/material/form-field';
+import { MatFormField, MatHint, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import {
   BleedingOption,
@@ -104,7 +100,9 @@ const sameDay = (a: Date | string, b: Date | string): boolean => {
 const sameDayOrBothEmpty = (a: Date | null, b: Date | null): boolean =>
   a === b || (!!a && !!b && sameDay(a, b));
 
-const toFormModel = (measurement: Partial<Measurement>): MeasurementFormModel => ({
+const toFormModel = (
+  measurement: Partial<Measurement>
+): MeasurementFormModel => ({
   // The API serializes the date as a string; the datepicker needs a real Date.
   date: measurement.date ? new Date(measurement.date) : null,
   temperature: measurement.temperature ?? null,
@@ -125,7 +123,8 @@ const toFormModel = (measurement: Partial<Measurement>): MeasurementFormModel =>
 const isBeforeCycle = (
   date: Date | null,
   cycleStartDate: Date | string | null | undefined
-): boolean => !!date && !!cycleStartDate && toCycleDay(date, cycleStartDate) === null;
+): boolean =>
+  !!date && !!cycleStartDate && toCycleDay(date, cycleStartDate) === null;
 
 /**
  * A day with no temperature is never disturbed, whatever the checkbox last held — the mark says
@@ -140,14 +139,19 @@ const toDisturbancePayload = <T extends undefined | null>(
   disturbanceNote: string | T;
 } => {
   if (values.temperature == null || !values.disturbed) {
-    return { disturbed: false, disturbanceReasons: empty, disturbanceNote: empty };
+    return {
+      disturbed: false,
+      disturbanceReasons: empty,
+      disturbanceNote: empty,
+    };
   }
   const reasons = values.disturbanceReasons ?? [];
   return {
     disturbed: true,
     disturbanceReasons: reasons.length ? reasons : empty,
     disturbanceNote:
-      (reasons.includes(DisturbanceReason.Other) && values.disturbanceNote) || empty,
+      (reasons.includes(DisturbanceReason.Other) && values.disturbanceNote) ||
+      empty,
   };
 };
 
@@ -170,7 +174,9 @@ const toCreatePayload = (values: MeasurementFormModel): MeasurementDto => ({
 
 // An edit sends `null` rather than `undefined` for empty fields, so clearing a
 // previously recorded observation actually reaches the server.
-const toUpdatePayload = (values: MeasurementFormModel): UpdateMeasurementDto => ({
+const toUpdatePayload = (
+  values: MeasurementFormModel
+): UpdateMeasurementDto => ({
   date: values.date as Date,
   temperature: values.temperature as number,
   bleeding: values.bleeding || null,
@@ -188,7 +194,6 @@ const toUpdatePayload = (values: MeasurementFormModel): UpdateMeasurementDto => 
 @Component({
   selector: 'app-add-measurement',
   templateUrl: './add-measurement.component.html',
-  styleUrls: ['./add-measurement.component.scss'],
   providers: [provideNativeDateAdapter()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -235,17 +240,24 @@ export class AddMeasurementComponent implements AfterViewInit {
       required(path.date);
       // A date before day 1 belongs to no cycle, so it is refused rather than silently misplaced.
       validate(path.date, ({ value }) =>
-        isBeforeCycle(value(), this.data.cycleStartDate) ? { kind: BEFORE_CYCLE } : null
+        isBeforeCycle(value(), this.data.cycleStartDate)
+          ? { kind: BEFORE_CYCLE }
+          : null
       );
       // Not required: a day with a mucus observation and no measurement is a normal day in this
       // method, and the range only means anything once a value is present.
       min(path.temperature, 30);
       max(path.temperature, 45);
       // A temperature can only be called disturbed if there is one (`#R-DIST-02`).
-      disabled(path.disturbed, ({ valueOf }) => valueOf(path.temperature) == null);
+      disabled(
+        path.disturbed,
+        ({ valueOf }) => valueOf(path.temperature) == null
+      );
       // The method's log has no concept of an entry that observed nothing.
       validate(path, ({ value }) =>
-        hasObservation(toCreatePayload(value())) ? null : { kind: NO_OBSERVATION }
+        hasObservation(toCreatePayload(value()))
+          ? null
+          : { kind: NO_OBSERVATION }
       );
     },
     { submission: { action: async () => this.save() } }
@@ -264,7 +276,9 @@ export class AddMeasurementComponent implements AfterViewInit {
       .some((error) => error.kind === BEFORE_CYCLE)
   );
 
-  canMarkDisturbed = computed(() => !this.temperatureForm.disturbed().disabled());
+  canMarkDisturbed = computed(
+    () => !this.temperatureForm.disturbed().disabled()
+  );
 
   showDisturbanceReasons = computed(
     () => this.canMarkDisturbed() && this.measurement().disturbed

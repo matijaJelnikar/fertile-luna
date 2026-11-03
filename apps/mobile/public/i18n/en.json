@@ -50,6 +50,8 @@
   "home.cycle.next": "Next",
   "home.section.this.cycle": "This cycle",
   "home.section.insights": "Insights",
+  "home.stats.label": "Current cycle statistics",
+  "home.temperature.label": "Temperature shift status for current cycle",
   "home.bleeding.days": "Bleeding days",
   "home.avg.cycle.length": "Avg cycle length",
   "home.phase.label": "Method state",

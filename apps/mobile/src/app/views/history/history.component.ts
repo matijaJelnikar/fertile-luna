@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatIconButton } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -49,6 +49,7 @@ const MOBILE_DIALOG_CONFIG = {
   providers: [HistoryService],
   imports: [
     DatePipe,
+    DecimalPipe,
     TranslatePipe,
     MatCell,
     MatCellDef,

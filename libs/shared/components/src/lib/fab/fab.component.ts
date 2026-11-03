@@ -10,7 +10,6 @@ import { MatIcon } from '@angular/material/icon';
 @Component({
   selector: 'lib-fab',
   templateUrl: './fab.component.html',
-  styleUrls: ['./fab.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatIcon, MatFabButton],
 })

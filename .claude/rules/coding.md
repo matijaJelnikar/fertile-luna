@@ -10,6 +10,7 @@ ngx-translate 18 · SVG charts · PWA/service worker · Jest 30 · TypeScript 6.
 ## Shared Code Style (Frontend & Backend)
 
 ### Naming
+
 - PascalCase for classes, enums, types, interfaces
 - camelCase for variables and methods
 - No `I` prefix on interfaces: `User` not `IUser`
@@ -17,6 +18,7 @@ ngx-translate 18 · SVG charts · PWA/service worker · Jest 30 · TypeScript 6.
 - Methods start with verbs: `getUser()`, `isValid()`, `hasPermission()`
 
 ### General
+
 - `const` by default, `let` when needed, never `var`
 - Single quotes for strings (matches `.prettierrc`)
 - Arrow functions over anonymous functions
@@ -25,6 +27,7 @@ ngx-translate 18 · SVG charts · PWA/service worker · Jest 30 · TypeScript 6.
 - Don't put verbose comments to the code, the code should be self explanatory. When it's not you can add a short comment
 
 ### Typing
+
 - Type everything — avoid `any`, use `unknown` if the type is uncertain
 - Use interfaces for structural types, not classes
 - Union types over generic strings: `'active' | 'inactive'` not `string`
@@ -34,6 +37,7 @@ ngx-translate 18 · SVG charts · PWA/service worker · Jest 30 · TypeScript 6.
   truth for the API contract
 
 ### File Naming
+
 - Kebab-case: `add-measurement.component.ts`, `auth.interceptor.ts`
 - Keep the suffix convention already used across this repo:
   `*.component.ts`, `*.service.ts`, `*.guard.ts`, `*.interceptor.ts`, `*.entity.ts`, `*.dto.ts`
@@ -61,15 +65,15 @@ libs/shared/
 
 ### `apps/mobile/src/app` structure
 
-| Folder | Contents |
-|--------|----------|
-| `views/` | Routed feature components (`home`, `history`, `settings`) + their services |
-| `components/` | App-level shared components (`shell`, `add-measurement`, `new-cycle`) |
-| `auth/` | Authentication + credentials services, guard, login/registration/complete-profile |
-| `state/` | Signal-based domain state services (`user`, `measurements`, `fertility`) |
-| `services/` | Cross-cutting infra services (`local-storage`) |
-| `interceptors/` | HTTP interceptors |
-| `shared/constants/` | Endpoint and common constants |
+| Folder              | Contents                                                                          |
+| ------------------- | --------------------------------------------------------------------------------- |
+| `views/`            | Routed feature components (`home`, `history`, `settings`) + their services        |
+| `components/`       | App-level shared components (`shell`, `add-measurement`, `new-cycle`)             |
+| `auth/`             | Authentication + credentials services, guard, login/registration/complete-profile |
+| `state/`            | Signal-based domain state services (`user`, `measurements`, `fertility`)          |
+| `services/`         | Cross-cutting infra services (`local-storage`)                                    |
+| `interceptors/`     | HTTP interceptors                                                                 |
+| `shared/constants/` | Endpoint and common constants                                                     |
 
 - Group by domain/feature, not by technical type; structure mirrors routing.
 - Truly reusable, app-agnostic UI belongs in `libs/shared/components`, not `app/components`.
@@ -135,14 +139,12 @@ export class ExampleComponent {
 
 ```html
 @if (isLoading()) {
-  <mat-spinner />
-} @else {
-  @for (item of items(); track item.id) {
-    <app-card [data]="item" />
-  } @empty {
-    <p>{{ 'items.empty' | translate }}</p>
-  }
-}
+<mat-spinner />
+} @else { @for (item of items(); track item.id) {
+<app-card [data]="item" />
+} @empty {
+<p>{{ 'items.empty' | translate }}</p>
+} }
 ```
 
 ---
@@ -170,14 +172,10 @@ export class ItemsService {
   readonly items = this.state.asReadonly();
   readonly selectedId = signal<string | null>(null);
 
-  readonly selected = computed(
-    () => this.items().find((i) => i.id === this.selectedId()) ?? null
-  );
+  readonly selected = computed(() => this.items().find((i) => i.id === this.selectedId()) ?? null);
 
   addItem(dto: CreateItemDto) {
-    return this.http
-      .post<Item>(API.items.create, dto)
-      .pipe(tap((item) => this.state.update((list) => [item, ...list])));
+    return this.http.post<Item>(API.items.create, dto).pipe(tap((item) => this.state.update((list) => [item, ...list])));
   }
 }
 ```
@@ -363,8 +361,27 @@ All app forms are Signal Forms; do not add new reactive forms.
 - Angular Material 22 (M3) via `mat.theme()` in `styles.scss`
 - Import individual Material components (`MatButton`, `MatIcon`) — **never** a `MaterialModule` barrel;
   a barrel defeats tree-shaking and pulls in components you don't use
-- SCSS for component styles; theme colors centralized in `src/styles/_theme-colors.scss`
+- Theme colors centralized in `src/styles/_theme-colors.scss`
 - Prefer M3 system tokens (`var(--mat-sys-surface)`, `var(--mat-sys-on-surface)`) over hardcoded colors
+
+### Tailwind CSS 4
+
+- Configured in `apps/mobile/src/tailwind.css`, built through `apps/mobile/.postcssrc.json`
+- **Utilities in templates** for layout, spacing and typography on plain elements:
+  `class="flex flex-col gap-2 text-sm"`; `:host` styles go in the `host` object as `class`
+- **No preflight** — its reset breaks Material components
+- **Colors are M3 tokens only**: the default palette is cleared, so `bg-surface`, `text-primary`,
+  `border-outline-variant`, `text-on-surface-variant` map to `--mat-sys-*` and follow dark mode.
+  Add an app color as a CSS variable in `styles.scss` and map it in `@theme inline`
+- Utilities live in a CSS layer, so Material's unlayered styles win over them. Size or reshape a
+  Material element (`mat-icon` size **and color**, `mat-toolbar`, `mat-*-button` font) in component SCSS,
+  not with utilities
+- Two utilities for the same property have no reliable order — toggle the pair
+  (`[class.text-primary]="active" [class.text-on-surface]="!active"`), never stack them
+- No `@apply` in component styles: each use copies Tailwind's `@property` boilerplate into the
+  component and blows the 2 KB budget. Repeat utilities, or extract a component
+- Component SCSS stays for what utilities can't express well: keyframes, SVG chart styling,
+  Material overrides
 - Dark mode belongs in an injectable `ThemeService` (signal + `LocalStorageService` +
   `prefers-color-scheme`) — never scatter `document.body.classList` calls across components
 - Respect the configured budgets: initial 500 KB warn / 2 MB error, component styles 2 KB / 4 KB
@@ -403,21 +420,21 @@ All app forms are Signal Forms; do not add new reactive forms.
 
 ## Anti-Patterns (Never Do)
 
-| Don't | Do Instead |
-|-------|-----------|
-| `MaterialModule` barrel | Import individual Material components |
-| `@Input()` / `@Output()` | `input()` / `output()` functions |
-| `@HostBinding` / `@HostListener` | `host` object in `@Component` |
-| Class-based `HttpInterceptor` | Functional `HttpInterceptorFn` + `withInterceptors()` |
-| Class-based `CanActivate` guard | Functional `CanActivateFn` |
-| `*ngIf` / `*ngFor` / `*ngSwitch` | `@if` / `@for` / `@switch` |
-| `ngClass` / `ngStyle` | `[class.*]` / `[style.*]` bindings |
-| Constructor injection | `inject()` function |
-| `.subscribe()` inside `effect()` | `resource()` / `rxResource()` |
-| `ChangeDetectorRef` / `setTimeout()` to force refresh | Fix the root cause |
-| Endpoint enums | `as const` object |
-| Hardcoded UI strings | ngx-translate keys |
-| `any` type | Proper types or `unknown` |
+| Don't                                                 | Do Instead                                            |
+| ----------------------------------------------------- | ----------------------------------------------------- |
+| `MaterialModule` barrel                               | Import individual Material components                 |
+| `@Input()` / `@Output()`                              | `input()` / `output()` functions                      |
+| `@HostBinding` / `@HostListener`                      | `host` object in `@Component`                         |
+| Class-based `HttpInterceptor`                         | Functional `HttpInterceptorFn` + `withInterceptors()` |
+| Class-based `CanActivate` guard                       | Functional `CanActivateFn`                            |
+| `*ngIf` / `*ngFor` / `*ngSwitch`                      | `@if` / `@for` / `@switch`                            |
+| `ngClass` / `ngStyle`                                 | `[class.*]` / `[style.*]` bindings                    |
+| Constructor injection                                 | `inject()` function                                   |
+| `.subscribe()` inside `effect()`                      | `resource()` / `rxResource()`                         |
+| `ChangeDetectorRef` / `setTimeout()` to force refresh | Fix the root cause                                    |
+| Endpoint enums                                        | `as const` object                                     |
+| Hardcoded UI strings                                  | ngx-translate keys                                    |
+| `any` type                                            | Proper types or `unknown`                             |
 
 ---
 

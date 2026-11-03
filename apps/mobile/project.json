@@ -26,7 +26,10 @@
             "input": "apps/mobile/src/assets"
           }
         ],
-        "styles": ["apps/mobile/src/styles.scss"],
+        "styles": [
+          "apps/mobile/src/tailwind.css",
+          "apps/mobile/src/styles.scss"
+        ],
         "scripts": []
       },
       "configurations": {

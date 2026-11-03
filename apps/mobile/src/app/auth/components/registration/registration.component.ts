@@ -8,7 +8,7 @@ import { form, FormField, FormRoot, required } from '@angular/forms/signals';
 import { MatAnchor, MatButton } from '@angular/material/button';
 import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { LoginResponse } from '@basal-temp-log-workspace/model';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
@@ -30,12 +30,14 @@ type RegistrationModel = Pick<UserDto, 'email' | 'password'>;
   selector: 'app-registration',
   templateUrl: './registration.component.html',
   styleUrls: ['./registration.component.scss'],
+  host: { class: 'flex h-screen flex-col items-center bg-surface' },
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormField,
     FormRoot,
     TranslatePipe,
     MatAnchor,
+    RouterLink,
     MatButton,
     MatError,
     MatFormField,
