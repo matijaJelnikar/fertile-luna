@@ -6,6 +6,7 @@ import {
   OnInit,
   resource,
   signal,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
@@ -25,6 +26,7 @@ enum NavigationButton {
   selector: 'app-shell',
   templateUrl: './shell.component.html',
   styleUrls: ['./shell.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterModule, NgClass, TranslateModule, MaterialModule],
 })
 export class ShellComponent implements OnInit {

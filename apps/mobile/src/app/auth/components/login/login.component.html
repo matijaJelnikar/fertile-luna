@@ -1,15 +1,15 @@
 <div fxFill fxLayout="column" class="login-wrapper">
   <div
     class="login-image"
-    [ngClass]="{ 'initial-load': initialLoad }"
+    [ngClass]="{ 'initial-load': initialLoad() }"
     style="background-image: url('resources/fertileluna_background.png')"
   ></div>
 
   <div class="login-form">
     <form (ngSubmit)="login()" [formGroup]="loginForm" novalidate>
       <div class="login-error">
-        @if (error) {
-        {{ error || 'login.credentials.incorrect' | translate }}
+        @if (error()) {
+          {{ error() || 'login.credentials.incorrect' | translate }}
         }
       </div>
 
@@ -25,11 +25,13 @@
           required
         />
         <mat-label for="emailInput">{{ 'email' | translate }}</mat-label>
-        @if (loginForm.controls['email'].invalid &&
-        loginForm.controls['email'].touched) {
-        <mat-error>
-          <span>{{ 'email.required' | translate }}</span>
-        </mat-error>
+        @if (
+          loginForm.controls['email'].invalid &&
+          loginForm.controls['email'].touched
+        ) {
+          <mat-error>
+            <span>{{ 'email.required' | translate }}</span>
+          </mat-error>
         }
       </mat-form-field>
 
@@ -43,11 +45,13 @@
           required
         />
         <mat-label for="passwordInput">{{ 'password' | translate }}</mat-label>
-        @if(loginForm.controls['password'].invalid &&
-        loginForm.controls['password'].touched){
-        <mat-error>
-          <span>{{ 'password.required' | translate }}</span>
-        </mat-error>
+        @if (
+          loginForm.controls['password'].invalid &&
+          loginForm.controls['password'].touched
+        ) {
+          <mat-error>
+            <span>{{ 'password.required' | translate }}</span>
+          </mat-error>
         }
       </mat-form-field>
 
@@ -60,7 +64,7 @@
           mat-flat-button
           color="secondary"
           type="submit"
-          [disabled]="loginForm.invalid || isLoading"
+          [disabled]="loginForm.invalid || isLoading()"
         >
           <span>{{ 'login.label' | translate }}</span>
         </button>

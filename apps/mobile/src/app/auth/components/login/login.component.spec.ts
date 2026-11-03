@@ -27,7 +27,11 @@ describe('LoginComponent', () => {
     route.snapshot.queryParams = {};
 
     await TestBed.configureTestingModule({
-      imports: [LoginComponent, NoopAnimationsModule, TranslateModule.forRoot()],
+      imports: [
+        LoginComponent,
+        NoopAnimationsModule,
+        TranslateModule.forRoot(),
+      ],
       providers: [
         { provide: AuthenticationService, useValue: authenticationService },
         { provide: Router, useValue: router },
@@ -59,7 +63,7 @@ describe('LoginComponent', () => {
       remember: false,
     });
     expect(router.navigate).toHaveBeenCalledWith(['/'], { replaceUrl: true });
-    expect(component.isLoading).toBe(false);
+    expect(component.isLoading()).toBe(false);
   });
 
   it('returns to the route the guard redirected from', () => {
@@ -81,8 +85,8 @@ describe('LoginComponent', () => {
 
     component.login();
 
-    expect(component.error).toBe('Invalid credentials');
+    expect(component.error()).toBe('Invalid credentials');
     expect(router.navigate).not.toHaveBeenCalled();
-    expect(component.isLoading).toBe(false);
+    expect(component.isLoading()).toBe(false);
   });
 });

@@ -1,4 +1,3 @@
-
 import {
   ChangeDetectionStrategy,
   Component,
@@ -31,14 +30,17 @@ import { UserService } from '../../state/user/user.service';
     FabComponent,
     TemperaturesChartComponent,
     MaterialModule,
-    TranslateModule
-],
+    TranslateModule,
+  ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [HomeService],
 })
 export class HomeComponent {
+  private dialog = inject(MatDialog);
+  homeService = inject(HomeService);
+
   cycleService = inject(CycleService);
   fertilityService = inject(FertilityService);
   userService = inject(UserService);
@@ -90,7 +92,11 @@ export class HomeComponent {
   evaluation = computed(() =>
     // TODO: pass the prior cycles' entries — until this screen loads them, R-FIRST-01 and R-FIRST-02
     // report insufficient history for every cycle.
-    this.fertilityService.evaluate(this.homeService.measurements(), [], this.evaluationContext())
+    this.fertilityService.evaluate(
+      this.homeService.measurements(),
+      [],
+      this.evaluationContext()
+    )
   );
 
   /**
@@ -99,7 +105,8 @@ export class HomeComponent {
    */
   phaseStateKey = computed(() => {
     const { postOvulatory, temperature, mucus, cervix } = this.evaluation();
-    if (postOvulatory.status === 'satisfied') return 'home.phase.infertile.confirmed';
+    if (postOvulatory.status === 'satisfied')
+      return 'home.phase.infertile.confirmed';
     if (temperature.status === 'satisfied') {
       // Without mucus the cervix is the second sign (`#R-CERVIX-01`), so name the one awaited.
       const unrecorded = (sign: typeof mucus | typeof cervix) =>
@@ -115,7 +122,9 @@ export class HomeComponent {
   /** The day the post-ovulatory infertile phase begins, once both signs are in. */
   infertileFromDay = computed(() => {
     const { postOvulatory } = this.evaluation();
-    return postOvulatory.status === 'satisfied' ? postOvulatory.result.infertileFromDay : null;
+    return postOvulatory.status === 'satisfied'
+      ? postOvulatory.result.infertileFromDay
+      : null;
   });
 
   isLatestCycle = computed(() => {
@@ -124,17 +133,15 @@ export class HomeComponent {
     return cycles[0].uuid === this.cycleService.currentCycleUuid();
   });
 
-
   // The shift is the evaluation's output, never a stored field.
   tempShift = computed(() => {
     const { temperature } = this.evaluation();
     if (temperature.status !== 'satisfied') return null;
     const { completedOnDay, helperLineTemperature } = temperature.result;
-    const day = this.charted().find((entry) => entry.day === completedOnDay) ?? null;
+    const day =
+      this.charted().find((entry) => entry.day === completedOnDay) ?? null;
     return day ? { ...day, helperLineTemperature } : null;
   });
-
-  constructor(private dialog: MatDialog, public homeService: HomeService) {}
 
   previousCycle(): void {
     const cycles = this.cycleService.cycles();
@@ -185,7 +192,8 @@ export class HomeComponent {
       )
       .subscribe({
         // The error only — never the entry, which is health data.
-        error: (err: unknown) => console.error('Error adding measurement:', err),
+        error: (err: unknown) =>
+          console.error('Error adding measurement:', err),
       });
   }
 }

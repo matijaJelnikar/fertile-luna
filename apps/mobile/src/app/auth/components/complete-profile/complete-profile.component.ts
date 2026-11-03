@@ -1,5 +1,4 @@
-
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -26,12 +25,8 @@ export interface CompleteProfileDto {
   selector: 'app-complete-profile',
   templateUrl: './complete-profile.component.html',
   styleUrls: ['./complete-profile.component.scss'],
-  imports: [
-    MaterialModule,
-    ReactiveFormsModule,
-    TranslateModule,
-    RouterModule
-],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [MaterialModule, ReactiveFormsModule, TranslateModule, RouterModule],
 })
 export class CompleteProfileComponent {
   isLinear = false;

@@ -2,7 +2,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { Cycle, Measurement } from '@basal-temp-log-workspace/model';
 import { CycleService } from './cycle.service';
@@ -27,7 +27,7 @@ describe('MeasurementsService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(withXhr()), provideHttpClientTesting()],
     });
 
     cycleService = TestBed.inject(CycleService);
@@ -114,10 +114,17 @@ describe('MeasurementsService', () => {
     loadCycle([]);
 
     service
-      .addMeasurement(CYCLE.uuid, { date: new Date(2026, 7, 2), temperature: 36.5 }, CYCLE.startDate)
+      .addMeasurement(
+        CYCLE.uuid,
+        { date: new Date(2026, 7, 2), temperature: 36.5 },
+        CYCLE.startDate
+      )
       .subscribe();
     const created = httpMock.expectOne(`/api/measurement/add/${CYCLE.uuid}`);
-    expect(created.request.body).toEqual({ date: '2026-08-02', temperature: 36.5 });
+    expect(created.request.body).toEqual({
+      date: '2026-08-02',
+      temperature: 36.5,
+    });
     created.flush(measurement('a', '2026-08-02', 36.5));
 
     service.updateMeasurement('a', { date: new Date(2026, 7, 3) }).subscribe();

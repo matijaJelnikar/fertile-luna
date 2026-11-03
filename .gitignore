@@ -57,3 +57,4 @@ openspec/
 .claude/worktrees
 .nx/polygraph
 .nx/self-healing
+.nx/migrate-runs

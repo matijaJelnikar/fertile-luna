@@ -19,7 +19,12 @@
         "libs/shared/components/src/index.ts"
       ],
       "@basal-temp-log-workspace/model": ["libs/shared/model/src/index.ts"]
-    }
+    },
+    "strict": false,
+    "noUncheckedSideEffectImports": false,
+    "types": ["*"],
+    "esModuleInterop": false,
+    "ignoreDeprecations": "6.0"
   },
   "exclude": ["node_modules", "tmp"]
 }

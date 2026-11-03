@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal, inject } from '@angular/core';
 import {
   Cycle,
   CycleDto,
@@ -11,13 +11,16 @@ import { toCalendarDay, toCycleDay } from './cycle-day';
 
 @Injectable({ providedIn: 'root' })
 export class CycleService {
+  private http = inject(HttpClient);
+
   cycles = signal<Cycle[]>([]);
   currentCycleUuid = signal<string | null>(null);
 
   /** A cycle runs until the next one starts, so end and length follow from the neighbours. */
   cyclesWithDerived = computed<CycleWithDerived[]>(() => {
     const byStart = [...this.cycles()].sort(
-      (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+      (a, b) =>
+        new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
     );
 
     return byStart.map((cycle, index) => {
@@ -52,8 +55,6 @@ export class CycleService {
       this.cyclesWithDerived().find((cycle) => cycle.uuid === cycleUuid) ?? null
     );
   });
-
-  constructor(private http: HttpClient) {}
 
   getCycles() {
     return this.http.get<Cycle[]>(CycleEndpoints.GET_ALL_CYCLES).pipe(
@@ -91,7 +92,10 @@ export class CycleService {
   }
 
   addCycle(cycleData: CycleDto) {
-    const body = { ...cycleData, startDate: toCalendarDay(cycleData.startDate) };
+    const body = {
+      ...cycleData,
+      startDate: toCalendarDay(cycleData.startDate),
+    };
     return this.http.post<Cycle>(CycleEndpoints.ADD_CYCLE, body).pipe(
       tap((newCycle) => {
         this.cycles.update((cycles) => [newCycle, ...cycles]);

@@ -1,5 +1,11 @@
 import { NgClass } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { MatFabButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 
@@ -7,6 +13,7 @@ import { MatIcon } from '@angular/material/icon';
   selector: 'lib-fab',
   templateUrl: './fab.component.html',
   styleUrls: ['./fab.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MatIcon, NgClass, MatFabButton],
 })
 export class FabComponent {

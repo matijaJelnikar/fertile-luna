@@ -33,7 +33,10 @@ describe('RegistrationComponent', () => {
         { provide: AuthenticationService, useValue: authenticationService },
         { provide: CredentialsService, useValue: credentialsService },
         { provide: Router, useValue: router },
-        { provide: ActivatedRoute, useValue: { snapshot: { queryParams: {} } } },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParams: {} } },
+        },
       ],
     }).compileComponents();
 
@@ -71,7 +74,7 @@ describe('RegistrationComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/complete-profile'], {
       replaceUrl: true,
     });
-    expect(component.isLoading).toBe(false);
+    expect(component.isLoading()).toBe(false);
   });
 
   it('surfaces the server`s first message when registration is rejected', () => {
@@ -85,8 +88,8 @@ describe('RegistrationComponent', () => {
 
     component.register();
 
-    expect(component.error).toBe('Email already in use');
+    expect(component.error()).toBe('Email already in use');
     expect(router.navigate).not.toHaveBeenCalled();
-    expect(component.isLoading).toBe(false);
+    expect(component.isLoading()).toBe(false);
   });
 });

@@ -1,4 +1,4 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import {
   HttpTestingController,
   provideHttpClientTesting,
@@ -12,7 +12,12 @@ const cycle = (
   uuid: string,
   startDate: string,
   cycleNumber: number
-): Cycle => ({ uuid, startDate: new Date(startDate), bleedingLength: 5, cycleNumber });
+): Cycle => ({
+  uuid,
+  startDate: new Date(startDate),
+  bleedingLength: 5,
+  cycleNumber,
+});
 
 describe('CycleService', () => {
   let service: CycleService;
@@ -20,7 +25,7 @@ describe('CycleService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(withXhr()), provideHttpClientTesting()],
     });
 
     service = TestBed.inject(CycleService);
@@ -62,7 +67,9 @@ describe('CycleService', () => {
         cycle('c1', '2026-01-13', 1),
       ]);
 
-      expect(service.cyclesWithDerived().filter((c) => c.isOpen)).toHaveLength(1);
+      expect(service.cyclesWithDerived().filter((c) => c.isOpen)).toHaveLength(
+        1
+      );
     });
 
     it('follows a corrected start date, leaving no stale length behind', () => {

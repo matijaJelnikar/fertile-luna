@@ -1,4 +1,11 @@
-import { AfterViewInit, Component, DestroyRef, inject } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  DestroyRef,
+  inject,
+  ChangeDetectionStrategy,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormControl,
@@ -19,6 +26,7 @@ import { AuthenticationService } from '../../authentication.service';
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -28,7 +36,11 @@ import { AuthenticationService } from '../../authentication.service';
   ],
 })
 export class LoginComponent implements AfterViewInit {
-  error: string | undefined;
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private authenticationService = inject(AuthenticationService);
+
+  error = signal<string | undefined>(undefined);
   loginForm: FormGroup = new FormGroup({
     email: new FormControl('', {
       validators: [Validators.required],
@@ -43,31 +55,25 @@ export class LoginComponent implements AfterViewInit {
       nonNullable: true,
     }),
   });
-  isLoading = false;
+  isLoading = signal(false);
   destroyRef = inject(DestroyRef);
-  initialLoad = true;
-
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private authenticationService: AuthenticationService
-  ) {}
+  initialLoad = signal(true);
 
   ngAfterViewInit(): void {
     setTimeout(() => {
-      this.initialLoad = false;
+      this.initialLoad.set(false);
     }, 10);
   }
 
   login() {
-    this.isLoading = true;
+    this.isLoading.set(true);
     this.authenticationService
       .login(this.loginForm.value)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
           this.loginForm.markAsPristine();
-          this.isLoading = false;
+          this.isLoading.set(false);
         })
       )
       .subscribe({
@@ -78,7 +84,7 @@ export class LoginComponent implements AfterViewInit {
           );
         },
         error: (err) => {
-          this.error = err.error?.message;
+          this.error.set(err.error?.message);
         },
       });
   }

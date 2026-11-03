@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { map, Observable, of, tap } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
@@ -21,10 +21,8 @@ export interface LoginContext {
   providedIn: 'root',
 })
 export class AuthenticationService {
-  constructor(
-    private credentialsService: CredentialsService,
-    private http: HttpClient
-  ) {}
+  private credentialsService = inject(CredentialsService);
+  private http = inject(HttpClient);
 
   /**
    * Authenticates the user.
