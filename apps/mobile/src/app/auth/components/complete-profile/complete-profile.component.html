@@ -30,14 +30,15 @@
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>{{ 'username' | translate }}</mat-label>
         <input type="text" matInput formControlName="username" required />
-        <mat-error
-          *ngIf="
-            userFormGroup.controls['username'].invalid &&
-            userFormGroup.controls['username'].touched
-          "
-        >
-          <span>{{ 'username.required' | translate }}</span>
-        </mat-error>
+        @if (
+          userFormGroup.controls['username'].invalid &&
+          userFormGroup.controls['username'].touched
+          ) {
+          <mat-error
+            >
+            <span>{{ 'username.required' | translate }}</span>
+          </mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="full-width">
@@ -47,33 +48,35 @@
           [matDatepicker]="birthDatePicker"
           formControlName="birthDate"
           required
-        />
+          />
         <mat-datepicker-toggle
           matIconSuffix
           [for]="birthDatePicker"
         ></mat-datepicker-toggle>
         <mat-datepicker touchUi #birthDatePicker></mat-datepicker>
-        <mat-error
-          *ngIf="
-            userFormGroup.controls['birthDate'].invalid &&
-            userFormGroup.controls['birthDate'].touched
-          "
-        >
-          <span>{{ 'birth.date.required' | translate }}</span>
-        </mat-error>
+        @if (
+          userFormGroup.controls['birthDate'].invalid &&
+          userFormGroup.controls['birthDate'].touched
+          ) {
+          <mat-error
+            >
+            <span>{{ 'birth.date.required' | translate }}</span>
+          </mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>{{ 'weight' | translate }}</mat-label>
         <input type="number" matInput formControlName="weight" />
-        <mat-error
-          *ngIf="
-            userFormGroup.controls['weight'].invalid &&
-            userFormGroup.controls['weight'].touched
-          "
-        >
-          <span>{{ 'weight.required' | translate }}</span>
-        </mat-error>
+        @if (
+          userFormGroup.controls['weight'].invalid &&
+          userFormGroup.controls['weight'].touched
+          ) {
+          <mat-error
+            >
+            <span>{{ 'weight.required' | translate }}</span>
+          </mat-error>
+        }
       </mat-form-field>
 
       <div class="button-group">
@@ -95,7 +98,7 @@
           matInput
           [matDatepicker]="lastPeriodPicker"
           formControlName="lastPeriodDate"
-        />
+          />
         <mat-datepicker-toggle
           matIconSuffix
           [for]="lastPeriodPicker"
@@ -110,7 +113,7 @@
           matInput
           formControlName="bleedingLength"
           required
-        />
+          />
       </mat-form-field>
 
       <div class="button-group">

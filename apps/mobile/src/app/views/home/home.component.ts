@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import {
   ChangeDetectionStrategy,
   Component,
@@ -28,12 +28,11 @@ import { UserService } from '../../state/user/user.service';
 @Component({
   selector: 'app-home',
   imports: [
-    CommonModule,
     FabComponent,
     TemperaturesChartComponent,
     MaterialModule,
-    TranslateModule,
-  ],
+    TranslateModule
+],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

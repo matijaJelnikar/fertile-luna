@@ -1,4 +1,4 @@
-import { NgIf } from '@angular/common';
+
 import { Component, inject } from '@angular/core';
 import {
   FormControl,
@@ -30,9 +30,8 @@ export interface CompleteProfileDto {
     MaterialModule,
     ReactiveFormsModule,
     TranslateModule,
-    NgIf,
-    RouterModule,
-  ],
+    RouterModule
+],
 })
 export class CompleteProfileComponent {
   isLinear = false;
