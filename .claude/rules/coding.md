@@ -426,12 +426,6 @@ All app forms are Signal Forms; do not add new reactive forms.
 Current code that violates the rules above. Do not copy these patterns; migrate them
 when touching the surrounding code.
 
-- `apps/mobile/src/app/material.module.ts` — Material barrel module, still used by `shell`, `home` and
-  `settings`; replace with direct imports
-- `apps/mobile/src/app/interceptors/auth.interceptor.ts` — class-based interceptor registered via
-  `HTTP_INTERCEPTORS`; convert to `HttpInterceptorFn` + `withInterceptors()`
-- `apps/mobile/src/app/shared/constants/endpoints.constants.ts` — endpoint enums; convert to `as const`
 - No global `ErrorHandler` and no `NotificationService` yet
 - No `environments/` files — API URL is not configurable per environment
-- `AppComponent` uses `ChangeDetectionStrategy.Eager`, which fails the `prefer-on-push` lint rule
-- `shell` still uses `ngClass`
+- Initial bundle (~1.15 MB) and `home.component.scss` exceed their warning budgets

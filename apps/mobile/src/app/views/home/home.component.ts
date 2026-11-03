@@ -16,7 +16,8 @@ import {
   MeasurementDialogData,
 } from '../../components/add-measurement/add-measurement.component';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { MaterialModule } from '../../material.module';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 import { toCycleDay } from '../../state/measurements/cycle-day';
 import { CycleService } from '../../state/measurements/cycle.service';
 import { FertilityService } from '../../state/fertility/fertility.service';
@@ -29,7 +30,8 @@ import { UserService } from '../../state/user/user.service';
   imports: [
     FabComponent,
     TemperaturesChartComponent,
-    MaterialModule,
+    MatButton,
+    MatIcon,
     TranslatePipe,
   ],
   templateUrl: './home.component.html',

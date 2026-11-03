@@ -1,8 +1,7 @@
 import {
-  HTTP_INTERCEPTORS,
   HttpClient,
   provideHttpClient,
-  withInterceptorsFromDi,
+  withInterceptors,
   withXhr,
 } from '@angular/common/http';
 import {
@@ -14,9 +13,9 @@ import { Router } from '@angular/router';
 import { of } from 'rxjs';
 
 import { AuthenticationService, CredentialsService } from '../auth';
-import { AuthInterceptor } from './auth.interceptor';
+import { authInterceptor } from './auth.interceptor';
 
-describe('AuthInterceptor', () => {
+describe('authInterceptor', () => {
   let http: HttpClient;
   let backend: HttpTestingController;
 
@@ -30,9 +29,8 @@ describe('AuthInterceptor', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(withXhr(), withInterceptorsFromDi()),
+        provideHttpClient(withXhr(), withInterceptors([authInterceptor])),
         provideHttpClientTesting(),
-        { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
         { provide: CredentialsService, useValue: credentialsService },
         { provide: AuthenticationService, useValue: authenticationService },
         { provide: Router, useValue: router },

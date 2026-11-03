@@ -12,6 +12,7 @@ describe('FabComponent', () => {
 
     fixture = TestBed.createComponent(FabComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('label', 'Add');
     fixture.detectChanges();
   });
 

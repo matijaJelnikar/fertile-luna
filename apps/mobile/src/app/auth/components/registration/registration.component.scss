@@ -19,10 +19,18 @@
   background-position: center;
   width: 100%;
   height: 26vh;
-  transition: height 0.5s ease-in-out;
+  animation: settle-image 0.5s ease-in-out;
+}
 
-  &.initial-load {
+@keyframes settle-image {
+  from {
     height: 33vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .registration-image {
+    animation: none;
   }
 }
 

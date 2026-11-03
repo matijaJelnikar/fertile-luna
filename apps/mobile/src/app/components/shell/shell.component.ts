@@ -1,25 +1,27 @@
-import { NgClass } from '@angular/common';
 import {
-  Component,
-  DestroyRef,
-  inject,
-  OnInit,
-  resource,
-  signal,
   ChangeDetectionStrategy,
+  Component,
+  inject,
+  resource,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { MatIcon } from '@angular/material/icon';
+import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
+import { MatToolbar } from '@angular/material/toolbar';
+import {
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet,
+} from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { firstValueFrom, tap } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { AuthenticationService } from '../../auth';
-import { MaterialModule } from '../../material.module';
 import { CycleService } from '../../state/measurements/cycle.service';
 
-enum NavigationButton {
-  HOME = '/home',
-  HISTORY = '/history',
-  SETTINGS = '/settings',
+interface NavItem {
+  path: string;
+  icon: string;
+  labelKey: string;
 }
 
 @Component({
@@ -27,14 +29,22 @@ enum NavigationButton {
   templateUrl: './shell.component.html',
   styleUrls: ['./shell.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterModule, NgClass, TranslatePipe, MaterialModule],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    TranslatePipe,
+    MatIcon,
+    MatMenu,
+    MatMenuItem,
+    MatMenuTrigger,
+    MatToolbar,
+  ],
 })
-export class ShellComponent implements OnInit {
-  router = inject(Router);
-  authService = inject(AuthenticationService);
-  destroyRef = inject(DestroyRef);
+export class ShellComponent {
+  private router = inject(Router);
+  private authService = inject(AuthenticationService);
   private cycleService = inject(CycleService);
-  selectedTab = signal<NavigationButton>(this.router.url as NavigationButton);
 
   // Cycles are loaded here rather than in a view, so every authenticated route
   // (home, history) has them regardless of which one is entered first.
@@ -42,31 +52,13 @@ export class ShellComponent implements OnInit {
     loader: () => firstValueFrom(this.cycleService.getCycles()),
   });
 
-  protected Navigation: typeof NavigationButton = NavigationButton;
+  readonly navItems: readonly NavItem[] = [
+    { path: '/home', icon: 'home', labelKey: 'nav.home' },
+    { path: '/history', icon: 'show_chart', labelKey: 'nav.history' },
+    { path: '/settings', icon: 'settings', labelKey: 'nav.settings' },
+  ];
 
-  ngOnInit(): void {
-    this.registerRouteChangesListener();
-  }
-
-  registerRouteChangesListener(): void {
-    this.router.events
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        tap((event) => {
-          if (event instanceof NavigationEnd) {
-            this.selectedTab.set(this.router.url as NavigationButton);
-          }
-        })
-      )
-      .subscribe();
-  }
-
-  selectTab(navButton: NavigationButton): void {
-    this.selectedTab.set(navButton);
-    this.router.navigate([navButton]);
-  }
-
-  logout() {
+  logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }

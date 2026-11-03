@@ -6,7 +6,7 @@ import {
   CycleWithDerived,
 } from '@basal-temp-log-workspace/model';
 import { tap, throwError } from 'rxjs';
-import { CycleEndpoints } from '../../shared/constants/endpoints.constants';
+import { API } from '../../shared/constants/endpoints.constants';
 import { toCalendarDay, toCycleDay } from './cycle-day';
 
 @Injectable({ providedIn: 'root' })
@@ -57,7 +57,7 @@ export class CycleService {
   });
 
   getCycles() {
-    return this.http.get<Cycle[]>(CycleEndpoints.GET_ALL_CYCLES).pipe(
+    return this.http.get<Cycle[]>(API.cycle.list).pipe(
       tap((cycles) => {
         this.cycles.set(cycles);
         if (cycles.length > 0 && !this.currentCycleUuid()) {
@@ -68,7 +68,7 @@ export class CycleService {
   }
 
   getCycle(cycleUuid: string) {
-    return this.http.get<Cycle>(`${CycleEndpoints.GET_CYCLE}${cycleUuid}`);
+    return this.http.get<Cycle>(API.cycle.byId(cycleUuid));
   }
 
   /**
@@ -96,7 +96,7 @@ export class CycleService {
       ...cycleData,
       startDate: toCalendarDay(cycleData.startDate),
     };
-    return this.http.post<Cycle>(CycleEndpoints.ADD_CYCLE, body).pipe(
+    return this.http.post<Cycle>(API.cycle.create, body).pipe(
       tap((newCycle) => {
         this.cycles.update((cycles) => [newCycle, ...cycles]);
         this.currentCycleUuid.set(newCycle.uuid);
@@ -105,14 +105,11 @@ export class CycleService {
   }
 
   updateCycle(cycleUuid: string, cycleData: Partial<CycleDto>) {
-    return this.http.put<Cycle>(
-      `${CycleEndpoints.UPDATE_CYCLE}${cycleUuid}`,
-      cycleData
-    );
+    return this.http.put<Cycle>(API.cycle.update(cycleUuid), cycleData);
   }
 
   deleteCycle(cycleUuid: string) {
-    return this.http.delete(`${CycleEndpoints.DELETE_CYCLE}${cycleUuid}`).pipe(
+    return this.http.delete(API.cycle.delete(cycleUuid)).pipe(
       tap(() => {
         this.cycles.update((cycles) =>
           cycles.filter((c) => c.uuid !== cycleUuid)

@@ -1,22 +1,20 @@
-export const LoginFlowEndpoints = {
-  LOGIN: '/api/auth/login',
-  REGISTER: '/api/auth/register',
-  USER_UPDATE: '/api/auth/user/update',
-  USER_ME: '/api/auth/user/me',
-} as const;
-
-export const MeasurementEndpoints = {
-  ADD_MEASUREMENT: '/api/measurement/add',
-  GET_MEASUREMENT: '/api/measurement/getAll',
-  GET_ONE_MEASUREMENT: '/api/measurement',
-  UPDATE_MEASUREMENT: '/api/measurement',
-  DELETE_MEASUREMENT: '/api/measurement',
-} as const;
-
-export const CycleEndpoints = {
-  GET_ALL_CYCLES: '/api/cycle/getAll',
-  GET_CYCLE: '/api/cycle/get/',
-  ADD_CYCLE: '/api/cycle/add',
-  UPDATE_CYCLE: '/api/cycle/update/',
-  DELETE_CYCLE: '/api/cycle/delete/',
+export const API = {
+  auth: {
+    login: '/api/auth/login',
+    register: '/api/auth/register',
+    updateUser: '/api/auth/user/update',
+    me: '/api/auth/user/me',
+  },
+  measurement: {
+    byCycle: (cycleId: string) => `/api/measurement/getAll/${cycleId}`,
+    create: (cycleId: string) => `/api/measurement/add/${cycleId}`,
+    byId: (id: string) => `/api/measurement/${id}`,
+  },
+  cycle: {
+    list: '/api/cycle/getAll',
+    create: '/api/cycle/add',
+    byId: (id: string) => `/api/cycle/get/${id}`,
+    update: (id: string) => `/api/cycle/update/${id}`,
+    delete: (id: string) => `/api/cycle/delete/${id}`,
+  },
 } as const;

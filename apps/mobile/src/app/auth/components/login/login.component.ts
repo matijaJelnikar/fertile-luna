@@ -1,5 +1,4 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   inject,
@@ -14,7 +13,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { lastValueFrom } from 'rxjs';
 
-import { AuthenticationService, LoginContext } from '../../authentication.service';
+import {
+  AuthenticationService,
+  LoginContext,
+} from '../../authentication.service';
 
 @Component({
   selector: 'app-login',
@@ -34,13 +36,12 @@ import { AuthenticationService, LoginContext } from '../../authentication.servic
     MatSlideToggle,
   ],
 })
-export class LoginComponent implements AfterViewInit {
+export class LoginComponent {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private authenticationService = inject(AuthenticationService);
 
   error = signal<string | undefined>(undefined);
-  initialLoad = signal(true);
 
   private credentials = signal<Required<LoginContext>>({
     email: '',
@@ -56,12 +57,6 @@ export class LoginComponent implements AfterViewInit {
     },
     { submission: { action: (field) => this.signIn(field().value()) } }
   );
-
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.initialLoad.set(false);
-    }, 10);
-  }
 
   private async signIn(credentials: LoginContext): Promise<undefined> {
     try {

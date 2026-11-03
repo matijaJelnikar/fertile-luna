@@ -5,7 +5,7 @@ import {
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Cycle } from '@basal-temp-log-workspace/model';
-import { CycleEndpoints } from '../../shared/constants/endpoints.constants';
+import { API } from '../../shared/constants/endpoints.constants';
 import { CycleService } from './cycle.service';
 
 const cycle = (
@@ -103,7 +103,7 @@ describe('CycleService', () => {
         .startNewCycle({ startDate: new Date('2026-01-13'), bleedingLength: 5 })
         .subscribe();
 
-      const request = httpMock.expectOne(CycleEndpoints.ADD_CYCLE);
+      const request = httpMock.expectOne(API.cycle.create);
       expect(request.request.body).toEqual(
         expect.objectContaining({ cycleNumber: 1 })
       );
@@ -117,7 +117,7 @@ describe('CycleService', () => {
         .startNewCycle({ startDate: new Date('2026-02-10'), bleedingLength: 4 })
         .subscribe();
 
-      const request = httpMock.expectOne(CycleEndpoints.ADD_CYCLE);
+      const request = httpMock.expectOne(API.cycle.create);
       expect(request.request.body).toEqual(
         expect.objectContaining({ cycleNumber: 2 })
       );
@@ -139,7 +139,7 @@ describe('CycleService', () => {
         .subscribe({ error: onError });
 
       expect(onError).toHaveBeenCalled();
-      httpMock.expectNone(CycleEndpoints.ADD_CYCLE);
+      httpMock.expectNone(API.cycle.create);
     });
 
     it('refuses a start on the open cycle`s own first day, which would leave it no days', () => {
@@ -151,7 +151,7 @@ describe('CycleService', () => {
         .subscribe({ error: onError });
 
       expect(onError).toHaveBeenCalled();
-      httpMock.expectNone(CycleEndpoints.ADD_CYCLE);
+      httpMock.expectNone(API.cycle.create);
     });
 
     it('sends the start as the calendar day picked, not a UTC timestamp', () => {
@@ -159,7 +159,7 @@ describe('CycleService', () => {
         .startNewCycle({ startDate: new Date(2026, 1, 10), bleedingLength: 4 })
         .subscribe();
 
-      const request = httpMock.expectOne(CycleEndpoints.ADD_CYCLE);
+      const request = httpMock.expectOne(API.cycle.create);
       expect(request.request.body.startDate).toBe('2026-02-10');
       request.flush(cycle('c1', '2026-02-10', 1));
     });

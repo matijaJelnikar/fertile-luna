@@ -3,7 +3,7 @@ import { map, Observable, of, tap } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
 import { LoginResponse } from '@basal-temp-log-workspace/model';
-import { LoginFlowEndpoints } from '../shared/constants/endpoints.constants';
+import { API } from '../shared/constants/endpoints.constants';
 import { UserDto } from './components/registration/registration.component';
 import { Credentials, CredentialsService } from './credentials.service';
 
@@ -35,7 +35,7 @@ export class AuthenticationService {
       password: context.password,
     };
 
-    return this.http.post<LoginResponse>(LoginFlowEndpoints.LOGIN, data).pipe(
+    return this.http.post<LoginResponse>(API.auth.login, data).pipe(
       tap((loginResponse: LoginResponse) => {
         this.credentialsService.setCredentials(
           {
@@ -56,7 +56,7 @@ export class AuthenticationService {
   }
 
   register(userData: unknown): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(LoginFlowEndpoints.REGISTER, userData);
+    return this.http.post<LoginResponse>(API.auth.register, userData);
   }
 
   /**
@@ -70,6 +70,6 @@ export class AuthenticationService {
   }
 
   updateUser(userData: Partial<UserDto>): Observable<boolean> {
-    return this.http.post<boolean>(LoginFlowEndpoints.USER_UPDATE, userData);
+    return this.http.post<boolean>(API.auth.updateUser, userData);
   }
 }

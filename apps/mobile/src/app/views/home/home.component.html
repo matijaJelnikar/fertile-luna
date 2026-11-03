@@ -28,20 +28,20 @@
     <h2 class="section-label">{{ 'home.section.this.cycle' | translate }}</h2>
     <div class="cycle-stats" role="list" aria-label="Current cycle statistics">
       @if (currentCycle()) {
-      @if (dayOfCycle() !== null) {
-      <div class="stat-chip" role="listitem">
-        <span class="stat-value">{{ dayOfCycle() }}</span>
-        <span class="stat-label">{{ 'home.cycle.day' | translate }}</span>
-      </div>
-      }
-      <div
-        class="stat-chip"
-        [class.stat-chip--bleeding]="currentCycle()!.bleedingLength > 0"
-        role="listitem"
-      >
-        <span class="stat-value">{{ currentCycle()!.bleedingLength }}</span>
-        <span class="stat-label">{{ 'home.bleeding.days' | translate }}</span>
-      </div>
+        @if (dayOfCycle() !== null) {
+          <div class="stat-chip" role="listitem">
+            <span class="stat-value">{{ dayOfCycle() }}</span>
+            <span class="stat-label">{{ 'home.cycle.day' | translate }}</span>
+          </div>
+        }
+        <div
+          class="stat-chip"
+          [class.stat-chip--bleeding]="currentCycle()!.bleedingLength > 0"
+          role="listitem"
+        >
+          <span class="stat-value">{{ currentCycle()!.bleedingLength }}</span>
+          <span class="stat-label">{{ 'home.bleeding.days' | translate }}</span>
+        </div>
       }
     </div>
 
@@ -54,18 +54,21 @@
       <mat-icon aria-hidden="true">thermostat</mat-icon>
       <div class="temp-shift-info">
         @if (tempShift(); as shift) {
-        <p class="temp-shift-label">{{ 'home.temperature.evaluated' | translate }}</p>
-        <p class="temp-shift-value">{{ shift.temperature }}°C</p>
-        <p class="temp-shift-day">
-          {{ 'home.cycle.day' | translate }} {{ shift.day }}
-        </p>
-        <p class="temp-shift-baseline">
-          {{ 'home.helper.line' | translate }} {{ shift.helperLineTemperature }}°C
-        </p>
+          <p class="temp-shift-label">
+            {{ 'home.temperature.evaluated' | translate }}
+          </p>
+          <p class="temp-shift-value">{{ shift.temperature }}°C</p>
+          <p class="temp-shift-day">
+            {{ 'home.cycle.day' | translate }} {{ shift.day }}
+          </p>
+          <p class="temp-shift-baseline">
+            {{ 'home.helper.line' | translate }}
+            {{ shift.helperLineTemperature }}°C
+          </p>
         } @else {
-        <p class="temp-shift-label">
-          {{ 'home.temperature.not.evaluated' | translate }}
-        </p>
+          <p class="temp-shift-label">
+            {{ 'home.temperature.not.evaluated' | translate }}
+          </p>
         }
       </div>
     </div>
@@ -92,19 +95,21 @@
             {{ phaseStateKey() | translate }}
           </p>
           @if (infertileFromDay(); as from) {
-          <p class="phase-detail">
-            {{ 'home.phase.infertile.from' | translate }} {{ from }}
-          </p>
+            <p class="phase-detail">
+              {{ 'home.phase.infertile.from' | translate }} {{ from }}
+            </p>
           }
         </div>
       </div>
 
       <!-- All-time pattern stat -->
       @if (avgCycleLength() !== null) {
-      <div class="stat-card">
-        <span class="stat-value">{{ avgCycleLength() }}</span>
-        <span class="stat-label">{{ 'home.avg.cycle.length' | translate }}</span>
-      </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ avgCycleLength() }}</span>
+          <span class="stat-label">{{
+            'home.avg.cycle.length' | translate
+          }}</span>
+        </div>
       }
     </div>
 
@@ -116,5 +121,6 @@
   icon="add"
   color="primary"
   position="bottom-right"
+  [label]="'measurement.add.title' | translate"
   (fabClick)="addRecord()"
-></lib-fab>
+/>

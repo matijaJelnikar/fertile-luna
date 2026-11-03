@@ -1,5 +1,4 @@
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   inject,
@@ -44,13 +43,12 @@ type RegistrationModel = Pick<UserDto, 'email' | 'password'>;
     MatLabel,
   ],
 })
-export class RegistrationComponent implements AfterViewInit {
+export class RegistrationComponent {
   private authService = inject(AuthenticationService);
   private credentialsService = inject(CredentialsService);
   private router = inject(Router);
   private translate = inject(TranslateService);
 
-  initialLoad = signal(true);
   error = signal<string | null>(null);
 
   private account = signal<RegistrationModel>({ email: '', password: '' });
@@ -63,12 +61,6 @@ export class RegistrationComponent implements AfterViewInit {
     },
     { submission: { action: (field) => this.register(field().value()) } }
   );
-
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.initialLoad.set(false);
-    }, 10);
-  }
 
   private async register(account: RegistrationModel): Promise<undefined> {
     let response: LoginResponse;

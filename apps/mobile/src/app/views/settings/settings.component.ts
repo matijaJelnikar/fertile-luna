@@ -1,11 +1,30 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+} from '@angular/core';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { Router } from '@angular/router';
 import { Cycle } from '@basal-temp-log-workspace/model';
 import { TranslatePipe } from '@ngx-translate/core';
 import { filter } from 'rxjs';
 import { NewCycleDialogService } from '../../components/new-cycle/new-cycle-dialog.service';
-import { MaterialModule } from '../../material.module';
+import { MatButton } from '@angular/material/button';
+import {
+  MatDatepicker,
+  MatDatepickerInput,
+  MatDatepickerToggle,
+} from '@angular/material/datepicker';
+import {
+  MatFormField,
+  MatHint,
+  MatLabel,
+  MatSuffix,
+} from '@angular/material/form-field';
+import { MatIcon } from '@angular/material/icon';
+import { MatInput } from '@angular/material/input';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { ThemeService } from '../../services/theme.service';
 import { UserService } from '../../state/user/user.service';
 
@@ -15,7 +34,20 @@ import { UserService } from '../../state/user/user.service';
   styleUrls: ['./settings.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideNativeDateAdapter()],
-  imports: [MaterialModule, TranslatePipe],
+  imports: [
+    TranslatePipe,
+    MatButton,
+    MatDatepicker,
+    MatDatepickerInput,
+    MatDatepickerToggle,
+    MatFormField,
+    MatHint,
+    MatIcon,
+    MatInput,
+    MatLabel,
+    MatSlideToggle,
+    MatSuffix,
+  ],
 })
 export class SettingsComponent {
   private theme = inject(ThemeService);

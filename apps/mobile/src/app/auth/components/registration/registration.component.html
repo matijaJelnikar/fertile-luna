@@ -1,7 +1,6 @@
 <div class="registration-wrapper">
   <div
     class="registration-image"
-    [class.initial-load]="initialLoad()"
     style="background-image: url('resources/fertileluna_background.png')"
   ></div>
 
@@ -23,7 +22,10 @@
           id="emailInput"
         />
         <mat-label for="emailInput">{{ 'email' | translate }}</mat-label>
-        @if (registrationForm.email().invalid() && registrationForm.email().touched()) {
+        @if (
+          registrationForm.email().invalid() &&
+          registrationForm.email().touched()
+        ) {
           <mat-error>
             <span>{{ 'email.required' | translate }}</span>
           </mat-error>
@@ -39,7 +41,10 @@
           id="passwordInput"
         />
         <mat-label for="passwordInput">{{ 'password' | translate }}</mat-label>
-        @if (registrationForm.password().invalid() && registrationForm.password().touched()) {
+        @if (
+          registrationForm.password().invalid() &&
+          registrationForm.password().touched()
+        ) {
           <mat-error>
             <span>{{ 'password.required' | translate }}</span>
           </mat-error>
@@ -50,7 +55,9 @@
         mat-flat-button
         color="secondary"
         type="submit"
-        [disabled]="registrationForm().invalid() || registrationForm().submitting()"
+        [disabled]="
+          registrationForm().invalid() || registrationForm().submitting()
+        "
       >
         <span>{{ 'sign.up.label' | translate }}</span>
       </button>

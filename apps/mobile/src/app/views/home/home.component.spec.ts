@@ -41,7 +41,10 @@ const NOTHING_EVALUATED: CycleEvaluation = {
   temperature: { status: 'unevaluable', missing: 'too-few-values' },
   mucus: { status: 'unevaluable', missing: 'not-recorded' },
   cervix: { status: 'unevaluable', missing: 'not-recorded' },
-  preOvulatory: { status: 'unevaluable', missing: 'no-evaluated-previous-cycle' },
+  preOvulatory: {
+    status: 'unevaluable',
+    missing: 'no-evaluated-previous-cycle',
+  },
   postOvulatory: { status: 'unevaluable', missing: 'awaiting-second-sign' },
   markers: [],
   mucusByDay: [],
@@ -88,15 +91,8 @@ describe('HomeComponent', () => {
         { provide: MatDialog, useValue: dialog },
       ],
     })
-      // MaterialModule brings MatDialogModule into the component's own environment injector,
-      // which shadows a TestBed-level provider — so the double goes on the component.
       .overrideComponent(HomeComponent, {
-        set: {
-          providers: [
-            { provide: HomeService, useValue: homeService },
-            { provide: MatDialog, useValue: dialog },
-          ],
-        },
+        set: { providers: [{ provide: HomeService, useValue: homeService }] },
       })
       .compileComponents();
 
@@ -121,7 +117,11 @@ describe('HomeComponent', () => {
   it('hands the sheet the entries and the evaluation, and derives nothing itself', () => {
     const sheet = fixture.nativeElement.querySelector('lib-temperatures-chart');
     expect(sheet).toBeTruthy();
-    expect(fertilityService.evaluate).toHaveBeenCalledWith(MEASUREMENTS, [], {});
+    expect(fertilityService.evaluate).toHaveBeenCalledWith(
+      MEASUREMENTS,
+      [],
+      {}
+    );
   });
 
   it('evaluates the first cycle after stopping hormonal contraception under its own rule', () => {
@@ -129,9 +129,13 @@ describe('HomeComponent', () => {
     userService.contraceptionStoppedOn.set('2026-03-28');
     fixture.detectChanges();
 
-    expect(fertilityService.evaluate).toHaveBeenLastCalledWith(MEASUREMENTS, [], {
-      afterHormonalContraception: { bleedingInFirstWeek: true },
-    });
+    expect(fertilityService.evaluate).toHaveBeenLastCalledWith(
+      MEASUREMENTS,
+      [],
+      {
+        afterHormonalContraception: { bleedingInFirstWeek: true },
+      }
+    );
   });
 
   it('names the cervix as the awaited sign when no mucus is recorded', () => {

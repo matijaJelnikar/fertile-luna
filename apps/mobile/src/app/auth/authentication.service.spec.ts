@@ -6,7 +6,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { LoginResponse } from '@basal-temp-log-workspace/model';
 
-import { LoginFlowEndpoints } from '../shared/constants/endpoints.constants';
+import { API } from '../shared/constants/endpoints.constants';
 import { AuthenticationService } from './authentication.service';
 import { CredentialsService } from './credentials.service';
 import { MockCredentialsService } from './credentials.service.mock';
@@ -28,7 +28,7 @@ describe('AuthenticationService', () => {
       remember,
     });
     const subscription = request.subscribe();
-    http.expectOne(LoginFlowEndpoints.LOGIN).flush(LOGIN_RESPONSE);
+    http.expectOne(API.auth.login).flush(LOGIN_RESPONSE);
     subscription.unsubscribe();
   };
 
@@ -58,7 +58,7 @@ describe('AuthenticationService', () => {
         .login({ email: 'me@example.test', password: '123' })
         .subscribe();
 
-      const request = http.expectOne(LoginFlowEndpoints.LOGIN);
+      const request = http.expectOne(API.auth.login);
       expect(request.request.body).toEqual({
         email: 'me@example.test',
         password: '123',
@@ -77,7 +77,7 @@ describe('AuthenticationService', () => {
           done();
         });
 
-      http.expectOne(LoginFlowEndpoints.LOGIN).flush(LOGIN_RESPONSE);
+      http.expectOne(API.auth.login).flush(LOGIN_RESPONSE);
     });
 
     it('authenticates the user', () => {
@@ -116,7 +116,7 @@ describe('AuthenticationService', () => {
         });
 
       http
-        .expectOne(LoginFlowEndpoints.LOGIN)
+        .expectOne(API.auth.login)
         .flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
     });
   });

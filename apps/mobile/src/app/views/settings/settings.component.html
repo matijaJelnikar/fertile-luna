@@ -1,5 +1,5 @@
 <div class="settings-container">
-  <h2 mat-dialog-title>{{ 'settings' | translate }}</h2>
+  <h2>{{ 'settings' | translate }}</h2>
   <div class="dark-mode-row">
     <mat-icon aria-hidden="true">light_mode</mat-icon>
     <mat-slide-toggle
@@ -30,8 +30,12 @@
     <mat-datepicker touchUi #stoppedPicker />
   </mat-form-field>
   @if (contraceptionStoppedOn()) {
-  <button mat-button type="button" (click)="onContraceptionStoppedOnChange(null)">
-    {{ 'settings.contraception.clear' | translate }}
-  </button>
+    <button
+      mat-button
+      type="button"
+      (click)="onContraceptionStoppedOnChange(null)"
+    >
+      {{ 'settings.contraception.clear' | translate }}
+    </button>
   }
 </div>

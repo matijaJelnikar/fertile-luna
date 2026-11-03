@@ -41,13 +41,12 @@ describe('ShellComponent', () => {
     expect(cycleService.getCycles).toHaveBeenCalledTimes(1);
   });
 
-  it('navigates to the tab that was selected, and marks it current', () => {
-    const navigate = jest.spyOn(TestBed.inject(Router), 'navigate');
+  it('links every tab to its route', () => {
+    const links = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('nav a')
+    ).map((a) => a.getAttribute('href'));
 
-    component.selectTab('/history' as never);
-
-    expect(component.selectedTab()).toBe('/history');
-    expect(navigate).toHaveBeenCalledWith(['/history']);
+    expect(links).toEqual(['/home', '/history', '/settings']);
   });
 
   it('signs the user out and returns them to login', () => {

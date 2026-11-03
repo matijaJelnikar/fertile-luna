@@ -1,5 +1,15 @@
-<div class="fab-container" [ngClass]="position">
-  <button mat-fab [color]="color" (click)="onClick()">
-    <mat-icon>{{ icon }}</mat-icon>
+<div
+  class="fab-container"
+  [class.bottom-right]="position() === 'bottom-right'"
+  [class.bottom-left]="position() === 'bottom-left'"
+>
+  <button
+    mat-fab
+    type="button"
+    [color]="color()"
+    [attr.aria-label]="label()"
+    (click)="fabClick.emit()"
+  >
+    <mat-icon aria-hidden="true">{{ icon() }}</mat-icon>
   </button>
 </div>

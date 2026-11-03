@@ -10,7 +10,7 @@ import {
   UpdateMeasurementDto,
 } from '@basal-temp-log-workspace/model';
 import { filter, switchMap, tap } from 'rxjs/operators';
-import { MeasurementEndpoints } from '../../shared/constants/endpoints.constants';
+import { API } from '../../shared/constants/endpoints.constants';
 import { toCalendarDay, toCycleDay } from './cycle-day';
 import { CycleService } from './cycle.service';
 
@@ -46,23 +46,19 @@ export class MeasurementsService {
   }
 
   getMeasurementsByCycle(cycleId: string, cycleStartDate?: Date) {
-    return this.http
-      .get<Measurement[]>(`${MeasurementEndpoints.GET_MEASUREMENT}/${cycleId}`)
-      .pipe(
-        tap((measurements) => {
-          this.state.set(
-            this.sortByDate(
-              measurements.map((m) => this.toGraphData(m, cycleStartDate))
-            )
-          );
-        })
-      );
+    return this.http.get<Measurement[]>(API.measurement.byCycle(cycleId)).pipe(
+      tap((measurements) => {
+        this.state.set(
+          this.sortByDate(
+            measurements.map((m) => this.toGraphData(m, cycleStartDate))
+          )
+        );
+      })
+    );
   }
 
   getMeasurement(measurementId: string) {
-    return this.http.get<Measurement>(
-      `${MeasurementEndpoints.GET_ONE_MEASUREMENT}/${measurementId}`
-    );
+    return this.http.get<Measurement>(API.measurement.byId(measurementId));
   }
 
   addMeasurement(
@@ -72,7 +68,7 @@ export class MeasurementsService {
   ) {
     return this.http
       .post<Measurement>(
-        `${MeasurementEndpoints.ADD_MEASUREMENT}/${cycleId}`,
+        API.measurement.create(cycleId),
         // A calendar day, like the cycle start: a UTC timestamp can land on the previous day.
         { ...measurementData, date: toCalendarDay(measurementData.date) }
       )
@@ -95,7 +91,7 @@ export class MeasurementsService {
   ) {
     return this.http
       .put<Measurement>(
-        `${MeasurementEndpoints.UPDATE_MEASUREMENT}/${measurementId}`,
+        API.measurement.byId(measurementId),
         measurementData.date
           ? { ...measurementData, date: toCalendarDay(measurementData.date) }
           : measurementData
@@ -116,17 +112,15 @@ export class MeasurementsService {
   }
 
   deleteMeasurement(measurementId: string) {
-    return this.http
-      .delete(`${MeasurementEndpoints.DELETE_MEASUREMENT}/${measurementId}`)
-      .pipe(
-        tap(() => {
-          this.state.update((measurements) =>
-            measurements.filter(
-              (measurement) => measurement.uuid !== measurementId
-            )
-          );
-        })
-      );
+    return this.http.delete(API.measurement.byId(measurementId)).pipe(
+      tap(() => {
+        this.state.update((measurements) =>
+          measurements.filter(
+            (measurement) => measurement.uuid !== measurementId
+          )
+        );
+      })
+    );
   }
 
   private toGraphData(

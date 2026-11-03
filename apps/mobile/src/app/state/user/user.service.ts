@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, resource } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, tap } from 'rxjs';
-import { LoginFlowEndpoints } from '../../shared/constants/endpoints.constants';
+import { API } from '../../shared/constants/endpoints.constants';
 import { toCalendarDay } from '../measurements/cycle-day';
 
 interface Profile {
@@ -18,7 +18,7 @@ export class UserService {
   private http = inject(HttpClient);
 
   profileResource = resource({
-    loader: () => firstValueFrom(this.http.get<Profile>(LoginFlowEndpoints.USER_ME)),
+    loader: () => firstValueFrom(this.http.get<Profile>(API.auth.me)),
   });
 
   username = computed(() => this.profileResource.value()?.username ?? null);
@@ -31,7 +31,7 @@ export class UserService {
   /** `null` clears the date. */
   setContraceptionStoppedOn(date: Date | null) {
     return this.http
-      .post<unknown>(LoginFlowEndpoints.USER_UPDATE, {
+      .post<unknown>(API.auth.updateUser, {
         contraceptionStoppedOn: date ? toCalendarDay(date) : null,
       })
       .pipe(tap(() => this.profileResource.reload()));

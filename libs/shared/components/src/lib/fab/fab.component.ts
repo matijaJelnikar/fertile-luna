@@ -1,10 +1,8 @@
-import { NgClass } from '@angular/common';
 import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
   ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
 } from '@angular/core';
 import { MatFabButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
@@ -14,15 +12,12 @@ import { MatIcon } from '@angular/material/icon';
   templateUrl: './fab.component.html',
   styleUrls: ['./fab.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatIcon, NgClass, MatFabButton],
+  imports: [MatIcon, MatFabButton],
 })
 export class FabComponent {
-  @Input() icon = 'add';
-  @Input() color = 'accent';
-  @Input() position: 'bottom-right' | 'bottom-left' = 'bottom-right';
-  @Output() fabClick = new EventEmitter<void>();
-
-  onClick() {
-    this.fabClick.emit();
-  }
+  icon = input('add');
+  color = input('accent');
+  position = input<'bottom-right' | 'bottom-left'>('bottom-right');
+  label = input.required<string>();
+  fabClick = output<void>();
 }

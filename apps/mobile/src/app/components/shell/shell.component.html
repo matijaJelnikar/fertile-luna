@@ -5,18 +5,23 @@
     </div>
     <div class="user-avatar">
       <div class="user-dropdown">
-        <mat-icon class="user-icon" [matMenuTriggerFor]="menu" [tabindex]="0">
-          <mat-icon
+        <button
+          type="button"
+          class="user-icon"
+          [matMenuTriggerFor]="menu"
+          [attr.aria-label]="'profile.avatar' | translate"
+        >
+          <span
             class="user-avatar"
+            aria-hidden="true"
             [style.background-image]="'url(resources/avatar_woman.png)'"
-            alt="User Avatar"
-          ></mat-icon>
-        </mat-icon>
+          ></span>
+        </button>
 
         <mat-menu #menu="matMenu">
           <button mat-menu-item (click)="logout()">
-            <mat-icon>logout</mat-icon>
-            Logout
+            <mat-icon aria-hidden="true">logout</mat-icon>
+            {{ 'common.logout' | translate }}
           </button>
         </mat-menu>
       </div>
@@ -24,50 +29,22 @@
   </mat-toolbar>
 
   <main class="main-content">
-    <router-outlet></router-outlet>
+    <router-outlet />
   </main>
 
-  <div class="bottom-nav-wrapper">
+  <nav class="bottom-nav-wrapper" [attr.aria-label]="'nav.label' | translate">
     <div class="bottom-nav-container">
-      <div
-        class="nav-button"
-        [tabindex]="1"
-        [ngClass]="{ selected: selectedTab() === Navigation.HOME }"
-        role="button"
-        (click)="selectTab(Navigation.HOME)"
-        (keydown.enter)="selectTab(Navigation.HOME)"
-        (keydown.space)="selectTab(Navigation.HOME)"
-        [routerLink]="['/home']"
-      >
-        <mat-icon>home</mat-icon>
-        Home
-      </div>
-      <div
-        class="nav-button"
-        [ngClass]="{ selected: selectedTab() === Navigation.HISTORY }"
-        [tabindex]="2"
-        role="button"
-        (click)="selectTab(Navigation.HISTORY)"
-        (keydown.enter)="selectTab(Navigation.HISTORY)"
-        (keydown.space)="selectTab(Navigation.HISTORY)"
-        [routerLink]="['/history']"
-      >
-        <mat-icon>show_chart</mat-icon>
-        History
-      </div>
-      <div
-        class="nav-button"
-        [tabindex]="3"
-        [ngClass]="{ selected: selectedTab() === Navigation.SETTINGS }"
-        role="button"
-        (click)="selectTab(Navigation.SETTINGS)"
-        (keydown.enter)="selectTab(Navigation.SETTINGS)"
-        (keydown.space)="selectTab(Navigation.SETTINGS)"
-        [routerLink]="['/settings']"
-      >
-        <mat-icon>settings</mat-icon>
-        Settings
-      </div>
+      @for (item of navItems; track item.path) {
+        <a
+          class="nav-button"
+          [routerLink]="item.path"
+          routerLinkActive="selected"
+          ariaCurrentWhenActive="page"
+        >
+          <mat-icon aria-hidden="true">{{ item.icon }}</mat-icon>
+          {{ item.labelKey | translate }}
+        </a>
+      }
     </div>
-  </div>
+  </nav>
 </div>

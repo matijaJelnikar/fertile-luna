@@ -1,5 +1,7 @@
 export const storagePrefix = 'fertileLuna_' as const;
 
-export enum StorageKeys {
-  DARK_MODE = 'darkMode',
-}
+export const StorageKeys = {
+  DARK_MODE: 'darkMode',
+} as const;
+
+export type StorageKey = (typeof StorageKeys)[keyof typeof StorageKeys];

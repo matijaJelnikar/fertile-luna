@@ -1,7 +1,6 @@
 import {
-  HTTP_INTERCEPTORS,
   provideHttpClient,
-  withInterceptorsFromDi,
+  withInterceptors,
   withXhr,
 } from '@angular/common/http';
 import {
@@ -14,20 +13,15 @@ import { provideRouter } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { appRoutes } from './app.routes';
 import { provideI18n } from './i18n.config';
-import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { authInterceptor } from './interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(appRoutes),
     provideAnimationsAsync(),
-    provideHttpClient(withXhr(), withInterceptorsFromDi()),
+    provideHttpClient(withXhr(), withInterceptors([authInterceptor])),
     provideI18n(),
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AuthInterceptor,
-      multi: true,
-    },
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',
