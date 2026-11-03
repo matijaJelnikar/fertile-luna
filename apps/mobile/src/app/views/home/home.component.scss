@@ -62,10 +62,9 @@ $padding-card: 12px 14px;
 
 // --- Temperature section ---
 
+// Not sticky: the cycle sheet with its rows is most of a phone's height, and pinning it would leave
+// no room to scroll the cards beneath. The sheet sizes itself, so no height is fixed here either.
 .temperature-section {
-  position: sticky;
-  top: 50px;
-  z-index: 9;
   background: var(--mat-sys-background, #ffffff);
   padding: 0 16px;
   display: flex;
@@ -74,8 +73,6 @@ $padding-card: 12px 14px;
 }
 
 .chart-placeholder {
-  position: relative;
-  height: 240px;
   width: 100%;
 }
 

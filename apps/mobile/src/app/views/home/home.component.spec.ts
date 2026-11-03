@@ -17,21 +17,6 @@ import { UserService } from '../../state/user/user.service';
 import { HomeComponent } from './home.component';
 import { HomeService } from './home.service';
 
-// The home screen embeds the Chart.js chart, and jsdom has no canvas 2d context for it.
-// Charting is the chart component's own concern and is tested there.
-jest.mock('chart.js', () => ({
-  Chart: class {
-    static register(): void {
-      /* nothing to register against a double */
-    }
-    data = { labels: [], datasets: [{ data: [] }, { data: [] }] };
-    update(): void {
-      /* no canvas to redraw */
-    }
-  },
-  registerables: [],
-}));
-
 const CYCLE = {
   uuid: 'cycle-2',
   cycleNumber: 2,
@@ -123,9 +108,10 @@ describe('HomeComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Hey, Ana');
   });
 
-  it('charts the temperatures of the placed entries, keyed by cycle day', () => {
-    expect(component.temperatureData()).toEqual([36.4, 36.5]);
-    expect(component.timestampData()).toEqual(['1', '2']);
+  it('hands the sheet the entries and the evaluation, and derives nothing itself', () => {
+    const sheet = fixture.nativeElement.querySelector('lib-temperatures-chart');
+    expect(sheet).toBeTruthy();
+    expect(fertilityService.evaluate).toHaveBeenCalledWith(MEASUREMENTS);
   });
 
   it('names the cervix as the awaited sign when no mucus is recorded', () => {

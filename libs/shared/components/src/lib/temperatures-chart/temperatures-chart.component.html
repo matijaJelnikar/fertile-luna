@@ -1,13 +1,121 @@
-<div class="chart-container">
-  <canvas id="temperatureChart"></canvas>
+<!-- Built from the same data as the drawing, so the two cannot disagree. -->
+<p class="visually-hidden">{{ textAlternative() }}</p>
+
+<div class="body">
+  <!-- The scale and the row labels sit outside the scroller, so they stay put while the days scroll. -->
+  <div class="labels" aria-hidden="true">
+    <div class="ticks" [style.height.px]="chartHeight()">
+      @for (tick of ticks(); track tick.y) {
+      <span class="tick" [style.top.px]="tick.y">{{ tick.label }}</span>
+      }
+    </div>
+    <div class="label label--axis">{{ 'chart.row.day' | translate }}</div>
+    @for (row of rows(); track row.key) {
+    <div class="label">{{ row.labelKey | translate }}</div>
+    }
+  </div>
+
+  <div #scroller class="scroller" role="group" [attr.aria-label]="'chart.label' | translate">
+    <div class="sheet" [style.width.px]="sheetWidth()">
+      <svg
+        class="curve"
+        [attr.width]="sheetWidth()"
+        [attr.height]="chartHeight()"
+        aria-hidden="true"
+      >
+        @if (selectedColumn(); as column) {
+        <rect
+          class="selected"
+          [attr.x]="column.x"
+          y="0"
+          [attr.width]="columnWidth()"
+          [attr.height]="chartHeight()"
+        />
+        }
+        @for (line of gridLines(); track line.y) {
+        <line class="grid" x1="0" [attr.x2]="sheetWidth()" [attr.y1]="line.y" [attr.y2]="line.y" />
+        }
+        @for (column of dayColumns(); track column.day) {
+        <line
+          class="grid"
+          [attr.x1]="column.right"
+          [attr.x2]="column.right"
+          y1="0"
+          [attr.y2]="chartHeight()"
+        />
+        }
+
+        @if (helperLine(); as helper) {
+        <line
+          class="helper-line"
+          [attr.x1]="helper.x1"
+          [attr.x2]="helper.x2"
+          [attr.y1]="helper.y"
+          [attr.y2]="helper.y"
+        />
+        }
+
+        @for (segment of segments(); track segment) {
+        <polyline class="line" [attr.points]="segment" />
+        }
+
+        @for (point of points(); track point.day) {
+        <g [class.plot--disturbed]="point.disturbed">
+          @if (point.triangle) {
+          <polygon class="marker-counted" [attr.points]="point.triangle" />
+          }
+          @if (point.disturbed) {
+          <!-- Bracketed exactly as the sheet marks it: drawn, and plainly not counted. -->
+          <text class="bracket" [attr.x]="point.x" [attr.y]="point.y + 4">( )</text>
+          }
+          <circle class="point" [attr.cx]="point.x" [attr.cy]="point.y" r="3" />
+        </g>
+        }
+
+        <!-- Drawn last so a tap anywhere in a column lands on its day. -->
+        @for (column of dayColumns(); track column.day) {
+        <rect
+          class="hit"
+          [attr.x]="column.x"
+          y="0"
+          [attr.width]="columnWidth()"
+          [attr.height]="chartHeight()"
+          [attr.data-day]="column.day"
+        />
+        }
+      </svg>
+
+      <div class="row" [style.grid-template-columns]="columns()">
+        @for (column of dayColumns(); track column.day) {
+        <button
+          #dayButton
+          type="button"
+          class="day"
+          [attr.data-day]="column.day"
+          [attr.aria-label]="column.label"
+          [attr.aria-pressed]="column.selected"
+          [tabIndex]="column.tabIndex"
+          (keydown)="moveSelection($event, column.day)"
+        >
+          {{ column.day }}
+        </button>
+        }
+      </div>
+
+      <!-- Read through the day buttons and the summary below; the glyphs alone would be noise. -->
+      @for (row of rows(); track row.key) {
+      <div class="row" [style.grid-template-columns]="columns()" aria-hidden="true">
+        @for (cell of row.cells; track cell.day) {
+        <span class="cell" [class.cell--peak]="cell.peak" [attr.data-day]="cell.day"
+          >{{ cell.text }}@if (cell.count) {<sup>{{ cell.count }}</sup>}</span
+        >
+        }
+      </div>
+      }
+    </div>
+  </div>
 </div>
-<div class="chart-legend" role="list" aria-label="Chart colour legend">
-  <span class="legend-item" role="listitem">
-    <span class="legend-dot legend-dot--fertile" aria-hidden="true"></span>
-    Fertile
-  </span>
-  <span class="legend-item" role="listitem">
-    <span class="legend-dot legend-dot--infertile" aria-hidden="true"></span>
-    Infertile
-  </span>
-</div>
+
+<p class="state" aria-live="polite">{{ selectedSummary() }}</p>
+<!-- Method state in words, never colour alone. -->
+<p class="state" role="status">{{ phaseState() }}</p>

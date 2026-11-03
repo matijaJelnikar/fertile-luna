@@ -1,307 +1,477 @@
-import { ChangeDetectionStrategy, Component, effect, input, OnInit } from '@angular/core';
-import { Chart, ChartConfiguration, ChartDataset, registerables } from 'chart.js';
+import {
+  afterNextRender,
+  afterRenderEffect,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  ElementRef,
+  inject,
+  input,
+  linkedSignal,
+  signal,
+  viewChild,
+  viewChildren,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   CycleEvaluation,
   DayMarkerKind,
   MeasurementGraphData,
 } from '@basal-temp-log-workspace/model';
 
-Chart.register(...registerables);
+/**
+ * The narrowest a day's column may get: two glyphs stay legible and a day stays a 24 px touch target
+ * (WCAG 2.5.8). Below this the sheet scrolls rather than shrinks.
+ */
+const MIN_COLUMN_WIDTH = 24;
+/** The paper sheet has 40 columns (`#R-CYCLE-01`); empty days ahead are drawn only up to that. */
+const SHEET_DAYS = 40;
+/** One square is 0.1 °C, as the method's own sheet is ruled (`#R-TEMP-02`). */
+const SQUARES_PER_DEGREE = 10;
+const SQUARE_HEIGHT = 14;
+const DEFAULT_RANGE = { min: 36.0, max: 37.0 };
+/** The least span shown, so a flat week reads as flat instead of being stretched into noise. */
+const MIN_SPAN = 1.0;
 
-const MARKER_LABELS: Record<DayMarkerKind, string> = {
-  'mucus-peak': 'Mucus peak (V)',
-  'post-peak-1': 'Post-peak day 1',
-  'post-peak-2': 'Post-peak day 2',
-  'post-peak-3': 'Post-peak day 3',
-  'temperature-counted-1': 'Higher temperature 1',
-  'temperature-counted-2': 'Higher temperature 2',
-  'temperature-counted-3': 'Higher temperature 3',
-  'temperature-counted-4': 'Higher temperature 4',
-  'temperature-counted-5': 'Higher temperature 5',
-  'temperature-uncounted': 'Not counted',
-  disturbed: 'Disturbed — not taken into account',
-};
+/** Rounds to a half degree without floating-point drift (36.9 + 0.1 must be 37.0, not 37.0000001). */
+const toHalfDegree = (value: number, round: (n: number) => number): number =>
+  round(Math.round(value * 20) / 10) / 2;
+
+export interface CurvePoint {
+  readonly day: number;
+  readonly x: number;
+  readonly y: number;
+  readonly temperature: number;
+  readonly disturbed: boolean;
+  /** The triangle the method draws over a counted raised value (`#R-TEMP-02`), or `null`. */
+  readonly triangle: string | null;
+}
+
+interface RowCell {
+  readonly day: number;
+  readonly text: string;
+  readonly peak: boolean;
+  /** 1–3 on the days counted after the mucus peak (`#R-MUCUS-03`). */
+  readonly count: number | null;
+}
+
+interface ObservationRow {
+  readonly key: string;
+  readonly labelKey: string;
+  readonly cells: readonly RowCell[];
+}
+
+interface DayColumn {
+  readonly day: number;
+  readonly x: number;
+  readonly right: number;
+  readonly label: string;
+  readonly selected: boolean;
+  readonly tabIndex: number;
+}
 
 /**
- * Markers are addressed by **cycle day**, never by array position: a day without a temperature is
- * charted as a gap, so position and day stop agreeing the moment one entry is missing.
+ * The Zyklusblatt: the temperature curve with the day's observations aligned in rows directly
+ * beneath it, on one shared cycle-day axis. Reading down a column is how the method is practised.
+ *
+ * Drawn as SVG over a CSS grid rather than on a canvas, because the rows and the curve must share
+ * an axis exactly, and because a canvas holds no text for a screen reader to read.
+ *
+ * It decides nothing. Every mark comes from the engine's result; where the engine reports a rule as
+ * unevaluable, nothing is drawn for it.
  */
-const markersByDay = (
-  evaluation: CycleEvaluation | null
-): ReadonlyMap<number, DayMarkerKind[]> => {
-  const byDay = new Map<number, DayMarkerKind[]>();
-  for (const marker of evaluation?.markers ?? []) {
-    byDay.set(marker.day, [...(byDay.get(marker.day) ?? []), marker.kind]);
-  }
-  return byDay;
-};
-
 @Component({
   selector: 'lib-temperatures-chart',
   templateUrl: './temperatures-chart.component.html',
-  styleUrls: ['./temperatures-chart.component.scss'],
+  styleUrl: './temperatures-chart.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { style: 'display: flex; flex-direction: column; width: 100%; height: 100%;' },
+  imports: [TranslateModule],
+  host: {
+    class: 'zyklusblatt',
+    // One listener for the whole sheet: a tap anywhere in a column selects that day.
+    '(click)': 'selectFrom($event)',
+  },
 })
-export class TemperaturesChartComponent implements OnInit {
-  temperatureData = input<number[]>([]);
-  timestampData = input<string[]>([]);
-  measurements = input<MeasurementGraphData[]>([]);
+export class TemperaturesChartComponent {
+  private translate = inject(TranslateService);
+  /** Read inside computeds so their text follows a language that finishes loading after the data. */
+  private language = toSignal(this.translate.onLangChange);
+
+  /** Every entry of the cycle. Entries with no cycle day are not drawn — they have no column. */
+  entries = input<readonly MeasurementGraphData[]>([]);
+  /** The engine's output; the sole source of every marker, line and phase boundary drawn here. */
   evaluation = input<CycleEvaluation | null>(null);
 
-  chart!: Chart;
+  private scroller = viewChild.required<ElementRef<HTMLElement>>('scroller');
+  private dayButtons = viewChildren<ElementRef<HTMLButtonElement>>('dayButton');
+  /** The width available to the days, measured; 0 until it has been. */
+  private viewport = signal(0);
 
-  constructor() {
-    effect(() => {
-      if (!this.chart) return;
+  private placed = computed(() =>
+    [...this.entries()]
+      .filter((entry) => entry.day !== null)
+      .sort((a, b) => (a.day as number) - (b.day as number))
+  );
 
-      const tempData = this.temperatureData();
-      const timeData = this.timestampData();
-      this.measurements();
-      const fertility = this.evaluation();
+  private byDay = computed(
+    () => new Map(this.placed().map((entry) => [entry.day as number, entry]))
+  );
 
-      // Chart colors optimized for both light and dark modes
-      const isDarkMode = document.body.classList.contains('dark');
-      const healthyColor = isDarkMode ? 'rgba(80, 210, 80, 1)' : 'rgba(34, 197, 94, 1)';
-      const fertileColor = isDarkMode ? 'rgba(240, 90, 70, 1)' : 'rgba(239, 68, 68, 1)';
-
-      this.chart.data.labels = timeData;
-      const lineDataset = this.chart.data.datasets[0] as ChartDataset<'line'>;
-      lineDataset.data = tempData;
-      lineDataset.pointStyle = this.buildPointStyles(tempData.length, fertility);
-      lineDataset.pointBackgroundColor = this.buildPointColors(tempData.length, fertility, healthyColor, fertileColor);
-      lineDataset.pointRadius = this.buildPointRadii(tempData.length, fertility);
-      this.chart.data.datasets[1].data = this.buildHelperLineData(timeData.length, fertility);
-      this.chart.update();
-    });
-  }
-
-  ngOnInit() {
-    const fertility = this.evaluation();
-    const tempData = this.temperatureData();
-    const timeData = this.timestampData();
-
-    // Chart colors optimized for both light and dark modes
-    const isDarkMode = document.body.classList.contains('dark');
-    const lineColor = isDarkMode ? 'rgba(180, 140, 120, 1)' : 'rgba(54, 162, 235, 1)';
-    const bleedingColor = isDarkMode ? 'rgba(200, 120, 120, 1)' : 'rgba(255, 99, 132, 1)';
-    const helperLineColor = isDarkMode ? 'rgba(200, 160, 100, 1)' : 'rgba(255, 165, 0, 0.8)';
-    const healthyColor = isDarkMode ? 'rgba(80, 210, 80, 1)' : 'rgba(34, 197, 94, 1)';
-    const fertileColor = isDarkMode ? 'rgba(240, 90, 70, 1)' : 'rgba(239, 68, 68, 1)';
-
-    const chartData: ChartConfiguration<'line'> = {
-      type: 'line',
-      data: {
-        labels: timeData,
-        datasets: [
-          {
-            label: 'Temperature (°C)',
-            data: tempData,
-            borderColor: lineColor,
-            borderWidth: 2,
-            fill: false,
-            tension: 0.1,
-            pointStyle: this.buildPointStyles(tempData.length, fertility),
-            pointBackgroundColor: this.buildPointColors(tempData.length, fertility, healthyColor, fertileColor),
-            pointRadius: this.buildPointRadii(tempData.length, fertility),
-            segment: {
-              borderColor: (ctx) => {
-                const measurement = this.measurements()[ctx.p0DataIndex];
-                return measurement?.bleeding ? bleedingColor : lineColor;
-              },
-            },
-          },
-          {
-            label: 'Helper Line',
-            data: this.buildHelperLineData(timeData.length, fertility),
-            borderColor: helperLineColor,
-            borderWidth: 1,
-            borderDash: [6, 4],
-            fill: false,
-            tension: 0,
-            pointRadius: 0,
-            pointHoverRadius: 0,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            ticks: {
-              autoSkip: true,
-              maxTicksLimit: 35,
-              maxRotation: 0,
-              font: { size: 10 },
-            },
-            grid: {
-              color: isDarkMode ? 'rgba(200, 160, 100, 0.15)' : 'rgba(200, 200, 200, 0.3)',
-            },
-          },
-          y: {
-            beginAtZero: false,
-            grid: {
-              color: isDarkMode ? 'rgba(200, 160, 100, 0.15)' : 'rgba(200, 200, 200, 0.3)',
-            },
-          },
-        },
-        plugins: {
-          legend: {
-            labels: {
-              filter: (item) => item.text !== 'Helper Line',
-            },
-          },
-          tooltip: {
-            callbacks: {
-              title: (tooltipItems) => {
-                const index = tooltipItems[0].dataIndex;
-                const allMeasurements = this.measurements();
-                const measurement = allMeasurements[index];
-                if (!measurement) return '';
-                const date = new Date(measurement.date).toLocaleDateString();
-                return `Day ${measurement.day} - ${date}`;
-              },
-              label: (context) => {
-                if (context.datasetIndex !== 0) return '';
-
-                const index = context.dataIndex;
-                const allMeasurements = this.measurements();
-                const measurement = allMeasurements[index];
-                if (!measurement) return '';
-
-                const labels: string[] = [];
-                labels.push(`Temperature: ${measurement.temperature}°C`);
-
-                const fertility = this.evaluation();
-                for (const kind of markersByDay(fertility).get(measurement.day ?? -1) ?? []) {
-                  labels.push(MARKER_LABELS[kind]);
-                }
-
-                if (fertility?.temperature.status === 'satisfied') {
-                  labels.push(
-                    `Helper line: ${fertility.temperature.result.helperLineTemperature}°C`
-                  );
-                }
-
-                if (measurement.bleeding) {
-                  labels.push(`Bleeding: ${measurement.bleeding}`);
-                }
-                if (measurement.mucusFeeling) {
-                  labels.push(`Mucus Feeling: ${measurement.mucusFeeling}`);
-                }
-                if (measurement.mucusAppearance) {
-                  labels.push(`Mucus Appearance: ${measurement.mucusAppearance}`);
-                }
-                if (measurement.cervixPosition) {
-                  labels.push(`Cervix Position: ${measurement.cervixPosition}`);
-                }
-                if (measurement.cervixOpenness) {
-                  labels.push(`Cervix openness: ${measurement.cervixOpenness}`);
-                }
-                if (measurement.cervixFirmness) {
-                  labels.push(`Cervix firmness: ${measurement.cervixFirmness}`);
-                }
-                if (measurement.pain) {
-                  labels.push(`Pain: ${measurement.pain}`);
-                }
-                if (measurement.intercourse) {
-                  labels.push(`Intercourse: ${measurement.intercourse}`);
-                }
-                if (measurement.notes) {
-                  labels.push(`Notes: ${measurement.notes}`);
-                }
-
-                return labels;
-              },
-            },
-          },
-        },
-      },
-    };
-
-    this.chart = new Chart('temperatureChart', chartData);
-  }
-
-  private createVMarker(): HTMLCanvasElement {
-    const canvas = document.createElement('canvas');
-    canvas.width = 14;
-    canvas.height = 14;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return canvas;
-    ctx.font = 'bold 12px sans-serif';
-    const isDarkMode = document.body.classList.contains('dark');
-    ctx.fillStyle = isDarkMode ? 'rgba(80, 210, 80, 1)' : '#000000';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('V', 7, 8);
-    return canvas;
-  }
-
-  private buildPointStyles(
-    count: number,
-    fertility: CycleEvaluation | null
-  ): (string | HTMLCanvasElement | undefined)[] {
-    const byDay = markersByDay(fertility);
-    return Array.from({ length: count }, (_, i) => {
-      const kinds = byDay.get(this.dayAt(i)) ?? [];
-      if (kinds.includes('mucus-peak')) return this.createVMarker();
-      if (kinds.some((k) => k.startsWith('post-peak'))) return 'rectRot';
-      if (kinds.some((k) => k.startsWith('temperature-counted'))) return 'triangle';
-      // A bracketed value is drawn, because the woman measured it — it is simply not counted.
-      if (kinds.includes('disturbed')) return 'crossRot';
-      return 'circle';
-    });
-  }
+  private lastDay = computed(() =>
+    this.placed().reduce((max, entry) => Math.max(max, entry.day as number), 0)
+  );
 
   /**
-   * Phase colouring, by cycle day. These are the method's own phases, not a risk: a day is either
-   * inside an evaluated infertile phase or it is not.
+   * Cycle days 1 to the last recorded — never positions in an array — padded with empty days ahead
+   * while they fit, as the paper sheet has its blank columns.
    */
-  private buildPointColors(
-    count: number,
-    fertility: CycleEvaluation | null,
-    infertileColor: string,
-    fertileColor: string
-  ): string[] {
-    const postOvulatory =
-      fertility?.postOvulatory.status === 'satisfied'
-        ? fertility.postOvulatory.result.infertileFromDay
-        : null;
-    const preOvulatory =
-      fertility?.preOvulatory.status === 'satisfied'
-        ? fertility.preOvulatory.result.lastInfertileDay
-        : null;
+  days = computed<number[]>(() => {
+    const fit = Math.min(Math.floor(this.viewport() / MIN_COLUMN_WIDTH), SHEET_DAYS);
+    return Array.from({ length: Math.max(this.lastDay(), fit, 1) }, (_, i) => i + 1);
+  });
 
-    return Array.from({ length: count }, (_, i) => {
-      const day = this.dayAt(i);
-      if (preOvulatory !== null && day <= preOvulatory) return infertileColor;
-      if (postOvulatory !== null && day >= postOvulatory) return infertileColor;
-      return fertileColor;
+  /** The one axis definition. The curve, the day buttons and every row are laid out from it. */
+  columnWidth = computed(() =>
+    Math.max(MIN_COLUMN_WIDTH, this.viewport() / this.days().length)
+  );
+  sheetWidth = computed(() => this.days().length * this.columnWidth());
+  columns = computed(() => `repeat(${this.days().length}, ${this.columnWidth()}px)`);
+
+  /** Opens on the last recorded day: it is the day being charted, and the one worth reading first. */
+  selectedDay = linkedSignal<number | null>(() => this.lastDay() || null);
+  private focusDay = computed(() => this.selectedDay() ?? 1);
+
+  dayColumns = computed<DayColumn[]>(() => {
+    this.language();
+    const width = this.columnWidth();
+    return this.days().map((day) => ({
+      day,
+      x: (day - 1) * width,
+      right: day * width,
+      label: this.translate.instant('chart.day', { day }),
+      selected: day === this.selectedDay(),
+      tabIndex: day === this.focusDay() ? 0 : -1,
+    }));
+  });
+
+  selectedColumn = computed(() => this.dayColumns().find((column) => column.selected) ?? null);
+
+  private helperTemperature = computed(() => {
+    const temperature = this.evaluation()?.temperature;
+    return temperature?.status === 'satisfied' ? temperature.result.helperLineTemperature : null;
+  });
+
+  /**
+   * Fitted to what was measured, in half degrees, so nothing is clamped to a fixed band and a phone
+   * does not spend its height on empty squares. The 0.1 °C square never changes.
+   */
+  private range = computed(() => {
+    const values = this.placed().flatMap((entry) =>
+      entry.temperature != null ? [entry.temperature] : []
+    );
+    const helper = this.helperTemperature();
+    if (helper !== null) values.push(helper);
+    if (values.length === 0) return DEFAULT_RANGE;
+
+    // A tenth of headroom either side keeps a triangle over the top value inside the drawing.
+    const min = toHalfDegree(Math.min(...values) - 0.1, Math.floor);
+    const max = Math.max(toHalfDegree(Math.max(...values) + 0.1, Math.ceil), min + MIN_SPAN);
+    return { min, max };
+  });
+
+  private squares = computed(() =>
+    Math.round((this.range().max - this.range().min) * SQUARES_PER_DEGREE)
+  );
+  chartHeight = computed(() => this.squares() * SQUARE_HEIGHT);
+
+  /** Horizontal rules, one per 0.1 °C, labelled every half degree as the sheet is. */
+  gridLines = computed(() => {
+    const top = Math.round(this.range().max * SQUARES_PER_DEGREE);
+    return Array.from({ length: this.squares() + 1 }, (_, step) => {
+      const tenths = top - step;
+      return {
+        y: step * SQUARE_HEIGHT,
+        label: tenths % 5 === 0 ? (tenths / SQUARES_PER_DEGREE).toFixed(1) : null,
+      };
+    });
+  });
+  ticks = computed(() => this.gridLines().filter((line) => line.label !== null));
+
+  private markersByDay = computed(() => {
+    const byDay = new Map<number, DayMarkerKind[]>();
+    for (const marker of this.evaluation()?.markers ?? []) {
+      byDay.set(marker.day, [...(byDay.get(marker.day) ?? []), marker.kind]);
+    }
+    return byDay;
+  });
+
+  private symbols = computed(
+    () => new Map((this.evaluation()?.mucusByDay ?? []).map((d) => [d.day, d.symbol]))
+  );
+
+  points = computed<CurvePoint[]>(() =>
+    this.placed().flatMap((entry) => {
+      if (entry.temperature == null) return [];
+      const day = entry.day as number;
+      const x = this.xFor(day);
+      const y = this.yFor(entry.temperature);
+      // `temperature-uncounted` is deliberately not drawn: the book says a skipped dip is neither
+      // taken into account nor marked (`#R-TEMP-04`).
+      const counted = (this.markersByDay().get(day) ?? []).some((kind) =>
+        kind.startsWith('temperature-counted')
+      );
+      return [
+        {
+          day,
+          x,
+          y,
+          temperature: entry.temperature,
+          disturbed: !!entry.disturbed,
+          triangle: counted ? `${x},${y - 8} ${x - 6},${y + 3} ${x + 6},${y + 3}` : null,
+        },
+      ];
+    })
+  );
+
+  /**
+   * The curve, split wherever a day carries no temperature. Separate polylines are the whole point:
+   * one line drawn through a gap would show a measurement that was never taken.
+   */
+  segments = computed<string[]>(() => {
+    const runs: CurvePoint[][] = [];
+    let run: CurvePoint[] = [];
+    let previousDay: number | null = null;
+
+    for (const point of this.points()) {
+      if (previousDay !== null && point.day !== previousDay + 1) {
+        if (run.length) runs.push(run);
+        run = [];
+      }
+      run.push(point);
+      previousDay = point.day;
+    }
+    if (run.length) runs.push(run);
+
+    return runs
+      .filter((segment) => segment.length > 1)
+      .map((segment) => segment.map((p) => `${p.x},${p.y}`).join(' '));
+  });
+
+  /** Drawn only when the engine evaluated a shift — never guessed at here. */
+  helperLine = computed(() => {
+    const temperature = this.evaluation()?.temperature;
+    if (temperature?.status !== 'satisfied') return null;
+
+    const { helperLineTemperature, helperLineDays, completedOnDay } = temperature.result;
+    const half = this.columnWidth() / 2;
+    return {
+      y: this.yFor(helperLineTemperature),
+      x1: this.xFor(helperLineDays[0]) - half,
+      x2: this.xFor(completedOnDay) + half,
+      temperature: helperLineTemperature,
+    };
+  });
+
+  /** Where the post-ovulatory infertile phase begins, once both signs are in (`#R-COMBI-01`). */
+  infertileFromDay = computed(() => {
+    const phase = this.evaluation()?.postOvulatory;
+    return phase?.status === 'satisfied' ? phase.result.infertileFromDay : null;
+  });
+
+  private lastPreOvulatoryInfertileDay = computed(() => {
+    const phase = this.evaluation()?.preOvulatory;
+    return phase?.status === 'satisfied' ? phase.result.lastInfertileDay : null;
+  });
+
+  rows = computed<ObservationRow[]>(() => {
+    const byDay = this.byDay();
+
+    // An empty string means "not recorded". A recorded "None" prints its own abbreviation, so the
+    // two never look alike.
+    const cell = (day: number, text?: string): RowCell => ({
+      day,
+      text: text ?? '',
+      peak: false,
+      count: null,
+    });
+
+    const initials = (...values: (string | undefined)[]): string =>
+      values.filter(Boolean).map((v) => (v as string).charAt(0)).join('');
+
+    return [
+      {
+        key: 'mucus',
+        labelKey: 'chart.row.mucus',
+        cells: this.days().map((day) => {
+          const kinds = this.markersByDay().get(day) ?? [];
+          const postPeak = kinds.find((kind) => kind.startsWith('post-peak-'));
+          return {
+            ...cell(day, this.symbols().get(day)),
+            peak: kinds.includes('mucus-peak'),
+            count: postPeak ? Number(postPeak.slice(-1)) : null,
+          };
+        }),
+      },
+      {
+        key: 'bleeding',
+        labelKey: 'chart.row.bleeding',
+        cells: this.days().map((day) => cell(day, initials(byDay.get(day)?.bleeding))),
+      },
+      {
+        key: 'sensation',
+        labelKey: 'chart.row.sensation',
+        cells: this.days().map((day) => cell(day, byDay.get(day)?.mucusFeeling?.slice(0, 2))),
+      },
+      {
+        key: 'appearance',
+        labelKey: 'chart.row.appearance',
+        cells: this.days().map((day) => cell(day, byDay.get(day)?.mucusAppearance?.slice(0, 2))),
+      },
+      {
+        key: 'cervix',
+        labelKey: 'chart.row.cervix',
+        cells: this.days().map((day) => {
+          const entry = byDay.get(day);
+          return cell(day, initials(entry?.cervixOpenness, entry?.cervixFirmness));
+        }),
+      },
+      {
+        key: 'intercourse',
+        labelKey: 'chart.row.intercourse',
+        cells: this.days().map((day) => cell(day, initials(byDay.get(day)?.intercourse))),
+      },
+      {
+        key: 'phase',
+        labelKey: 'chart.row.fertile',
+        cells: this.days().map((day) =>
+          // Past the last recorded day the row stays blank: marking days ahead would be a prediction.
+          cell(day, day <= this.lastDay() && this.isFertile(day) === true ? 'P' : undefined)
+        ),
+      },
+    ];
+  });
+
+  /** Method state as a sentence, shown beneath the sheet. Colour alone never carries it. */
+  phaseState = computed(() => {
+    this.language();
+    const from = this.infertileFromDay();
+    return from === null
+      ? this.translate.instant('chart.phase.unevaluable')
+      : this.translate.instant('chart.phase.confirmed.from', { day: from });
+  });
+
+  /** The selected day in words — the touch equivalent of a tooltip, and read out when it changes. */
+  selectedSummary = computed(() => {
+    const day = this.selectedDay();
+    return day === null ? '' : this.describeDay(day);
+  });
+
+  /**
+   * The same content as the drawing, in words, built from the same data — so it cannot drift from
+   * what is shown.
+   */
+  textAlternative = computed(() =>
+    [this.phaseState(), ...this.placed().map((entry) => this.describeDay(entry.day as number))]
+      .filter(Boolean)
+      .join('. ')
+  );
+
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+
+    afterNextRender(() => {
+      if (typeof ResizeObserver === 'undefined') return;
+      const observer = new ResizeObserver(([entry]) => this.viewport.set(entry.contentRect.width));
+      observer.observe(this.scroller().nativeElement);
+      destroyRef.onDestroy(() => observer.disconnect());
+    });
+
+    // On a phone the start of the cycle is what does not fit, so bring the latest day into view.
+    afterRenderEffect(() => {
+      const element = this.scroller().nativeElement;
+      element.scrollLeft = Math.max(0, this.lastDay() * this.columnWidth() - element.clientWidth);
     });
   }
 
-  private buildPointRadii(count: number, fertility: CycleEvaluation | null): number[] {
-    const byDay = markersByDay(fertility);
-    return Array.from({ length: count }, (_, i) => (byDay.has(this.dayAt(i)) ? 7 : 4));
+  selectFrom(event: Event): void {
+    const day = (event.target as Element | null)
+      ?.closest('[data-day]')
+      ?.getAttribute('data-day');
+    if (day) this.selectedDay.set(Number(day));
   }
 
-  /** The Hilfslinie, drawn across the six days it was taken from and the raised days that follow. */
-  private buildHelperLineData(
-    count: number,
-    fertility: CycleEvaluation | null
-  ): (number | null)[] {
-    if (fertility?.temperature.status !== 'satisfied') return Array(count).fill(null);
+  /** Arrow keys walk the days, so the grid is readable one column at a time without a pointer. */
+  moveSelection(event: KeyboardEvent, day: number): void {
+    const last = this.days().length;
+    const moves: Record<string, number> = {
+      ArrowLeft: day - 1,
+      ArrowRight: day + 1,
+      Home: 1,
+      End: last,
+    };
+    const target = moves[event.key];
+    if (target === undefined || target < 1 || target > last) return;
 
-    const { helperLineTemperature, helperLineDays, completedOnDay } = fertility.temperature.result;
-    const from = helperLineDays[0];
-    return Array.from({ length: count }, (_, i) => {
-      const day = this.dayAt(i);
-      return day >= from && day <= completedOnDay ? helperLineTemperature : null;
-    });
+    event.preventDefault();
+    this.selectedDay.set(target);
+    this.dayButtons()[target - 1]?.nativeElement.focus();
   }
 
-  private dayAt(index: number): number {
-    return this.measurements()[index]?.day ?? -1;
+  private describeDay(day: number): string {
+    this.language();
+    const t = (key: string, params?: object): string => this.translate.instant(key, params);
+    const entry = this.byDay().get(day);
+
+    const parts = [t('chart.day', { day })];
+    if (entry?.temperature != null) {
+      parts.push(
+        `${entry.temperature} °C${entry.disturbed ? ` (${t('chart.marker.disturbed')})` : ''}`
+      );
+    } else {
+      parts.push(t('chart.no.temperature'));
+    }
+
+    for (const kind of this.markersByDay().get(day) ?? []) {
+      if (kind !== 'disturbed') parts.push(t(`chart.marker.${kind}`));
+    }
+
+    const cervix = [entry?.cervixOpenness, entry?.cervixFirmness].filter(Boolean).join(', ');
+    const observations: [string, string | undefined][] = [
+      ['chart.row.mucus', this.symbols().get(day)],
+      ['chart.row.bleeding', entry?.bleeding],
+      ['chart.row.sensation', entry?.mucusFeeling],
+      ['chart.row.appearance', entry?.mucusAppearance],
+      ['chart.row.cervix', cervix || undefined],
+      ['chart.row.intercourse', entry?.intercourse],
+    ];
+    for (const [key, value] of observations) {
+      if (value) parts.push(`${t(key)}: ${value}`);
+    }
+
+    return parts.join(', ');
+  }
+
+  /** `null` means the phase cannot be evaluated for that day — and then nothing is asserted. */
+  private isFertile(day: number): boolean | null {
+    const evaluation = this.evaluation();
+    if (!evaluation) return null;
+
+    const lastInfertile = this.lastPreOvulatoryInfertileDay();
+    if (lastInfertile !== null && day <= lastInfertile) return false;
+
+    const from = this.infertileFromDay();
+    if (from !== null) return day < from;
+
+    return evaluation.preOvulatory.status === 'satisfied' ? true : null;
+  }
+
+  private xFor(day: number): number {
+    return (day - 0.5) * this.columnWidth();
+  }
+
+  private yFor(temperature: number): number {
+    return (this.range().max - temperature) * SQUARES_PER_DEGREE * SQUARE_HEIGHT;
   }
 }

@@ -1,78 +1,55 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { LocalStorageService } from '../../services/local-storage.service';
-import { StorageKeys } from '../../shared/constants/common.constants';
+import { ThemeService } from '../../services/theme.service';
 import { SettingsComponent } from './settings.component';
 
 describe('SettingsComponent', () => {
   let component: SettingsComponent;
   let fixture: ComponentFixture<SettingsComponent>;
 
-  const store = new Map<string, unknown>();
-  const localStorageService = {
-    getItem: jest.fn((key: string) => store.get(key) ?? null),
-    setItem: jest.fn((key: string, value: unknown) => store.set(key, value)),
-  };
+  const isDark = signal(false);
+  const theme = { isDark, set: jest.fn((value: boolean) => isDark.set(value)) };
 
-  const setup = async () => {
-    TestBed.resetTestingModule();
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    isDark.set(false);
+
     await TestBed.configureTestingModule({
-      imports: [
-        SettingsComponent,
-        NoopAnimationsModule,
-        TranslateModule.forRoot(),
-      ],
-      providers: [
-        { provide: LocalStorageService, useValue: localStorageService },
-      ],
+      imports: [SettingsComponent, NoopAnimationsModule, TranslateModule.forRoot()],
+      providers: [{ provide: ThemeService, useValue: theme }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SettingsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  };
-
-  beforeEach(async () => {
-    store.clear();
-    jest.clearAllMocks();
-    document.body.classList.remove('dark');
-    await setup();
   });
-
-  afterEach(() => document.body.classList.remove('dark'));
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('starts from the stored preference', async () => {
-    store.set(StorageKeys.DARK_MODE, true);
+  it('shows the theme the service reports', () => {
+    expect(component.isDarkMode()).toBe(false);
 
-    await setup();
-
-    expect(component.isDarkMode).toBe(true);
+    isDark.set(true);
+    expect(component.isDarkMode()).toBe(true);
   });
 
-  it('turns dark mode on and remembers it', () => {
-    component.onDarkModeChange();
+  it('asks the service to change the theme rather than touching the DOM', () => {
+    component.onDarkModeChange(true);
 
-    expect(component.isDarkMode).toBe(true);
-    expect(localStorageService.setItem).toHaveBeenCalledWith(
-      StorageKeys.DARK_MODE,
-      true
-    );
+    expect(theme.set).toHaveBeenCalledWith(true);
+    expect(component.isDarkMode()).toBe(true);
   });
 
-  it('turns dark mode back off and remembers that too', () => {
-    component.onDarkModeChange();
-    component.onDarkModeChange();
+  it('turns it back off again', () => {
+    component.onDarkModeChange(true);
+    component.onDarkModeChange(false);
 
-    expect(component.isDarkMode).toBe(false);
-    expect(localStorageService.setItem).toHaveBeenLastCalledWith(
-      StorageKeys.DARK_MODE,
-      false
-    );
+    expect(theme.set).toHaveBeenLastCalledWith(false);
+    expect(component.isDarkMode()).toBe(false);
   });
 });

@@ -1,13 +1,14 @@
 <div class="settings-container">
   <h2 mat-dialog-title>{{ 'settings' | translate }}</h2>
   <div class="dark-mode-row">
-    <mat-icon>light_mode</mat-icon>
+    <mat-icon aria-hidden="true">light_mode</mat-icon>
     <mat-slide-toggle
-      [(ngModel)]="isDarkMode"
-      (change)="onDarkModeChange()"
+      [checked]="isDarkMode()"
+      (change)="onDarkModeChange($event.checked)"
       color="primary"
+      [attr.aria-label]="'settings.dark.mode' | translate"
     >
     </mat-slide-toggle>
-    <mat-icon>dark_mode</mat-icon>
+    <mat-icon aria-hidden="true">dark_mode</mat-icon>
   </div>
 </div>

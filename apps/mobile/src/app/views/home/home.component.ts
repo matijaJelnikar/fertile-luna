@@ -59,13 +59,6 @@ export class HomeComponent {
       .filter((item) => item.temperature !== undefined)
   );
 
-  temperatureData = computed<number[]>(() =>
-    this.charted().map((item) => item.temperature as number)
-  );
-  timestampData = computed<string[]>(() =>
-    this.charted().map((item) => String(item.day))
-  );
-
   currentCycle = computed(() => this.homeService.currentCycle());
   currentCycleNumber = computed(() => this.currentCycle()?.cycleNumber ?? 1);
   dayOfCycle = computed(() =>

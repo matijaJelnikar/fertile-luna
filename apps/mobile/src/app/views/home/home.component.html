@@ -5,11 +5,9 @@
 <section class="temperature-section">
   <div class="chart-placeholder">
     <lib-temperatures-chart
-      [temperatureData]="temperatureData()"
-      [timestampData]="timestampData()"
-      [measurements]="homeService.placedMeasurements()"
+      [entries]="homeService.measurements()"
       [evaluation]="evaluation()"
-    ></lib-temperatures-chart>
+    />
   </div>
   <div class="cycle-navigation">
     <button mat-button (click)="previousCycle()">
