@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 
 import { AuthenticationService } from '../../authentication.service';
@@ -27,13 +27,16 @@ describe('RegistrationComponent', () => {
       imports: [
         RegistrationComponent,
         NoopAnimationsModule,
-        TranslateModule.forRoot(),
       ],
       providers: [
+        provideTranslateService(),
         { provide: AuthenticationService, useValue: authenticationService },
         { provide: CredentialsService, useValue: credentialsService },
         { provide: Router, useValue: router },
-        { provide: ActivatedRoute, useValue: { snapshot: { queryParams: {} } } },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParams: {} } },
+        },
       ],
     }).compileComponents();
 
@@ -71,7 +74,7 @@ describe('RegistrationComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/complete-profile'], {
       replaceUrl: true,
     });
-    expect(component.isLoading).toBe(false);
+    expect(component.isLoading()).toBe(false);
   });
 
   it('surfaces the server`s first message when registration is rejected', () => {
@@ -85,8 +88,8 @@ describe('RegistrationComponent', () => {
 
     component.register();
 
-    expect(component.error).toBe('Email already in use');
+    expect(component.error()).toBe('Email already in use');
     expect(router.navigate).not.toHaveBeenCalled();
-    expect(component.isLoading).toBe(false);
+    expect(component.isLoading()).toBe(false);
   });
 });

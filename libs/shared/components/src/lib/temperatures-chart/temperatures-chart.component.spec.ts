@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import {
   CycleEvaluation,
   MeasurementGraphData,
@@ -110,7 +110,8 @@ describe('TemperaturesChartComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TemperaturesChartComponent, TranslateModule.forRoot()],
+      imports: [TemperaturesChartComponent],
+      providers: [provideTranslateService()],
     }).compileComponents();
 
     // Real translations, so the assertions below read what a user would see rather than key names.
@@ -442,7 +443,7 @@ describe('TemperaturesChartComponent', () => {
     // A locale with no chart keys: every string that is not data falls back to its key.
     // Also the default: ngx-translate otherwise falls back to 'en', the first language used.
     translate.setTranslation('xx', {});
-    translate.setDefaultLang('xx');
+    translate.setFallbackLang('xx');
     translate.use('xx');
     setup([entry(1, { temperature: 36.5 })]);
 

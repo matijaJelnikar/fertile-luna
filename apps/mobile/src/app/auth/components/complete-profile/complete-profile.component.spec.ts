@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
 import { CycleService } from '../../../state/measurements/cycle.service';
@@ -35,9 +35,9 @@ describe('CompleteProfileComponent', () => {
       imports: [
         CompleteProfileComponent,
         NoopAnimationsModule,
-        TranslateModule.forRoot(),
       ],
       providers: [
+        provideTranslateService(),
         { provide: AuthenticationService, useValue: authenticationService },
         { provide: CredentialsService, useValue: credentialsService },
         { provide: CycleService, useValue: cycleService },

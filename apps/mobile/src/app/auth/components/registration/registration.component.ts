@@ -1,5 +1,11 @@
 import { NgClass } from '@angular/common';
-import { AfterViewInit, Component, inject } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  inject,
+  ChangeDetectionStrategy,
+  signal,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -7,7 +13,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { MaterialModule } from '../../../material.module';
 import { AuthenticationService } from '../../authentication.service';
 import { CredentialsService } from '../../credentials.service';
@@ -16,8 +22,8 @@ export interface UserDto {
   username?: string;
   email: string;
   password: string;
-  birthDate?: Date
-  weight?: number
+  birthDate?: Date;
+  weight?: number;
 }
 
 @Component({
@@ -25,9 +31,14 @@ export interface UserDto {
   selector: 'app-registration',
   templateUrl: './registration.component.html',
   styleUrls: ['./registration.component.scss'],
-  imports: [MaterialModule, ReactiveFormsModule, TranslateModule, NgClass],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [MaterialModule, ReactiveFormsModule, TranslatePipe, NgClass],
 })
 export class RegistrationComponent implements AfterViewInit {
+  private authService = inject(AuthenticationService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
   registrationForm: FormGroup = new FormGroup({
     email: new FormControl('', {
       validators: [Validators.required],
@@ -39,21 +50,15 @@ export class RegistrationComponent implements AfterViewInit {
     }),
   });
 
-  isLoading = false;
-  initialLoad = true;
-  error: string | null = null;
+  isLoading = signal(false);
+  initialLoad = signal(true);
+  error = signal<string | null>(null);
 
   private credentialsService = inject(CredentialsService);
 
-  constructor(
-    private authService: AuthenticationService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {}
-
   ngAfterViewInit(): void {
     setTimeout(() => {
-      this.initialLoad = false;
+      this.initialLoad.set(false);
     }, 10);
   }
 
@@ -62,7 +67,7 @@ export class RegistrationComponent implements AfterViewInit {
       return;
     }
 
-    this.isLoading = true;
+    this.isLoading.set(true);
     const formValues: UserDto = this.registrationForm.value;
 
     this.authService.register(formValues).subscribe({
@@ -79,12 +84,13 @@ export class RegistrationComponent implements AfterViewInit {
 
         // Navigate directly to complete-profile
         this.router.navigate(['/complete-profile'], { replaceUrl: true });
-        this.isLoading = false;
+        this.isLoading.set(false);
       },
       error: (err) => {
-        this.isLoading = false;
-        this.error =
-          err.error?.message?.[0] || 'Registration failed. Please try again.';
+        this.isLoading.set(false);
+        this.error.set(
+          err.error?.message?.[0] || 'Registration failed. Please try again.'
+        );
       },
     });
   }

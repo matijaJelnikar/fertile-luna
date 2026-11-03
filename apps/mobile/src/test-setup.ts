@@ -5,8 +5,9 @@ globalThis.ngJest = {
     errorOnUnknownProperties: true,
   },
 };
-import 'jest-preset-angular/setup-jest';
+import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
 
+setupZoneTestEnv();
 // jsdom implements no media queries. Angular Material and the theme lookup in AppComponent both
 // call matchMedia, so give it a listener-shaped stub that reports "no match".
 Object.defineProperty(window, 'matchMedia', {

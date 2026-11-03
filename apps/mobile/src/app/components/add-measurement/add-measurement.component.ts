@@ -57,7 +57,7 @@ import {
   DisturbanceReason,
   hasObservation,
 } from '@basal-temp-log-workspace/model';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { toCycleDay } from '../../state/measurements/cycle-day';
 
 export interface MeasurementDialogData {
@@ -110,7 +110,7 @@ export interface AddMeasurementFormModel {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
-    TranslateModule,
+    TranslatePipe,
     MatButton,
     MatChipListbox,
     MatChipOption,

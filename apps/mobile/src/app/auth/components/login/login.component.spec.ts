@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 
 import { AuthenticationService } from '../../authentication.service';
@@ -27,8 +27,12 @@ describe('LoginComponent', () => {
     route.snapshot.queryParams = {};
 
     await TestBed.configureTestingModule({
-      imports: [LoginComponent, NoopAnimationsModule, TranslateModule.forRoot()],
+      imports: [
+        LoginComponent,
+        NoopAnimationsModule,
+      ],
       providers: [
+        provideTranslateService(),
         { provide: AuthenticationService, useValue: authenticationService },
         { provide: Router, useValue: router },
         { provide: ActivatedRoute, useValue: route },
@@ -59,7 +63,7 @@ describe('LoginComponent', () => {
       remember: false,
     });
     expect(router.navigate).toHaveBeenCalledWith(['/'], { replaceUrl: true });
-    expect(component.isLoading).toBe(false);
+    expect(component.isLoading()).toBe(false);
   });
 
   it('returns to the route the guard redirected from', () => {
@@ -81,8 +85,8 @@ describe('LoginComponent', () => {
 
     component.login();
 
-    expect(component.error).toBe('Invalid credentials');
+    expect(component.error()).toBe('Invalid credentials');
     expect(router.navigate).not.toHaveBeenCalled();
-    expect(component.isLoading).toBe(false);
+    expect(component.isLoading()).toBe(false);
   });
 });

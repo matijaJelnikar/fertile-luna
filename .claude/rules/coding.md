@@ -1,15 +1,9 @@
 # Coding Rules — Frontend (`apps/mobile`) & Shared Code
 
-Stack: Nx 20 monorepo · Angular **19.1** · Angular Material **19** (M3) ·
-ngx-translate · Chart.js · PWA/service worker · Jest.
+Stack: Nx 23 monorepo · Angular **22** · Angular Material **22** (M3) ·
+ngx-translate 18 · SVG charts · PWA/service worker · Jest 30 · TypeScript 6.0 · Node 26.
 
-> Angular version matters. This repo is on **v19** — APIs from v20/v21
-> (Signal Forms, `httpResource()`, zoneless bootstrap) are **not available**.
-> Do not write code against them.
->
-> **A v21 upgrade is planned.** Rules for v21-only APIs are kept in this file as
-> commented-out blocks marked `PARKED until the Angular 21 upgrade` — uncomment them
-> as part of that upgrade rather than rewriting them from scratch.
+> The app still runs with zone.js; going zoneless is a separate, deliberate change.
 
 ---
 
@@ -41,9 +35,9 @@ ngx-translate · Chart.js · PWA/service worker · Jest.
 
 ### File Naming
 - Kebab-case: `add-measurement.component.ts`, `auth.interceptor.ts`
-- Keep the Angular v19 suffix convention already used across this repo:
+- Keep the suffix convention already used across this repo:
   `*.component.ts`, `*.service.ts`, `*.guard.ts`, `*.interceptor.ts`, `*.entity.ts`, `*.dto.ts`
-  (the suffix-less v20 style guide does **not** apply here — consistency wins)
+  (the suffix-less style guide does **not** apply here — consistency wins)
 - Co-locate specs: `foo.component.spec.ts` next to `foo.component.ts`
 
 ---
@@ -52,8 +46,8 @@ ngx-translate · Chart.js · PWA/service worker · Jest.
 
 ```
 apps/
-  mobile/      # Angular 19 PWA
-  api/         # NestJS 10 backend
+  mobile/      # Angular 22 PWA
+  api/         # NestJS 11 backend
   api-e2e/     # Jest-based API e2e
 libs/shared/
   model/       # @basal-temp-log-workspace/model — DTOs, types, enums, constants
@@ -84,9 +78,9 @@ libs/shared/
 
 ## Components
 
-- Standalone components only — **never** set `standalone: true` (it is the default in v19)
+- Standalone components only — **never** set `standalone: true` (it is the default)
   and never set `standalone: false`
-- `ChangeDetectionStrategy.OnPush` on **every** component. If a component breaks under
+- `ChangeDetectionStrategy.OnPush` on **every** component (the v22 default; never `Eager`). If a component breaks under
   OnPush, the component has a bug — fix the root cause, never `ChangeDetectorRef` or `setTimeout`
 - Separate files for class (`.ts`), template (`.html`), and styles (`.scss`);
   inline templates are fine for genuinely tiny components
@@ -202,15 +196,15 @@ effect(() => {
 
 // GOOD — resource() (already used by UserService)
 details = resource({
-  request: () => this.selectedId(),
-  loader: ({ request: id }) =>
+  params: () => this.selectedId(),
+  loader: ({ params: id }) =>
     id ? firstValueFrom(this.detailService.load(id)) : Promise.resolve(null),
 });
 
 // GOOD — rxResource() for Observable loaders
 details = rxResource({
-  request: () => this.selectedId(),
-  loader: ({ request: id }) => this.detailService.load(id),
+  params: () => this.selectedId(),
+  stream: ({ params: id }) => this.detailService.load(id),
 });
 
 // GOOD — explicit RxJS pipeline
@@ -222,8 +216,7 @@ constructor() {
 }
 ```
 
-`resource()` / `rxResource()` are **experimental** in v19 — fine to use (the repo already
-does), but expect API churn on upgrade.
+For plain HTTP reads, `httpResource()` is simpler than `resource()` + `firstValueFrom()`.
 
 ---
 
@@ -302,8 +295,10 @@ Dev requests are proxied to the API through `apps/mobile/proxy.conf.json`.
 
 ## Forms
 
-**Reactive forms only** on v19. Template-driven forms don't scale and are hard to test.
-(Signal Forms are Angular 21 — see the parked block at the end of this section.)
+**Signal Forms** for new forms (see below). Existing reactive forms stay valid — migrate them
+when you touch them. Never template-driven forms.
+
+Rules for the reactive forms that remain:
 
 - Type the `FormGroup` with an interface
 - `nonNullable: true` for fields that must never reset to null
@@ -323,15 +318,9 @@ form = new FormGroup<MeasurementForm>({
 });
 ```
 
-### Signal Forms — PARKED until the Angular 21 upgrade
+### Signal Forms
 
-Commented out on purpose: these APIs do not exist on v19. Uncomment this block, and drop
-the "Reactive forms only" wording above, once the workspace is on Angular 21.
-
-<!--
-Signal Forms are the modern approach for new code on Angular 21+.
-They use `form()` + a signal model + the `[formField]` directive.
-Note: still experimental; the API may change.
+`form()` + a signal model + the `[formField]` directive, from `@angular/forms/signals`.
 
 - Define the data model as a `signal<T>({...})`
 - Create the field tree with `form(model, schema?)` — the second arg is the validation schema
@@ -350,7 +339,6 @@ Note: still experimental; the API may change.
 - Show errors only when `touched()` and `invalid()`
 
 Existing reactive forms stay valid — migrate them opportunistically, not in a big bang.
--->
 
 ---
 
@@ -365,7 +353,7 @@ Existing reactive forms stay valid — migrate them opportunistically, not in a 
 
 ## Styling & Theming
 
-- Angular Material 19 (M3) via `mat.theme()` in `styles.scss`
+- Angular Material 22 (M3) via `mat.theme()` in `styles.scss`
 - Import individual Material components (`MatButton`, `MatIcon`) — **never** a `MaterialModule` barrel;
   a barrel defeats tree-shaking and pulls in components you don't use
 - SCSS for component styles; theme colors centralized in `src/styles/_theme-colors.scss`
@@ -437,4 +425,5 @@ when touching the surrounding code.
 - `apps/mobile/src/app/shared/constants/endpoints.constants.ts` — endpoint enums; convert to `as const`
 - No global `ErrorHandler` and no `NotificationService` yet
 - No `environments/` files — API URL is not configurable per environment
-- Dark mode / `ThemeService` not implemented; `styles.scss` is hardcoded to `theme-type: light`
+- `AppComponent` uses `ChangeDetectionStrategy.Eager`, which fails the `prefer-on-push` lint rule
+- `login`, `registration` and `shell` still use `ngClass`

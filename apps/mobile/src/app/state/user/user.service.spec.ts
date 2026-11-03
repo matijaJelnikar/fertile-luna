@@ -1,7 +1,10 @@
 import { ApplicationRef } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient, withXhr } from '@angular/common/http';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 import { LoginFlowEndpoints } from '../../shared/constants/endpoints.constants';
 import { UserService } from './user.service';
 
@@ -11,7 +14,7 @@ describe('UserService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [provideHttpClient(withXhr()), provideHttpClientTesting()],
     });
     service = TestBed.inject(UserService);
     http = TestBed.inject(HttpTestingController);
@@ -27,7 +30,10 @@ describe('UserService', () => {
     TestBed.flushEffects();
     http
       .expectOne(LoginFlowEndpoints.USER_ME)
-      .flush({ email: 'ana@example.com', contraceptionStoppedOn: '2026-02-01' });
+      .flush({
+        email: 'ana@example.com',
+        contraceptionStoppedOn: '2026-02-01',
+      });
     await TestBed.inject(ApplicationRef).whenStable();
 
     expect(service.contraceptionStoppedOn()).toBe('2026-02-01');
@@ -38,7 +44,9 @@ describe('UserService', () => {
 
     const request = http.expectOne(LoginFlowEndpoints.USER_UPDATE);
     expect(request.request.method).toBe('POST');
-    expect(request.request.body).toEqual({ contraceptionStoppedOn: '2026-02-01' });
+    expect(request.request.body).toEqual({
+      contraceptionStoppedOn: '2026-02-01',
+    });
     request.flush({});
   });
 

@@ -1,5 +1,4 @@
-import { NgIf } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -8,7 +7,7 @@ import {
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CycleDto } from '@basal-temp-log-workspace/model';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { forkJoin } from 'rxjs';
 import { MaterialModule } from '../../../material.module';
 import { CycleService } from '../../../state/measurements/cycle.service';
@@ -26,13 +25,8 @@ export interface CompleteProfileDto {
   selector: 'app-complete-profile',
   templateUrl: './complete-profile.component.html',
   styleUrls: ['./complete-profile.component.scss'],
-  imports: [
-    MaterialModule,
-    ReactiveFormsModule,
-    TranslateModule,
-    NgIf,
-    RouterModule,
-  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [MaterialModule, ReactiveFormsModule, TranslatePipe, RouterModule],
 })
 export class CompleteProfileComponent {
   isLinear = false;

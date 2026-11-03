@@ -1,15 +1,15 @@
-<div fxFill fxLayout="column" class="registration-wrapper">
+<div class="registration-wrapper">
   <div
     class="registration-image"
-    [ngClass]="{ 'initial-load': initialLoad }"
+    [ngClass]="{ 'initial-load': initialLoad() }"
     style="background-image: url('resources/fertileluna_background.png')"
   ></div>
 
   <div class="registration-form">
     <form (ngSubmit)="register()" [formGroup]="registrationForm" novalidate>
       <div class="registration-error">
-        @if (error) {
-        {{ error }}
+        @if (error()) {
+          {{ error() }}
         }
       </div>
       <br />
@@ -25,11 +25,13 @@
           required
         />
         <mat-label for="emailInput">{{ 'email' | translate }}</mat-label>
-        @if(registrationForm.controls['email'].invalid &&
-        registrationForm.controls['email'].touched){
-        <mat-error>
-          <span>{{ 'email.required' | translate }}</span>
-        </mat-error>
+        @if (
+          registrationForm.controls['email'].invalid &&
+          registrationForm.controls['email'].touched
+        ) {
+          <mat-error>
+            <span>{{ 'email.required' | translate }}</span>
+          </mat-error>
         }
       </mat-form-field>
 
@@ -44,11 +46,13 @@
           required
         />
         <mat-label for="passwordInput">{{ 'password' | translate }}</mat-label>
-        @if( registrationForm.controls['password'].invalid &&
-        registrationForm.controls['password'].touched){
-        <mat-error>
-          <span>{{ 'password.required' | translate }}</span>
-        </mat-error>
+        @if (
+          registrationForm.controls['password'].invalid &&
+          registrationForm.controls['password'].touched
+        ) {
+          <mat-error>
+            <span>{{ 'password.required' | translate }}</span>
+          </mat-error>
         }
       </mat-form-field>
 
@@ -57,13 +61,13 @@
         mat-flat-button
         color="secondary"
         type="submit"
-        [disabled]="registrationForm.invalid || isLoading"
+        [disabled]="registrationForm.invalid || isLoading()"
       >
         <span>{{ 'sign.up.label' | translate }}</span>
       </button>
 
       <!-- Back to login link -->
-      <div class="back-to-login" fxLayout="row" fxLayoutAlign="center center">
+      <div class="back-to-login">
         <a mat-button href="/login">{{
           'register.back.to.login' | translate
         }}</a>

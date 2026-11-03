@@ -1,10 +1,13 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXhr } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import { AppComponent } from './app.component';
-import { storagePrefix, StorageKeys } from './shared/constants/common.constants';
+import {
+  storagePrefix,
+  StorageKeys,
+} from './shared/constants/common.constants';
 
 const themeKey = storagePrefix + StorageKeys.DARK_MODE;
 
@@ -20,10 +23,11 @@ describe('AppComponent', () => {
     document.body.classList.remove('dark');
 
     await TestBed.configureTestingModule({
-      imports: [AppComponent, TranslateModule.forRoot()],
+      imports: [AppComponent],
       providers: [
+        provideTranslateService({ lang: 'en' }),
         provideRouter([]),
-        provideHttpClient(),
+        provideHttpClient(withXhr()),
         provideHttpClientTesting(),
       ],
     }).compileComponents();

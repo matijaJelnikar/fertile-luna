@@ -7,7 +7,7 @@ import {
   Measurement,
   MucusFeelingOption,
 } from '@basal-temp-log-workspace/model';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import {
   AddMeasurementComponent,
   MeasurementDialogData,
@@ -36,9 +36,9 @@ describe('AddMeasurementComponent', () => {
       imports: [
         AddMeasurementComponent,
         NoopAnimationsModule,
-        TranslateModule.forRoot(),
       ],
       providers: [
+        provideTranslateService(),
         { provide: MatDialogRef, useValue: dialogRef },
         { provide: MAT_DIALOG_DATA, useValue: data },
       ],

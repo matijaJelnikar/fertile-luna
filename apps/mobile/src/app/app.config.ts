@@ -2,6 +2,7 @@ import {
   HTTP_INTERCEPTORS,
   provideHttpClient,
   withInterceptorsFromDi,
+  withXhr,
 } from '@angular/common/http';
 import {
   ApplicationConfig,
@@ -12,7 +13,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideRouter } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { appRoutes } from './app.routes';
-import { provideTranslateLoader } from './i18n.config';
+import { provideI18n } from './i18n.config';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
@@ -20,8 +21,8 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(appRoutes),
     provideAnimationsAsync(),
-    provideHttpClient(withInterceptorsFromDi()),
-    provideTranslateLoader(),
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
+    provideI18n(),
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
