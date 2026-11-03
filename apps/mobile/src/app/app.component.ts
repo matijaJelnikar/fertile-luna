@@ -13,7 +13,7 @@ import { ThemeService } from './services/theme.service';
   imports: [RouterModule, TranslateModule],
   selector: 'app-root',
   templateUrl: './app.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
