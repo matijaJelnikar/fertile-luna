@@ -18,9 +18,12 @@ describe('SettingsComponent', () => {
   const theme = { isDark, set: jest.fn((value: boolean) => isDark.set(value)) };
 
   const contraceptionStoppedOn = signal<string | null>(null);
+  const goal = signal<'avoid' | 'conceive' | null>(null);
   const user = {
     contraceptionStoppedOn,
     setContraceptionStoppedOn: jest.fn(() => of({})),
+    goal,
+    setGoal: jest.fn(() => of({})),
   };
 
   const newCycleDialog = { start: jest.fn() };
@@ -35,6 +38,7 @@ describe('SettingsComponent', () => {
     jest.clearAllMocks();
     isDark.set(false);
     contraceptionStoppedOn.set(null);
+    goal.set(null);
 
     await TestBed.configureTestingModule({
       imports: [SettingsComponent, NoopAnimationsModule],
@@ -97,12 +101,41 @@ describe('SettingsComponent', () => {
     });
   });
 
+  describe('the goal', () => {
+    const radio = (value: string): HTMLInputElement =>
+      fixture.nativeElement.querySelector(
+        `mat-radio-button[value="${value}"] input`
+      ) ??
+      fixture.nativeElement.querySelectorAll('mat-radio-button input')[
+        ['none', 'avoid', 'conceive'].indexOf(value)
+      ];
+
+    it('offers no goal, avoiding and achieving a pregnancy, with none chosen by default', () => {
+      expect(
+        fixture.nativeElement.querySelectorAll('mat-radio-button')
+      ).toHaveLength(3);
+      expect(radio('none').checked).toBe(true);
+    });
+
+    it('saves the chosen goal, and clears it with null', () => {
+      radio('avoid').click();
+      expect(user.setGoal).toHaveBeenLastCalledWith('avoid');
+
+      radio('none').click();
+      expect(user.setGoal).toHaveBeenLastCalledWith(null);
+    });
+  });
+
   describe('the date hormonal contraception was stopped', () => {
     it('shows the stored date as that calendar day', () => {
       contraceptionStoppedOn.set('2026-02-01');
 
       const shown = component.contraceptionStoppedOn();
-      expect([shown?.getFullYear(), shown?.getMonth(), shown?.getDate()]).toEqual([2026, 1, 1]);
+      expect([
+        shown?.getFullYear(),
+        shown?.getMonth(),
+        shown?.getDate(),
+      ]).toEqual([2026, 1, 1]);
     });
 
     it('saves a picked date through the user service', () => {

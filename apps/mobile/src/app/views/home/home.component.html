@@ -1,165 +1,106 @@
-<div class="sticky top-0 z-10 bg-background px-4 pt-2.5 pb-1.5">
-  <p class="m-0 text-sm font-medium text-on-surface-variant">
-    {{ greeting() }}
-  </p>
-</div>
+<p class="m-0 px-4 pt-2.5 pb-1 text-sm font-medium text-on-surface-variant">
+  {{ greeting() }}
+</p>
 
-<!-- Not sticky: the cycle sheet is most of a phone's height, pinning it would leave no room to scroll. -->
-<section class="flex flex-col gap-2.5 bg-background px-4">
-  <div class="w-full">
-    <lib-temperatures-chart
-      [entries]="homeService.measurements()"
-      [evaluation]="evaluation()"
-    />
-  </div>
-  <div class="flex w-full items-center justify-between gap-1">
-    <button mat-button class="max-w-[150px] flex-1" (click)="previousCycle()">
-      <mat-icon>chevron_left</mat-icon> {{ 'home.cycle.previous' | translate }}
-    </button>
-    <span class="flex-1 text-center font-bold">
+<nav
+  class="flex items-center justify-between gap-1 px-1"
+  [attr.aria-label]="'home.cycle.navigation' | translate"
+>
+  <button
+    mat-icon-button
+    type="button"
+    [disabled]="!hasPrevious()"
+    [attr.aria-label]="'home.cycle.previous' | translate"
+    (click)="previousCycle()"
+  >
+    <mat-icon aria-hidden="true">chevron_left</mat-icon>
+  </button>
+  <div class="flex min-w-0 flex-col items-center text-center">
+    <h2 class="m-0 text-lg font-bold">
       {{ 'home.cycle' | translate }} {{ currentCycleNumber() }}
-    </span>
-    <button mat-button class="max-w-[150px] flex-1" (click)="nextCycle()">
-      {{ 'home.cycle.next' | translate }} <mat-icon>chevron_right</mat-icon>
-    </button>
-  </div>
-</section>
-
-<section class="flex w-full flex-col gap-3.5 px-1">
-  <div class="flex w-full flex-col gap-2.5">
-    <h2
-      class="m-0 px-1 text-xs font-semibold tracking-widest text-on-surface-variant uppercase"
-    >
-      {{ 'home.section.this.cycle' | translate }}
     </h2>
-    <div
-      class="flex w-full flex-wrap gap-1.5"
-      role="list"
-      [attr.aria-label]="'home.stats.label' | translate"
-    >
-      @if (currentCycle(); as cycle) {
-        @if (dayOfCycle() !== null) {
-          <div
-            class="flex min-w-0 flex-1 flex-col items-center justify-center rounded-xl border bg-surface-container-highest px-2 py-2.5 text-center border-outline-variant"
-            role="listitem"
-          >
-            <span class="text-lg leading-none font-bold">{{
-              dayOfCycle()
-            }}</span>
-            <span
-              class="mt-0.5 max-w-full truncate text-xs text-on-surface-variant"
-              >{{ 'home.cycle.day' | translate }}</span
-            >
-          </div>
+    @if (currentCycle(); as cycle) {
+      <p class="m-0 text-sm text-on-surface-variant">
+        {{ cycle.startDate | date: 'd MMM' }} –
+        @if (cycleEnd(); as end) {
+          {{ end | date: 'd MMM' }}
         }
-        @let bleeding = cycle.bleedingLength > 0;
-        <div
-          class="flex min-w-0 flex-1 flex-col items-center justify-center rounded-xl border bg-surface-container-highest px-2 py-2.5 text-center"
-          [class.border-outline-variant]="!bleeding"
-          [class.border-error]="bleeding"
-          [class.text-error]="bleeding"
-          role="listitem"
-        >
-          <span class="text-lg leading-none font-bold">{{
-            cycle.bleedingLength
-          }}</span>
-          <span
-            class="mt-0.5 max-w-full truncate text-xs text-on-surface-variant"
-            >{{ 'home.bleeding.days' | translate }}</span
-          >
-        </div>
-      }
-    </div>
-
-    @let detected = tempShift() !== null;
-    <div
-      class="box-border flex w-full items-start gap-3 rounded-xl border px-3.5 py-3"
-      [class.border-outline-variant]="!detected"
-      [class.bg-surface-container-highest]="!detected"
-      [class.border-primary]="detected"
-      [class.bg-primary-container]="detected"
-      [attr.aria-label]="'home.temperature.label' | translate"
-    >
-      <mat-icon
-        aria-hidden="true"
-        class="card-icon"
-        [class.card-icon--detected]="detected"
-        >thermostat</mat-icon
-      >
-      <div class="flex min-w-0 flex-col">
-        @if (tempShift(); as shift) {
-          <p class="m-0 text-sm text-on-surface-variant">
-            {{ 'home.temperature.evaluated' | translate }}
-          </p>
-          <p class="m-0 text-xl font-bold text-primary">
-            {{ shift.temperature }}°C
-          </p>
-          <p class="m-0 text-xs text-on-surface-variant">
-            {{ 'home.cycle.day' | translate }} {{ shift.day }}
-          </p>
-          <p class="m-0 text-xs text-on-surface-variant">
-            {{ 'home.helper.line' | translate }}
-            {{ shift.helperLineTemperature }}°C
-          </p>
-        } @else {
-          <p class="m-0 text-sm text-on-surface-variant">
-            {{ 'home.temperature.not.evaluated' | translate }}
-          </p>
-        }
-      </div>
-    </div>
+      </p>
+    }
   </div>
+  <button
+    mat-icon-button
+    type="button"
+    [disabled]="!hasNext()"
+    [attr.aria-label]="'home.cycle.next' | translate"
+    (click)="nextCycle()"
+  >
+    <mat-icon aria-hidden="true">chevron_right</mat-icon>
+  </button>
+</nav>
 
-  <div class="flex w-full flex-col gap-2.5 opacity-85">
-    <h2
-      class="m-0 px-1 text-xs font-semibold tracking-widest text-on-surface-variant uppercase"
+<!-- Edge to edge: on a phone every pixel of width is another day on screen. -->
+<lib-temperatures-chart
+  class="mt-1"
+  [entries]="homeService.measurements()"
+  [evaluation]="evaluation()"
+  [selectedDay]="selectedDay()"
+  [initialScroll]="initialChartScroll"
+  (selectedDayChange)="selectDay($event)"
+  [(showAllRows)]="showAllRows"
+/>
+
+<div class="flex flex-col gap-3 px-1 pt-2 pb-4">
+  @if (shownDay(); as day) {
+    <app-day-card
+      [day]="day"
+      [entry]="shownEntry()"
+      [phase]="shownPhase()"
+      [goal]="userService.goal()"
+      [evaluation]="evaluation()"
+      [cycleStartDate]="currentCycle()?.startDate ?? null"
+      [hasPrevious]="day > 1 || hasPrevious()"
+      [hasNext]="day < lastNavigableDay() || hasNext()"
+      (edit)="editDay($event)"
+      (add)="addRecord($event)"
+      (step)="stepDay($event)"
+    />
+  } @else {
+    <p class="m-0 px-3 text-sm text-on-surface-variant">
+      {{ 'home.day.none' | translate }}
+    </p>
+  }
+
+  <section
+    class="flex flex-col gap-3 rounded-2xl border border-outline-variant bg-surface-container-highest p-4"
+    aria-labelledby="cycle-info-title"
+  >
+    <h3
+      id="cycle-info-title"
+      class="m-0 text-xs font-semibold tracking-widest text-on-surface-variant uppercase"
     >
-      {{ 'home.section.insights' | translate }}
-    </h2>
-
-    <div
-      class="flex w-full flex-wrap gap-3 *:min-w-[140px] *:flex-1 min-[601px]:*:min-w-[200px]"
-    >
-      <div
-        class="box-border flex w-full items-start gap-3 rounded-xl border px-3.5 py-3 border-outline-variant bg-surface-container-highest"
-        [attr.aria-label]="'home.phase.label' | translate"
-      >
-        <mat-icon aria-hidden="true" class="card-icon">spa</mat-icon>
-        <div class="flex min-w-0 flex-col">
-          <p class="m-0 text-sm text-on-surface-variant">
-            {{ 'home.phase.label' | translate }}
-          </p>
-          <!-- Method state, never a risk: the method states a phase boundary, not a probability. -->
-          <p
-            class="m-0 text-xl font-bold"
-            [class.text-primary]="infertileFromDay() === null"
-            [class.text-phase-confirmed]="infertileFromDay() !== null"
-          >
-            {{ phaseStateKey() | translate }}
-          </p>
-          @if (infertileFromDay(); as from) {
-            <p class="mt-1 text-sm text-on-surface-variant">
-              {{ 'home.phase.infertile.from' | translate }} {{ from }}
-            </p>
-          }
-        </div>
-      </div>
-
-      @if (avgCycleLength() !== null) {
-        <div
-          class="flex min-h-full flex-col items-center justify-center gap-0.5 rounded-xl border border-outline-variant bg-surface-container-highest px-3.5 py-3 text-center"
-        >
-          <span class="text-2xl font-bold">{{ avgCycleLength() }}</span>
-          <span class="text-sm text-on-surface-variant">{{
-            'home.avg.cycle.length' | translate
-          }}</span>
-        </div>
-      }
-    </div>
-
-    <!-- Earliest shift across cycles returns with the rule engine, which evaluates history. -->
-  </div>
-</section>
+      {{ 'home.cycle.info' | translate }}
+    </h3>
+    <dl class="m-0 grid grid-cols-[auto_1fr] items-baseline gap-x-4 gap-y-1.5">
+      <dt class="text-xs text-on-surface-variant italic">
+        {{ 'home.first.raised.day' | translate }}
+      </dt>
+      <dd class="m-0 text-sm text-on-surface">
+        {{ earliestFirstRaisedDay() ?? '—' }}
+      </dd>
+      <dt class="text-xs text-on-surface-variant italic">
+        {{ 'home.avg.cycle.length' | translate }}
+      </dt>
+      <dd class="m-0 text-sm text-on-surface">{{ avgCycleLength() ?? '—' }}</dd>
+      <dt class="text-xs text-on-surface-variant italic">
+        {{ 'home.avg.bleeding.length' | translate }}
+      </dt>
+      <dd class="m-0 text-sm text-on-surface">
+        {{ avgBleedingLength() ?? '—' }}
+      </dd>
+    </dl>
+  </section>
+</div>
 
 <lib-fab
   icon="add"

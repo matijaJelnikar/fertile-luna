@@ -37,6 +37,10 @@ const MEASUREMENTS: MeasurementGraphData[] = [
   { uuid: 'm-2', date: new Date('2026-04-02'), temperature: 36.5, day: 2 },
 ];
 
+const PREVIOUS_ENTRIES: MeasurementGraphData[] = [
+  { uuid: 'p-1', date: new Date('2026-03-04'), temperature: 36.3, day: 1 },
+];
+
 const NOTHING_EVALUATED: CycleEvaluation = {
   temperature: { status: 'unevaluable', missing: 'too-few-values' },
   mucus: { status: 'unevaluable', missing: 'not-recorded' },
@@ -59,24 +63,37 @@ describe('HomeComponent', () => {
     measurements: signal(MEASUREMENTS),
     placedMeasurements: signal(MEASUREMENTS),
     currentCycle: signal<CycleWithDerived | null>(CYCLE),
+    history: signal([
+      { cycle: PREVIOUS, entries: PREVIOUS_ENTRIES },
+      { cycle: CYCLE, entries: MEASUREMENTS },
+    ]),
     record: jest.fn(() => of({})),
+    update: jest.fn(() => of({})),
   };
   const cycleService = {
     cycles: signal([CYCLE, PREVIOUS]),
-    cyclesWithDerived: signal([CYCLE, PREVIOUS]),
+    // As the real service orders them: `cycles` newest first, the derived list oldest first.
+    cyclesWithDerived: signal([PREVIOUS, CYCLE]),
     currentCycleUuid: signal<string | null>('cycle-2'),
     setCurrentCycle: jest.fn(),
     startNewCycle: jest.fn(() => of({})),
   };
-  const fertilityService = { evaluate: jest.fn(() => NOTHING_EVALUATED) };
+  const fertilityService = {
+    evaluate: jest.fn(
+      (_entries: readonly MeasurementGraphData[]): CycleEvaluation =>
+        NOTHING_EVALUATED
+    ),
+  };
   const userService = {
     username: signal<string | null>('Ana'),
     contraceptionStoppedOn: signal<string | null>(null),
+    goal: signal<'avoid' | 'conceive' | null>(null),
   };
   const dialog = { open: jest.fn() };
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    localStorage.clear();
     fertilityService.evaluate.mockReturnValue(NOTHING_EVALUATED);
     cycleService.currentCycleUuid.set('cycle-2');
     userService.contraceptionStoppedOn.set(null);
@@ -138,43 +155,162 @@ describe('HomeComponent', () => {
     );
   });
 
-  it('names the cervix as the awaited sign when no mucus is recorded', () => {
-    fertilityService.evaluate.mockReturnValue({
+  it('averages only the cycles that have finished', () => {
+    expect(component.avgCycleLength()).toBe(28);
+  });
+
+  it('averages the bleeding length over every cycle', () => {
+    expect(component.avgBleedingLength()).toBe(5);
+  });
+
+  it('shows no first raised day until a temperature shift is confirmed', () => {
+    expect(component.earliestFirstRaisedDay()).toBeNull();
+  });
+
+  it('takes the earliest first raised day across all cycles', () => {
+    const shiftFrom = (first: number): CycleEvaluation => ({
       ...NOTHING_EVALUATED,
       temperature: {
         status: 'satisfied',
         result: {
           helperLineTemperature: 36.5,
-          helperLineDays: [1, 2, 3, 4, 5, 6],
-          countedDays: [7, 8, 9],
+          helperLineDays: [],
+          countedDays: [first, first + 1, first + 2],
           uncountedDays: [],
           rule: 'R-TEMP-02',
-          completedOnDay: 9,
+          completedOnDay: first + 2,
         },
       },
-      cervix: { status: 'unevaluable', missing: 'awaiting-days' },
     });
-    homeService.measurements.set([...MEASUREMENTS]);
+    fertilityService.evaluate.mockImplementation(
+      (entries: readonly MeasurementGraphData[]) =>
+        entries === PREVIOUS_ENTRIES ? shiftFrom(13) : shiftFrom(16)
+    );
 
-    expect(component.phaseStateKey()).toBe('home.phase.awaiting.cervix');
+    fixture = TestBed.createComponent(HomeComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.earliestFirstRaisedDay()).toBe(13);
+    expect(fixture.nativeElement.textContent).toContain('13');
   });
 
-  it('averages only the cycles that have finished', () => {
-    expect(component.avgCycleLength()).toBe(28);
+  it('shows the last recorded day until another is chosen on the sheet', () => {
+    expect(component.shownDay()).toBe(2);
+    expect(component.shownEntry()?.uuid).toBe('m-2');
+
+    component.selectDay(1);
+
+    expect(component.shownEntry()?.uuid).toBe('m-1');
   });
 
-  it('reports no shift while the evaluation has found none', () => {
-    expect(component.tempShift()).toBeNull();
+  it('steps through the days with the arrows, from day 1 to today in the open cycle', () => {
+    jest.useFakeTimers({ now: new Date('2026-04-04T12:00:00') });
+    fixture = TestBed.createComponent(HomeComponent);
+    component = fixture.componentInstance;
+
+    expect(component.shownDay()).toBe(2);
+    expect(component.lastNavigableDay()).toBe(4);
+    jest.useRealTimers();
+
+    component.stepDay(-1);
+    expect(component.shownDay()).toBe(1);
+    expect(cycleService.setCurrentCycle).not.toHaveBeenCalled();
+
+    component.stepDay(1);
+    component.stepDay(1);
+    component.stepDay(1);
+    component.stepDay(1);
+    expect(component.shownDay()).toBe(4);
+    // Today has nothing recorded yet, so the card offers to add it.
+    expect(component.shownEntry()).toBeNull();
+  });
+
+  it('explains the empty space when the cycle has no days recorded', () => {
+    homeService.placedMeasurements.set([]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-day-card')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('home.day.none');
+    homeService.placedMeasurements.set(MEASUREMENTS);
+  });
+
+  it('says the phase cannot be evaluated rather than guessing, and nothing past the last day', () => {
+    expect(component.shownPhase()).toBe('unevaluable');
+
+    component.selectDay(3);
+
+    expect(component.shownPhase()).toBeNull();
+  });
+
+  it('keeps the chosen day when the home page is left and opened again', () => {
+    component.selectDay(1);
+    fixture.destroy();
+
+    const reopened = TestBed.createComponent(HomeComponent).componentInstance;
+
+    expect(reopened.shownDay()).toBe(1);
+    expect(reopened.initialChartScroll).not.toBeNull();
+  });
+
+  it('steps from day 1 back to the last day of the previous cycle', () => {
+    component.selectDay(1);
+
+    component.stepDay(-1);
+
+    expect(cycleService.setCurrentCycle).toHaveBeenCalledWith('cycle-1');
+    cycleService.currentCycleUuid.set('cycle-1');
+    expect(component.selectedDay()).toBe(28);
+  });
+
+  it('steps from the last day of a cycle on to day 1 of the next', () => {
+    cycleService.currentCycleUuid.set('cycle-1');
+    component.selectDay(28);
+
+    component.stepDay(1);
+
+    expect(cycleService.setCurrentCycle).toHaveBeenCalledWith('cycle-2');
+    cycleService.currentCycleUuid.set('cycle-2');
+    expect(component.selectedDay()).toBe(1);
+  });
+
+  it('returns to the last recorded day when another cycle is shown', () => {
+    component.selectDay(1);
+    cycleService.currentCycleUuid.set('cycle-1');
+
+    expect(component.selectedDay()).toBeNull();
+  });
+
+  it('saves the changes to a day edited from its card', () => {
+    const changes = { temperature: 36.8 };
+    dialog.open.mockReturnValue({ afterClosed: () => of(changes) });
+
+    component.editDay(MEASUREMENTS[1]);
+
+    expect(dialog.open.mock.calls[0][1].data.mode).toBe('edit');
+    expect(homeService.update).toHaveBeenCalledWith('m-2', changes);
+  });
+
+  it('remembers whether all rows of the sheet are shown', () => {
+    component.showAllRows.set(true);
+    fixture.detectChanges();
+
+    expect(localStorage.getItem('fertileLuna_chartAllRows')).toBe('true');
   });
 
   it('describes method state, and never a risk', () => {
-    expect(component.phaseStateKey()).toBe('home.phase.awaiting.both');
-    expect(component.infertileFromDay()).toBeNull();
-
     const rendered = fixture.nativeElement.textContent.toLowerCase();
     for (const word of ['risk', 'safe', 'unsafe', 'danger']) {
       expect(rendered).not.toContain(word);
     }
+  });
+
+  it('starts a day from its card on that day', () => {
+    dialog.open.mockReturnValue({ afterClosed: () => of(undefined) });
+    const date = new Date('2026-04-03');
+
+    component.addRecord(date);
+
+    expect(dialog.open.mock.calls[0][1].data.measurement.date).toBe(date);
   });
 
   it('steps back to the previous cycle', () => {

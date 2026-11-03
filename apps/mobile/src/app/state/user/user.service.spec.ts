@@ -55,4 +55,16 @@ describe('UserService', () => {
     expect(request.request.body).toEqual({ contraceptionStoppedOn: null });
     request.flush({});
   });
+
+  it('stores the goal, and clears it with null', () => {
+    service.setGoal('conceive').subscribe();
+    const request = http.expectOne(API.auth.updateUser);
+    expect(request.request.body).toEqual({ goal: 'conceive' });
+    request.flush({});
+
+    service.setGoal(null).subscribe();
+    const clear = http.expectOne(API.auth.updateUser);
+    expect(clear.request.body).toEqual({ goal: null });
+    clear.flush({});
+  });
 });

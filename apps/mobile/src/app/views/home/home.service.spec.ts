@@ -30,8 +30,24 @@ const MEASUREMENTS: MeasurementGraphData[] = [
   { uuid: 'm-2', date: new Date(2026, 2, 20), temperature: 36.6, day: null },
 ];
 
+const PREVIOUS: CycleWithDerived = {
+  ...CYCLE,
+  uuid: 'cycle-0',
+  cycleNumber: 0,
+  startDate: new Date(2026, 2, 4),
+  isOpen: false,
+  length: 28,
+};
+
+const PREVIOUS_ENTRIES: MeasurementGraphData[] = [
+  { uuid: 'p-1', date: new Date(2026, 2, 4), temperature: 36.3, day: 1 },
+];
+
 /** Menstrual bleeding well after the cycle's own bleeding — the day that offers a new cycle. */
-const BLEEDING_DAY: MeasurementDto = { date: new Date(2026, 3, 28), bleeding: BleedingOption.Heavy };
+const BLEEDING_DAY: MeasurementDto = {
+  date: new Date(2026, 3, 28),
+  bleeding: BleedingOption.Heavy,
+};
 
 describe('HomeService', () => {
   let homeService: HomeService;
@@ -41,6 +57,9 @@ describe('HomeService', () => {
     placedMeasurements: signal(MEASUREMENTS.filter((m) => m.day !== null)),
     addMeasurement: jest.fn(() => of({})),
     getMeasurementsByCycle: jest.fn(() => of([])),
+    fetchMeasurementsByCycle: jest.fn((uuid: string) =>
+      of(uuid === 'cycle-0' ? PREVIOUS_ENTRIES : [])
+    ),
   };
   const cycleService = {
     currentCycle: signal<CycleWithDerived | null>(CYCLE),
@@ -75,12 +94,26 @@ describe('HomeService', () => {
     expect(homeService.placedMeasurements()).toHaveLength(1);
   });
 
+  it('loads every cycle for the history, and reads the one on screen live', async () => {
+    cycleService.cyclesWithDerived.set([PREVIOUS, CYCLE]);
+    TestBed.tick();
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(homeService.history()).toEqual([
+      { cycle: PREVIOUS, entries: PREVIOUS_ENTRIES },
+      { cycle: CYCLE, entries: MEASUREMENTS },
+    ]);
+  });
+
   it('exposes the selected cycle', () => {
     expect(homeService.currentCycle()).toBe(CYCLE);
   });
 
   it('records a day against the selected cycle and its start date', () => {
-    const entry: MeasurementDto = { date: new Date(2026, 3, 6), temperature: 36.5 };
+    const entry: MeasurementDto = {
+      date: new Date(2026, 3, 6),
+      temperature: 36.5,
+    };
 
     homeService.record(entry).subscribe(done);
 
@@ -99,7 +132,9 @@ describe('HomeService', () => {
     cycleService.cyclesWithDerived.set([]);
     const onError = jest.fn();
 
-    homeService.record({ date: new Date(), temperature: 36.5 }).subscribe({ error: onError });
+    homeService
+      .record({ date: new Date(), temperature: 36.5 })
+      .subscribe({ error: onError });
 
     expect(onError).toHaveBeenCalled();
     expect(measurementsService.addMeasurement).not.toHaveBeenCalled();
@@ -125,7 +160,10 @@ describe('HomeService', () => {
     });
 
     it('files it in the cycle its date belongs to, then shows that cycle', () => {
-      const entry: MeasurementDto = { date: new Date(2026, 3, 29), bleeding: BleedingOption.Heavy };
+      const entry: MeasurementDto = {
+        date: new Date(2026, 3, 29),
+        bleeding: BleedingOption.Heavy,
+      };
 
       homeService.record(entry).subscribe(done);
 
@@ -142,7 +180,11 @@ describe('HomeService', () => {
 
   describe('a day of menstrual bleeding after the cycle`s own', () => {
     it('offers a new cycle from that day, and files the day in it once confirmed', () => {
-      const started = { uuid: 'cycle-2', cycleNumber: 2, startDate: BLEEDING_DAY.date } as Cycle;
+      const started = {
+        uuid: 'cycle-2',
+        cycleNumber: 2,
+        startDate: BLEEDING_DAY.date,
+      } as Cycle;
       newCycleDialog.start.mockReturnValue(of(started));
 
       homeService.record(BLEEDING_DAY).subscribe(done);
@@ -175,7 +217,9 @@ describe('HomeService', () => {
     });
 
     it('does not offer for spotting', () => {
-      homeService.record({ ...BLEEDING_DAY, bleeding: BleedingOption.Spotting }).subscribe();
+      homeService
+        .record({ ...BLEEDING_DAY, bleeding: BleedingOption.Spotting })
+        .subscribe();
 
       expect(newCycleDialog.start).not.toHaveBeenCalled();
       expect(measurementsService.addMeasurement).toHaveBeenCalledWith(

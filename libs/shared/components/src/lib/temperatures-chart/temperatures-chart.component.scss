@@ -3,7 +3,9 @@
 
 :host {
   display: block;
-  font-size: 0.625rem;
+  // Contains the visually hidden text, which would otherwise stretch the page past the scroller.
+  position: relative;
+  font-size: 0.8125rem;
   --line: var(--mat-sys-outline-variant);
   --ink: var(--mat-sys-on-surface);
   --muted: var(--mat-sys-on-surface-variant);
@@ -27,8 +29,8 @@
 
 .labels {
   flex: none;
-  max-width: 4.5rem;
-  padding-right: 4px;
+  max-width: 3.5rem;
+  padding-right: 6px;
   color: var(--muted);
   text-align: right;
 }
@@ -45,8 +47,8 @@
 
 .label,
 .cell {
-  height: 18px;
-  line-height: 18px;
+  height: 28px;
+  line-height: 28px;
   overflow: hidden;
   white-space: nowrap;
 }
@@ -56,8 +58,8 @@
 }
 
 .label--axis {
-  height: 24px;
-  line-height: 24px;
+  height: 40px;
+  line-height: 40px;
 }
 
 // Only the sheet scrolls sideways; the page never does.
@@ -79,7 +81,7 @@
 .line {
   fill: none;
   stroke: var(--mat-sys-primary);
-  stroke-width: 2;
+  stroke-width: 2.5;
 }
 
 .helper-line {
@@ -145,10 +147,11 @@ sup {
 }
 
 .day {
-  height: 24px;
+  height: 40px;
   padding: 0;
   background: none;
   font: inherit;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: var(--muted);
   cursor: pointer;
@@ -164,8 +167,8 @@ sup {
   }
 }
 
-.state {
-  margin: 6px 0 0;
-  font-size: 0.8rem;
-  color: var(--muted);
+.toggle {
+  display: flex;
+  min-height: 48px;
+  margin: 4px auto 0;
 }

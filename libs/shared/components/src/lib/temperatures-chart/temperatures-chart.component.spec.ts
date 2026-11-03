@@ -91,8 +91,10 @@ describe('TemperaturesChartComponent', () => {
 
   const setup = (
     entries: MeasurementGraphData[],
-    evaluation: CycleEvaluation | null = NOTHING_EVALUATED
+    evaluation: CycleEvaluation | null = NOTHING_EVALUATED,
+    showAllRows = true
   ) => {
+    fixture.componentRef.setInput('showAllRows', showAllRows);
     fixture.componentRef.setInput('entries', entries);
     fixture.componentRef.setInput('evaluation', evaluation);
     fixture.detectChanges();
@@ -208,7 +210,7 @@ describe('TemperaturesChartComponent', () => {
       setup([1, 2, 3].map((d) => entry(d, { temperature: 36.5 })), EVALUATED);
       onScreen(300);
 
-      expect(component.days()).toHaveLength(12);
+      expect(component.days()).toHaveLength(8);
       expect(component.sheetWidth()).toBe(300);
       // Days ahead are blank: marking them would be a prediction.
       const phase = component.rows().find((r) => r.key === 'phase');
@@ -219,8 +221,8 @@ describe('TemperaturesChartComponent', () => {
       setup(Array.from({ length: 35 }, (_, i) => entry(i + 1, { temperature: 36.5 })));
       onScreen(300);
 
-      // Columns keep their legible width rather than squeezing 35 days into 300 px.
-      expect(component.columnWidth()).toBe(24);
+      // Columns keep a finger-sized width rather than squeezing 35 days into 300 px.
+      expect(component.columnWidth()).toBe(36);
       expect(component.sheetWidth()).toBeGreaterThan(300);
 
       const scroller = query('.scroller');
@@ -327,13 +329,39 @@ describe('TemperaturesChartComponent', () => {
     it('states the phase in words, not colour alone', () => {
       setup([entry(9, { temperature: 36.8 })], EVALUATED);
 
-      expect(query('[role="status"]').textContent).toContain(
+      expect(query('.visually-hidden').textContent).toContain(
         'Infertile phase confirmed from cycle day 9'
       );
     });
   });
 
   describe('observation rows', () => {
+    const rowKeys = () => component.rows().map((row) => row.key);
+    const toggle = () => query('.toggle');
+
+    it('shows only the curve and the days until the rows are asked for', () => {
+      setup([entry(1, { temperature: 36.5 })], NOTHING_EVALUATED, false);
+
+      expect(rowKeys()).toEqual([]);
+      expect(query('.day')).toBeTruthy();
+      expect(toggle().getAttribute('aria-expanded')).toBe('false');
+
+      toggle().click();
+      fixture.detectChanges();
+
+      expect(rowKeys()).toEqual([
+        'mucus',
+        'bleeding',
+        'sensation',
+        'appearance',
+        'cervix',
+        'intercourse',
+        'phase',
+      ]);
+      expect(toggle().getAttribute('aria-expanded')).toBe('true');
+      expect(component.showAllRows()).toBe(true);
+    });
+
     it('shows every observation recorded for a day in that day`s column', () => {
       setup(
         [entry(4, { bleeding: 'Light', mucusFeeling: 'Wet', intercourse: 'Sex' } as never)],
@@ -374,7 +402,7 @@ describe('TemperaturesChartComponent', () => {
       const phase = component.rows().find((r) => r.key === 'phase');
 
       expect(phase?.cells[0].text).toBe('');
-      expect(query('[role="status"]').textContent).toContain('cannot be evaluated');
+      expect(component.phaseState()).toContain('cannot be evaluated');
     });
   });
 
@@ -387,7 +415,7 @@ describe('TemperaturesChartComponent', () => {
     it('opens on the last recorded day', () => {
       setup(DAYS, EVALUATED);
 
-      expect(query('.state').textContent).toContain('Cycle day 5');
+      expect(query('[aria-live]').textContent).toContain('Cycle day 5');
       expect(query('.day[aria-pressed="true"]').textContent?.trim()).toBe('5');
     });
 
@@ -397,10 +425,43 @@ describe('TemperaturesChartComponent', () => {
       query('.cell[data-day="4"]').click();
       fixture.detectChanges();
 
-      const summary = query('.state').textContent;
+      const summary = query('[aria-live]').textContent;
       expect(summary).toContain('Cycle day 4');
       expect(summary).toContain('36.5 °C');
       expect(summary).toContain('Bleeding: Light');
+      expect(component.selectedDay()).toBe(4);
+    });
+
+    it('scrolls a day chosen off-screen into view', () => {
+      Object.defineProperty(query('.scroller'), 'clientWidth', { value: 300 });
+      setup(Array.from({ length: 30 }, (_, i) => entry(i + 1, { temperature: 36.5 })));
+      onScreen(300);
+      const scroller = query('.scroller');
+      // Opens on the last day, scrolled to the end.
+      expect(scroller.scrollLeft).toBe(30 * 36 - 300);
+
+      fixture.componentRef.setInput('selectedDay', 2);
+      fixture.detectChanges();
+
+      expect(scroller.scrollLeft).toBe(36);
+    });
+
+    it('opens at the scroll the host page hands back, instead of on the last day', () => {
+      Object.defineProperty(query('.scroller'), 'clientWidth', { value: 300 });
+      fixture.componentRef.setInput('initialScroll', 108);
+      setup(Array.from({ length: 30 }, (_, i) => entry(i + 1, { temperature: 36.5 })));
+      onScreen(300);
+
+      expect(component.scrollOffset()).toBe(108);
+    });
+
+    it('follows a day chosen by the host page', () => {
+      setup(DAYS, EVALUATED);
+
+      fixture.componentRef.setInput('selectedDay', 4);
+      fixture.detectChanges();
+
+      expect(query('.day[aria-pressed="true"]').textContent?.trim()).toBe('4');
     });
 
     it('walks the days with the arrow keys, keeping one day in the tab order', () => {
@@ -410,7 +471,7 @@ describe('TemperaturesChartComponent', () => {
       selected.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
       fixture.detectChanges();
 
-      expect(query('.state').textContent).toContain('Cycle day 4');
+      expect(query('[aria-live]').textContent).toContain('Cycle day 4');
       const focusable = fixture.nativeElement.querySelectorAll('.day[tabindex="0"]');
       expect(focusable).toHaveLength(1);
       expect(focusable[0].textContent.trim()).toBe('4');
@@ -452,7 +513,7 @@ describe('TemperaturesChartComponent', () => {
       (el: HTMLElement) => el.textContent?.trim()
     );
     expect(labels.every((label) => label?.startsWith('chart.'))).toBe(true);
-    expect(query('[role="status"]').textContent?.trim()).toBe('chart.phase.unevaluable');
+    expect(component.phaseState()).toBe('chart.phase.unevaluable');
     expect(query('.day').getAttribute('aria-label')).toBe('chart.day');
   });
 

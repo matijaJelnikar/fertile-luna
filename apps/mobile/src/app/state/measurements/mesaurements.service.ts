@@ -9,7 +9,7 @@ import {
   PlacedMeasurement,
   UpdateMeasurementDto,
 } from '@basal-temp-log-workspace/model';
-import { filter, switchMap, tap } from 'rxjs/operators';
+import { filter, map, switchMap, tap } from 'rxjs/operators';
 import { API } from '../../shared/constants/endpoints.constants';
 import { toCalendarDay, toCycleDay } from './cycle-day';
 import { CycleService } from './cycle.service';
@@ -46,15 +46,22 @@ export class MeasurementsService {
   }
 
   getMeasurementsByCycle(cycleId: string, cycleStartDate?: Date) {
-    return this.http.get<Measurement[]>(API.measurement.byCycle(cycleId)).pipe(
-      tap((measurements) => {
-        this.state.set(
+    return this.fetchMeasurementsByCycle(cycleId, cycleStartDate).pipe(
+      tap((measurements) => this.state.set(measurements))
+    );
+  }
+
+  /** A cycle's entries, placed by cycle day, without making it the cycle on screen. */
+  fetchMeasurementsByCycle(cycleId: string, cycleStartDate?: Date) {
+    return this.http
+      .get<Measurement[]>(API.measurement.byCycle(cycleId))
+      .pipe(
+        map((measurements) =>
           this.sortByDate(
             measurements.map((m) => this.toGraphData(m, cycleStartDate))
           )
-        );
-      })
-    );
+        )
+      );
   }
 
   getMeasurement(measurementId: string) {

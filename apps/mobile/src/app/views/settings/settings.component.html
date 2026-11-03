@@ -25,6 +25,27 @@
     </div>
   </section>
 
+  <section [class]="sectionClass" aria-labelledby="goalHeading">
+    <h3 id="goalHeading" [class]="headingClass">
+      {{ 'settings.section.goal' | translate }}
+    </h3>
+    <p class="m-0 text-sm text-on-surface-variant">
+      {{ 'settings.goal.hint' | translate }}
+    </p>
+    <mat-radio-group
+      class="flex flex-col"
+      aria-labelledby="goalHeading"
+      [value]="goal()"
+      (change)="onGoalChange($event.value)"
+    >
+      @for (option of goals; track option) {
+        <mat-radio-button [value]="option">
+          {{ 'settings.goal.' + option | translate }}
+        </mat-radio-button>
+      }
+    </mat-radio-group>
+  </section>
+
   <section [class]="sectionClass" aria-labelledby="cycleHeading">
     <h3 id="cycleHeading" [class]="headingClass">
       {{ 'settings.section.cycle' | translate }}

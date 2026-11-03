@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Cycle } from './cycle.entity';
+import { CycleGoal } from '@basal-temp-log-workspace/model';
 
 @Entity({ name: 'user' })
 export class User {
@@ -41,6 +42,10 @@ export class User {
    */
   @Column({ type: 'date', nullable: true })
   contraceptionStoppedOn?: Date | null;
+
+  /** Whether the user charts to avoid or to achieve a pregnancy; only colours the app. */
+  @Column({ type: 'varchar', length: 16, nullable: true })
+  goal?: CycleGoal | null;
 
   @OneToMany(() => Cycle, (cycle) => cycle.user, { cascade: true })
   cycle?: Cycle[];

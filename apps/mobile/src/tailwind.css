@@ -45,6 +45,7 @@
   --color-inverse-on-surface: var(--mat-sys-inverse-on-surface);
   --color-inverse-primary: var(--mat-sys-inverse-primary);
   --color-scrim: var(--mat-sys-scrim);
+  --color-positive-container: var(--app-positive-container);
+  --color-on-positive-container: var(--app-on-positive-container);
   --color-shadow: var(--mat-sys-shadow);
-  --color-phase-confirmed: var(--app-phase-confirmed);
 }

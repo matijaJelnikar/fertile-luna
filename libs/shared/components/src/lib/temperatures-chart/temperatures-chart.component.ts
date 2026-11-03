@@ -8,29 +8,33 @@ import {
   ElementRef,
   inject,
   input,
-  linkedSignal,
+  model,
   signal,
+  untracked,
   viewChild,
   viewChildren,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import {
   CycleEvaluation,
   DayMarkerKind,
   MeasurementGraphData,
+  phaseOnDay,
 } from '@basal-temp-log-workspace/model';
 
 /**
- * The narrowest a day's column may get: two glyphs stay legible and a day stays a 24 px touch target
- * (WCAG 2.5.8). Below this the sheet scrolls rather than shrinks.
+ * The narrowest a day's column may get, so a day stays a finger-sized target on a phone.
+ * Below this the sheet scrolls rather than shrinks.
  */
-const MIN_COLUMN_WIDTH = 24;
+const MIN_COLUMN_WIDTH = 36;
 /** The paper sheet has 40 columns (`#R-CYCLE-01`); empty days ahead are drawn only up to that. */
 const SHEET_DAYS = 40;
 /** One square is 0.1 °C, as the method's own sheet is ruled (`#R-TEMP-02`). */
 const SQUARES_PER_DEGREE = 10;
-const SQUARE_HEIGHT = 14;
+const SQUARE_HEIGHT = 18;
 const DEFAULT_RANGE = { min: 36.0, max: 37.0 };
 /** The least span shown, so a flat week reads as flat instead of being stretched into noise. */
 const MIN_SPAN = 1.0;
@@ -57,8 +61,10 @@ interface RowCell {
   readonly count: number | null;
 }
 
+type RowKey = 'mucus' | 'bleeding' | 'sensation' | 'appearance' | 'cervix' | 'intercourse' | 'phase';
+
 interface ObservationRow {
-  readonly key: string;
+  readonly key: RowKey;
   readonly labelKey: string;
   readonly cells: readonly RowCell[];
 }
@@ -87,7 +93,7 @@ interface DayColumn {
   templateUrl: './temperatures-chart.component.html',
   styleUrl: './temperatures-chart.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslatePipe],
+  imports: [MatButton, MatIcon, TranslatePipe],
   host: {
     class: 'zyklusblatt',
     // One listener for the whole sheet: a tap anywhere in a column selects that day.
@@ -103,11 +109,18 @@ export class TemperaturesChartComponent {
   entries = input<readonly MeasurementGraphData[]>([]);
   /** The engine's output; the sole source of every marker, line and phase boundary drawn here. */
   evaluation = input<CycleEvaluation | null>(null);
+  /** The day being read; `null` falls back to the last recorded day. */
+  selectedDay = model<number | null>(null);
+  /** A horizontal scroll to restore on the first draw, as the host page left it. */
+  initialScroll = input<number | null>(null);
+  /** Collapsed, only the curve and the day axis are shown; the host page reads the day out. */
+  showAllRows = model(false);
 
   private scroller = viewChild.required<ElementRef<HTMLElement>>('scroller');
   private dayButtons = viewChildren<ElementRef<HTMLButtonElement>>('dayButton');
   /** The width available to the days, measured; 0 until it has been. */
   private viewport = signal(0);
+  private scrollRestored = false;
 
   private placed = computed(() =>
     [...this.entries()]
@@ -140,8 +153,8 @@ export class TemperaturesChartComponent {
   columns = computed(() => `repeat(${this.days().length}, ${this.columnWidth()}px)`);
 
   /** Opens on the last recorded day: it is the day being charted, and the one worth reading first. */
-  selectedDay = linkedSignal<number | null>(() => this.lastDay() || null);
-  private focusDay = computed(() => this.selectedDay() ?? 1);
+  activeDay = computed(() => this.selectedDay() ?? (this.lastDay() || null));
+  private focusDay = computed(() => this.activeDay() ?? 1);
 
   dayColumns = computed<DayColumn[]>(() => {
     this.language();
@@ -151,7 +164,7 @@ export class TemperaturesChartComponent {
       x: (day - 1) * width,
       right: day * width,
       label: this.translate.instant('chart.day', { day }),
-      selected: day === this.selectedDay(),
+      selected: day === this.activeDay(),
       tabIndex: day === this.focusDay() ? 0 : -1,
     }));
   });
@@ -229,7 +242,7 @@ export class TemperaturesChartComponent {
           y,
           temperature: entry.temperature,
           disturbed: !!entry.disturbed,
-          triangle: counted ? `${x},${y - 8} ${x - 6},${y + 3} ${x + 6},${y + 3}` : null,
+          triangle: counted ? `${x},${y - 11} ${x - 8},${y + 4} ${x + 8},${y + 4}` : null,
         },
       ];
     })
@@ -280,12 +293,7 @@ export class TemperaturesChartComponent {
     return phase?.status === 'satisfied' ? phase.result.infertileFromDay : null;
   });
 
-  private lastPreOvulatoryInfertileDay = computed(() => {
-    const phase = this.evaluation()?.preOvulatory;
-    return phase?.status === 'satisfied' ? phase.result.lastInfertileDay : null;
-  });
-
-  rows = computed<ObservationRow[]>(() => {
+  private allRows = computed<ObservationRow[]>(() => {
     const byDay = this.byDay();
 
     // An empty string means "not recorded". A recorded "None" prints its own abbreviation, so the
@@ -303,7 +311,7 @@ export class TemperaturesChartComponent {
     return [
       {
         key: 'mucus',
-        labelKey: 'chart.row.mucus',
+        labelKey: 'chart.row.short.mucus',
         cells: this.days().map((day) => {
           const kinds = this.markersByDay().get(day) ?? [];
           const postPeak = kinds.find((kind) => kind.startsWith('post-peak-'));
@@ -316,22 +324,22 @@ export class TemperaturesChartComponent {
       },
       {
         key: 'bleeding',
-        labelKey: 'chart.row.bleeding',
+        labelKey: 'chart.row.short.bleeding',
         cells: this.days().map((day) => cell(day, initials(byDay.get(day)?.bleeding))),
       },
       {
         key: 'sensation',
-        labelKey: 'chart.row.sensation',
+        labelKey: 'chart.row.short.sensation',
         cells: this.days().map((day) => cell(day, byDay.get(day)?.mucusFeeling?.slice(0, 2))),
       },
       {
         key: 'appearance',
-        labelKey: 'chart.row.appearance',
+        labelKey: 'chart.row.short.appearance',
         cells: this.days().map((day) => cell(day, byDay.get(day)?.mucusAppearance?.slice(0, 2))),
       },
       {
         key: 'cervix',
-        labelKey: 'chart.row.cervix',
+        labelKey: 'chart.row.short.cervix',
         cells: this.days().map((day) => {
           const entry = byDay.get(day);
           return cell(day, initials(entry?.cervixOpenness, entry?.cervixFirmness));
@@ -339,21 +347,23 @@ export class TemperaturesChartComponent {
       },
       {
         key: 'intercourse',
-        labelKey: 'chart.row.intercourse',
+        labelKey: 'chart.row.short.intercourse',
         cells: this.days().map((day) => cell(day, initials(byDay.get(day)?.intercourse))),
       },
       {
         key: 'phase',
-        labelKey: 'chart.row.fertile',
+        labelKey: 'chart.row.short.fertile',
         cells: this.days().map((day) =>
           // Past the last recorded day the row stays blank: marking days ahead would be a prediction.
-          cell(day, day <= this.lastDay() && this.isFertile(day) === true ? 'P' : undefined)
+          cell(day, day <= this.lastDay() && phaseOnDay(this.evaluation(), day) === 'fertile' ? 'P' : undefined)
         ),
       },
     ];
   });
 
-  /** Method state as a sentence, shown beneath the sheet. Colour alone never carries it. */
+  rows = computed(() => (this.showAllRows() ? this.allRows() : []));
+
+  /** Method state as a sentence, for the text alternative. */
   phaseState = computed(() => {
     this.language();
     const from = this.infertileFromDay();
@@ -364,7 +374,7 @@ export class TemperaturesChartComponent {
 
   /** The selected day in words — the touch equivalent of a tooltip, and read out when it changes. */
   selectedSummary = computed(() => {
-    const day = this.selectedDay();
+    const day = this.activeDay();
     return day === null ? '' : this.describeDay(day);
   });
 
@@ -388,11 +398,35 @@ export class TemperaturesChartComponent {
       destroyRef.onDestroy(() => observer.disconnect());
     });
 
-    // On a phone the start of the cycle is what does not fit, so bring the latest day into view.
+    // Keeps the day being read in view: on opening that is the latest, the part a phone cannot fit.
     afterRenderEffect(() => {
       const element = this.scroller().nativeElement;
-      element.scrollLeft = Math.max(0, this.lastDay() * this.columnWidth() - element.clientWidth);
+      const width = this.columnWidth();
+      const day = this.activeDay() ?? 1;
+      // Before the width is measured the sheet is too narrow to hold the restored offset.
+      if (this.viewport() === 0) return;
+
+      const restore = untracked(this.initialScroll);
+      if (!this.scrollRestored) {
+        this.scrollRestored = true;
+        if (restore !== null) {
+          element.scrollLeft = restore;
+          return;
+        }
+      }
+
+      const left = (day - 1) * width;
+      const right = day * width;
+      if (left < element.scrollLeft) element.scrollLeft = left;
+      else if (right > element.scrollLeft + element.clientWidth) {
+        element.scrollLeft = right - element.clientWidth;
+      }
     });
+  }
+
+  /** How far the days are scrolled, so a host page can hand it back through `initialScroll`. */
+  scrollOffset(): number {
+    return this.scroller().nativeElement.scrollLeft;
   }
 
   selectFrom(event: Event): void {
@@ -400,6 +434,10 @@ export class TemperaturesChartComponent {
       ?.closest('[data-day]')
       ?.getAttribute('data-day');
     if (day) this.selectedDay.set(Number(day));
+  }
+
+  toggleRows(): void {
+    this.showAllRows.update((all) => !all);
   }
 
   /** Arrow keys walk the days, so the grid is readable one column at a time without a pointer. */
@@ -451,20 +489,6 @@ export class TemperaturesChartComponent {
     }
 
     return parts.join(', ');
-  }
-
-  /** `null` means the phase cannot be evaluated for that day — and then nothing is asserted. */
-  private isFertile(day: number): boolean | null {
-    const evaluation = this.evaluation();
-    if (!evaluation) return null;
-
-    const lastInfertile = this.lastPreOvulatoryInfertileDay();
-    if (lastInfertile !== null && day <= lastInfertile) return false;
-
-    const from = this.infertileFromDay();
-    if (from !== null) return day < from;
-
-    return evaluation.preOvulatory.status === 'satisfied' ? true : null;
   }
 
   private xFor(day: number): number {

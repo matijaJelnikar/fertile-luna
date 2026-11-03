@@ -7,3 +7,5 @@ export * from './lib/model/Access-token';
 export * from './lib/model/disturbance';
 export * from './lib/model/graph';
 export * from './lib/model/fertility';
+export * from './lib/model/phase-on-day';
+export * from './lib/model/cycle-goal';

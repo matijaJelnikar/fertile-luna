@@ -1,0 +1,141 @@
+@let current = entry();
+<section
+  class="flex flex-col gap-3 rounded-2xl border border-outline-variant bg-surface-container-highest p-4"
+  [attr.aria-label]="'chart.day' | translate: { day: day() }"
+>
+  <!-- Fixed slots either side, so the arrows and the title never move when the action comes and goes. -->
+  <header class="-mx-2 -mt-2 flex items-center">
+    <span class="size-12 shrink-0" aria-hidden="true"></span>
+    <button
+      mat-icon-button
+      type="button"
+      [disabled]="!hasPrevious()"
+      [attr.aria-label]="'home.day.previous' | translate"
+      (click)="step.emit(-1)"
+    >
+      <mat-icon aria-hidden="true">chevron_left</mat-icon>
+    </button>
+    <div class="flex min-w-0 flex-1 flex-col items-center text-center">
+      <h3
+        class="m-0 text-xs font-semibold tracking-widest text-on-surface-variant uppercase"
+      >
+        {{ 'chart.day' | translate: { day: day() } }}
+      </h3>
+      @if (date(); as d) {
+        <p class="m-0 text-sm text-on-surface-variant">
+          {{ d | date: 'EEE, d MMM' }}
+        </p>
+      }
+      @if (phase(); as p) {
+        @let tone = phaseTone();
+        <span
+          class="mt-1 rounded-full px-2.5 py-0.5 text-xs font-semibold"
+          [class.bg-positive-container]="tone === 'positive'"
+          [class.text-on-positive-container]="tone === 'positive'"
+          [class.bg-error-container]="tone === 'negative'"
+          [class.text-on-error-container]="tone === 'negative'"
+          [class.bg-secondary-container]="tone === 'neutral'"
+          [class.text-on-secondary-container]="tone === 'neutral'"
+          [class.border]="tone === 'none'"
+          [class.border-outline-variant]="tone === 'none'"
+          [class.text-on-surface-variant]="tone === 'none'"
+        >
+          {{ 'home.day.phase.' + p | translate }}
+        </span>
+      }
+    </div>
+    <button
+      mat-icon-button
+      type="button"
+      [disabled]="!hasNext()"
+      [attr.aria-label]="'home.day.next' | translate"
+      (click)="step.emit(1)"
+    >
+      <mat-icon aria-hidden="true">chevron_right</mat-icon>
+    </button>
+    <span class="flex size-12 shrink-0 items-center justify-center">
+      @if (current || canAdd()) {
+        <button
+          mat-icon-button
+          type="button"
+          class="day-action"
+          [attr.aria-label]="
+            (current ? 'home.day.edit' : 'home.day.add') | translate
+          "
+          (click)="onAction()"
+        >
+          <mat-icon aria-hidden="true">{{ current ? 'edit' : 'add' }}</mat-icon>
+        </button>
+      }
+    </span>
+  </header>
+
+  @if (current) {
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+      @if (temperature(); as value) {
+        <p
+          class="m-0 text-4xl leading-none font-bold tabular-nums"
+          [class.text-on-surface]="!current.disturbed"
+          [class.text-on-surface-variant]="current.disturbed"
+        >
+          {{ value
+          }}<span class="ml-0.5 text-lg font-medium text-on-surface-variant"
+            >°C</span
+          >
+        </p>
+        @if (current.disturbed) {
+          <span
+            class="rounded-md border border-outline-variant px-2 py-0.5 text-xs text-on-surface-variant"
+          >
+            {{ 'chart.marker.disturbed' | translate }}
+          </span>
+        }
+      } @else {
+        <p class="m-0 text-base text-on-surface-variant italic">
+          {{ 'home.day.no.temperature' | translate }}
+        </p>
+      }
+    </div>
+  }
+
+  @if (markers().length) {
+    <ul
+      class="m-0 flex list-none flex-wrap gap-1.5 p-0"
+      [attr.aria-label]="'home.day.markers' | translate"
+    >
+      @for (marker of markers(); track marker.labelKey) {
+        <li
+          class="rounded-lg bg-secondary-container px-2.5 py-1 text-xs text-on-secondary-container"
+        >
+          <span class="font-semibold">{{ marker.signKey | translate }}:</span>
+          {{ marker.labelKey | translate }}
+        </li>
+      }
+    </ul>
+  }
+
+  @if (current) {
+    @if (observations().length) {
+      <dl
+        class="m-0 grid grid-cols-[auto_1fr] items-baseline gap-x-4 gap-y-1.5 border-t border-outline-variant pt-3"
+      >
+        @for (item of observations(); track item.labelKey) {
+          <dt class="text-xs text-on-surface-variant italic">
+            {{ item.labelKey | translate }}
+          </dt>
+          <dd class="m-0 text-sm break-words text-on-surface">
+            {{ item.value }}
+          </dd>
+        }
+      </dl>
+    } @else {
+      <p class="m-0 text-sm text-on-surface-variant">
+        {{ 'home.day.no.observations' | translate }}
+      </p>
+    }
+  } @else {
+    <p class="m-0 text-sm text-on-surface-variant">
+      {{ 'home.day.nothing' | translate }}
+    </p>
+  }
+</section>

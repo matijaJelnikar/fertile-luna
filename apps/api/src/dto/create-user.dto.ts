@@ -4,6 +4,7 @@ import {
   IsBoolean,
   IsDate,
   IsEmail,
+  IsIn,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -11,6 +12,7 @@ import {
   Matches,
   MinLength,
 } from 'class-validator';
+import { CYCLE_GOALS, CycleGoal } from '@basal-temp-log-workspace/model';
 
 const passwordRegEx =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.-])[A-Za-z\d@$!%*?&.-]{8,20}$/;
@@ -60,6 +62,16 @@ export class CreateUserDto {
   @Type(() => Date)
   @IsOptional()
   contraceptionStoppedOn?: Date | null;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    enum: CYCLE_GOALS,
+    description: 'Avoid or achieve a pregnancy; null clears it',
+  })
+  @IsIn(CYCLE_GOALS)
+  @IsOptional()
+  goal?: CycleGoal | null;
 
   @ApiProperty({ required: false, example: 62 })
   @IsInt()

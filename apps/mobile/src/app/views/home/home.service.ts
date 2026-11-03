@@ -1,8 +1,25 @@
 import { computed, inject, Injectable } from '@angular/core';
-import { CycleWithDerived, MeasurementDto } from '@basal-temp-log-workspace/model';
-import { Observable, switchMap, tap, throwError } from 'rxjs';
+import { rxResource } from '@angular/core/rxjs-interop';
+import {
+  CycleWithDerived,
+  MeasurementDto,
+  MeasurementGraphData,
+  UpdateMeasurementDto,
+} from '@basal-temp-log-workspace/model';
+import {
+  forkJoin,
+  map,
+  Observable,
+  of,
+  switchMap,
+  tap,
+  throwError,
+} from 'rxjs';
 import { NewCycleDialogService } from '../../components/new-cycle/new-cycle-dialog.service';
-import { cycleContaining, offersNewCycle } from '../../state/measurements/cycle-start';
+import {
+  cycleContaining,
+  offersNewCycle,
+} from '../../state/measurements/cycle-start';
 import { CycleService } from '../../state/measurements/cycle.service';
 import { MeasurementsService } from '../../state/measurements/mesaurements.service';
 
@@ -18,6 +35,34 @@ export class HomeService {
     this.measurementService.placedMeasurements()
   );
 
+  /** Every cycle's entries by cycle uuid, for statistics across the whole history. */
+  private historyResource = rxResource({
+    params: () => this.cycleService.cyclesWithDerived(),
+    stream: ({ params: cycles }) =>
+      cycles.length
+        ? forkJoin(
+            cycles.map((cycle) =>
+              this.measurementService
+                .fetchMeasurementsByCycle(cycle.uuid, cycle.startDate)
+                .pipe(map((entries) => [cycle.uuid, entries] as const))
+            )
+          ).pipe(map((pairs) => new Map(pairs)))
+        : of(new Map<string, MeasurementGraphData[]>()),
+  });
+
+  /** The cycle on screen reads its live entries, so a day just recorded counts at once. */
+  history = computed(() => {
+    const loaded = this.historyResource.value() ?? new Map();
+    const shown = this.cycleService.currentCycleUuid();
+    return this.cycleService.cyclesWithDerived().map((cycle) => ({
+      cycle,
+      entries:
+        cycle.uuid === shown
+          ? this.measurementService.measurements()
+          : (loaded.get(cycle.uuid) ?? []),
+    }));
+  });
+
   currentCycle = computed(() => {
     return this.cycleService.currentCycle();
   });
@@ -32,13 +77,16 @@ export class HomeService {
    */
   record(entry: MeasurementDto): Observable<unknown> {
     const shown = this.cycleService.currentCycle();
-    const target = cycleContaining(entry.date, this.cycleService.cyclesWithDerived()) ?? shown;
+    const target =
+      cycleContaining(entry.date, this.cycleService.cyclesWithDerived()) ??
+      shown;
     if (!target) {
       return throwError(() => new Error('No cycle to record the day in'));
     }
 
     // Only the cycle on screen has its entries loaded; for another, its recorded length decides.
-    const entries = target.uuid === shown?.uuid ? this.measurementService.measurements() : [];
+    const entries =
+      target.uuid === shown?.uuid ? this.measurementService.measurements() : [];
     if (!offersNewCycle(entry, target, entries)) {
       return this.save(entry, target);
     }
@@ -46,21 +94,41 @@ export class HomeService {
     return this.newCycleDialog.start(entry.date).pipe(
       switchMap((started) =>
         started
-          ? this.measurementService.addMeasurement(started.uuid, entry, started.startDate).pipe(
-              // Selecting the new cycle fetches its entries on its own, and that fetch can land
-              // before this write — so read the cycle again once the day is stored.
-              switchMap(() =>
-                this.measurementService.getMeasurementsByCycle(started.uuid, started.startDate)
+          ? this.measurementService
+              .addMeasurement(started.uuid, entry, started.startDate)
+              .pipe(
+                // Selecting the new cycle fetches its entries on its own, and that fetch can land
+                // before this write — so read the cycle again once the day is stored.
+                switchMap(() =>
+                  this.measurementService.getMeasurementsByCycle(
+                    started.uuid,
+                    started.startDate
+                  )
+                )
               )
-            )
           : this.save(entry, target)
       )
     );
   }
 
+  update(uuid: string, changes: UpdateMeasurementDto): Observable<unknown> {
+    return this.measurementService.updateMeasurement(
+      uuid,
+      changes,
+      this.cycleService.currentCycle()?.startDate
+    );
+  }
+
   /** Stores the day; when its cycle is not the one on screen, shows that cycle once it is stored. */
-  private save(entry: MeasurementDto, cycle: CycleWithDerived): Observable<unknown> {
-    const stored = this.measurementService.addMeasurement(cycle.uuid, entry, cycle.startDate);
+  private save(
+    entry: MeasurementDto,
+    cycle: CycleWithDerived
+  ): Observable<unknown> {
+    const stored = this.measurementService.addMeasurement(
+      cycle.uuid,
+      entry,
+      cycle.startDate
+    );
     return cycle.uuid === this.cycleService.currentCycleUuid()
       ? stored
       : stored.pipe(tap(() => this.cycleService.setCurrentCycle(cycle.uuid)));

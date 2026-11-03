@@ -27,12 +27,14 @@ body {
 body {
   background: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
-  // A confirmed phase is emphasised; nothing here encodes a risk.
-  --app-phase-confirmed: rgb(34 197 94);
+  // Soft container tones for a day's phase, chosen by the user's goal; text is AA on its container.
+  --app-positive-container: rgb(200 238 208);
+  --app-on-positive-container: rgb(8 56 26);
 }
 
 body.dark {
-  --app-phase-confirmed: rgb(80 210 80);
+  --app-positive-container: rgb(30 77 44);
+  --app-on-positive-container: rgb(196 240 205);
   @include mat.theme(
     (
       color: (

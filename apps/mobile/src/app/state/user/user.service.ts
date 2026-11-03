@@ -3,12 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, tap } from 'rxjs';
 import { API } from '../../shared/constants/endpoints.constants';
 import { toCalendarDay } from '../measurements/cycle-day';
+import { CycleGoal } from '@basal-temp-log-workspace/model';
 
 interface Profile {
   username?: string;
   email: string;
   /** `YYYY-MM-DD`, the calendar day the column holds. */
   contraceptionStoppedOn?: string | null;
+  goal?: CycleGoal | null;
 }
 
 @Injectable({
@@ -27,6 +29,15 @@ export class UserService {
   contraceptionStoppedOn = computed(
     () => this.profileResource.value()?.contraceptionStoppedOn ?? null
   );
+
+  goal = computed(() => this.profileResource.value()?.goal ?? null);
+
+  /** `null` clears the goal. */
+  setGoal(goal: CycleGoal | null) {
+    return this.http
+      .post<unknown>(API.auth.updateUser, { goal })
+      .pipe(tap(() => this.profileResource.reload()));
+  }
 
   /** `null` clears the date. */
   setContraceptionStoppedOn(date: Date | null) {

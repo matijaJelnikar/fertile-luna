@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { Router } from '@angular/router';
-import { Cycle } from '@basal-temp-log-workspace/model';
+import { Cycle, CYCLE_GOALS, CycleGoal } from '@basal-temp-log-workspace/model';
 import { TranslatePipe } from '@ngx-translate/core';
 import { filter } from 'rxjs';
 import { NewCycleDialogService } from '../../components/new-cycle/new-cycle-dialog.service';
@@ -24,6 +24,7 @@ import {
 } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { MatInput } from '@angular/material/input';
+import { MatRadioButton, MatRadioGroup } from '@angular/material/radio';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { ThemeService } from '../../services/theme.service';
 import { UserService } from '../../state/user/user.service';
@@ -44,6 +45,8 @@ import { UserService } from '../../state/user/user.service';
     MatIcon,
     MatInput,
     MatLabel,
+    MatRadioButton,
+    MatRadioGroup,
     MatSlideToggle,
     MatSuffix,
   ],
@@ -62,6 +65,14 @@ export class SettingsComponent {
     const day = this.user.contraceptionStoppedOn();
     return day ? new Date(`${day.slice(0, 10)}T00:00:00`) : null;
   });
+
+  /** `'none'` stands for no goal: a radio option cannot carry `null` reliably. */
+  readonly goals = ['none', ...CYCLE_GOALS] as const;
+  readonly goal = computed(() => this.user.goal() ?? 'none');
+
+  onGoalChange(goal: CycleGoal | 'none'): void {
+    this.user.setGoal(goal === 'none' ? null : goal).subscribe();
+  }
 
   onDarkModeChange(isDark: boolean): void {
     this.theme.set(isDark);

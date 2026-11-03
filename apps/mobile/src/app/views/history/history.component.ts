@@ -31,15 +31,8 @@ import {
 } from '../../components/confirm-dialog/confirm-dialog.component';
 import { CycleService } from '../../state/measurements/cycle.service';
 import { HistoryService } from './history.service';
+import { MOBILE_DIALOG_CONFIG } from '../../shared/constants/common.constants';
 
-const MOBILE_DIALOG_CONFIG = {
-  width: '90%',
-  maxWidth: '95vw',
-  height: 'auto',
-  maxHeight: '95vh',
-  panelClass: 'mobile-dialog',
-  autoFocus: false,
-};
 
 @Component({
   selector: 'app-history',

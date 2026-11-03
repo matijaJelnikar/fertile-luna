@@ -445,4 +445,4 @@ when touching the surrounding code.
 
 - No global `ErrorHandler` and no `NotificationService` yet
 - No `environments/` files — API URL is not configurable per environment
-- Initial bundle (~1.15 MB) and `home.component.scss` exceed their warning budgets
+- Initial bundle (~1.17 MB) exceeds its warning budget

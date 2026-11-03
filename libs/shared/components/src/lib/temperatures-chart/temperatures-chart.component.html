@@ -68,7 +68,7 @@
           <!-- Bracketed exactly as the sheet marks it: drawn, and plainly not counted. -->
           <text class="bracket" [attr.x]="point.x" [attr.y]="point.y + 4">( )</text>
           }
-          <circle class="point" [attr.cx]="point.x" [attr.cy]="point.y" r="3" />
+          <circle class="point" [attr.cx]="point.x" [attr.cy]="point.y" r="4" />
         </g>
         }
 
@@ -116,6 +116,16 @@
   </div>
 </div>
 
-<p class="state" aria-live="polite">{{ selectedSummary() }}</p>
-<!-- Method state in words, never colour alone. -->
-<p class="state" role="status">{{ phaseState() }}</p>
+<!-- The host page shows the selected day; this announces a change of day to a screen reader. -->
+<p class="visually-hidden" aria-live="polite">{{ selectedSummary() }}</p>
+
+<button
+  mat-button
+  type="button"
+  class="toggle"
+  [attr.aria-expanded]="showAllRows()"
+  (click)="toggleRows()"
+>
+  <mat-icon aria-hidden="true">{{ showAllRows() ? 'expand_less' : 'expand_more' }}</mat-icon>
+  {{ (showAllRows() ? 'chart.rows.fewer' : 'chart.rows.all') | translate }}
+</button>
