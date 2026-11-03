@@ -45,23 +45,28 @@ describe('RegistrationComponent', () => {
     fixture.detectChanges();
   });
 
+  const submit = async () => {
+    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    await fixture.whenStable();
+  };
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('does not register an empty form', () => {
-    component.register();
+  it('does not register an empty form', async () => {
+    await submit();
 
     expect(authenticationService.register).not.toHaveBeenCalled();
   });
 
-  it('registers, keeps the issued token for the session, and goes on to the profile', () => {
-    component.registrationForm.setValue({
+  it('registers, keeps the issued token for the session, and goes on to the profile', async () => {
+    component.registrationForm().value.set({
       email: 'me@example.test',
       password: 'secret',
     });
 
-    component.register();
+    await submit();
 
     expect(authenticationService.register).toHaveBeenCalledWith({
       email: 'me@example.test',
@@ -74,22 +79,22 @@ describe('RegistrationComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/complete-profile'], {
       replaceUrl: true,
     });
-    expect(component.isLoading()).toBe(false);
+    expect(component.registrationForm().submitting()).toBe(false);
   });
 
-  it('surfaces the server`s first message when registration is rejected', () => {
+  it('surfaces the server`s first message when registration is rejected', async () => {
     authenticationService.register.mockReturnValueOnce(
       throwError(() => ({ error: { message: ['Email already in use'] } }))
     );
-    component.registrationForm.setValue({
+    component.registrationForm().value.set({
       email: 'taken@example.test',
       password: 'secret',
     });
 
-    component.register();
+    await submit();
 
     expect(component.error()).toBe('Email already in use');
     expect(router.navigate).not.toHaveBeenCalled();
-    expect(component.isLoading()).toBe(false);
+    expect(component.registrationForm().submitting()).toBe(false);
   });
 });

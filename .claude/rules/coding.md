@@ -337,8 +337,15 @@ form = new FormGroup<MeasurementForm>({
   - Standard Schema (Zod/Valibot): `validateStandardSchema(path, zodSchema)`
 - Wrap reusable validators in functions so they can be shared across forms
 - Show errors only when `touched()` and `invalid()`
+- Submit through `<form [formRoot]="myForm">` plus a `submission.action` in `form()` options;
+  `submitting()` replaces a hand-rolled loading flag
+- Text inputs need a `string` model (`''` for empty): a `null` model makes a text input parse as a number
+- A field whose value becomes `undefined` disappears from the field tree, so a CVA that writes
+  `undefined` (a single-select `mat-chip-listbox` on deselect) breaks the form — use
+  `app-chip-choice` (`components/chip-choice`), which maps it to `null`
+- `mat-step` takes `[completed]="myForm().valid()"` instead of `[stepControl]`
 
-Existing reactive forms stay valid — migrate them opportunistically, not in a big bang.
+All app forms are Signal Forms; do not add new reactive forms.
 
 ---
 
@@ -419,11 +426,12 @@ Existing reactive forms stay valid — migrate them opportunistically, not in a 
 Current code that violates the rules above. Do not copy these patterns; migrate them
 when touching the surrounding code.
 
-- `apps/mobile/src/app/material.module.ts` — Material barrel module; replace with direct imports
+- `apps/mobile/src/app/material.module.ts` — Material barrel module, still used by `shell`, `home` and
+  `settings`; replace with direct imports
 - `apps/mobile/src/app/interceptors/auth.interceptor.ts` — class-based interceptor registered via
   `HTTP_INTERCEPTORS`; convert to `HttpInterceptorFn` + `withInterceptors()`
 - `apps/mobile/src/app/shared/constants/endpoints.constants.ts` — endpoint enums; convert to `as const`
 - No global `ErrorHandler` and no `NotificationService` yet
 - No `environments/` files — API URL is not configurable per environment
 - `AppComponent` uses `ChangeDetectionStrategy.Eager`, which fails the `prefer-on-push` lint rule
-- `login`, `registration` and `shell` still use `ngClass`
+- `shell` still uses `ngClass`

@@ -1,38 +1,37 @@
 import {
   AfterViewInit,
-  Component,
-  DestroyRef,
-  inject,
   ChangeDetectionStrategy,
+  Component,
+  inject,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { form, FormField, FormRoot, required } from '@angular/forms/signals';
+import { MatAnchor, MatButton } from '@angular/material/button';
+import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatInput } from '@angular/material/input';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { ActivatedRoute, Router } from '@angular/router';
-import { finalize } from 'rxjs/operators';
-
-import { CommonModule, NgClass } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
-import { MaterialModule } from '../../../material.module';
-import { AuthenticationService } from '../../authentication.service';
+import { lastValueFrom } from 'rxjs';
+
+import { AuthenticationService, LoginContext } from '../../authentication.service';
 
 @Component({
-  standalone: true,
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
+    FormField,
+    FormRoot,
     TranslatePipe,
-    MaterialModule,
-    NgClass,
+    MatAnchor,
+    MatButton,
+    MatError,
+    MatFormField,
+    MatInput,
+    MatLabel,
+    MatSlideToggle,
   ],
 })
 export class LoginComponent implements AfterViewInit {
@@ -41,23 +40,22 @@ export class LoginComponent implements AfterViewInit {
   private authenticationService = inject(AuthenticationService);
 
   error = signal<string | undefined>(undefined);
-  loginForm: FormGroup = new FormGroup({
-    email: new FormControl('', {
-      validators: [Validators.required],
-      nonNullable: true,
-    }),
-    password: new FormControl('', {
-      validators: [Validators.required],
-      nonNullable: true,
-    }),
-    remember: new FormControl(false, {
-      validators: [Validators.required],
-      nonNullable: true,
-    }),
-  });
-  isLoading = signal(false);
-  destroyRef = inject(DestroyRef);
   initialLoad = signal(true);
+
+  private credentials = signal<Required<LoginContext>>({
+    email: '',
+    password: '',
+    remember: false,
+  });
+
+  loginForm = form(
+    this.credentials,
+    (path) => {
+      required(path.email);
+      required(path.password);
+    },
+    { submission: { action: (field) => this.signIn(field().value()) } }
+  );
 
   ngAfterViewInit(): void {
     setTimeout(() => {
@@ -65,27 +63,17 @@ export class LoginComponent implements AfterViewInit {
     }, 10);
   }
 
-  login() {
-    this.isLoading.set(true);
-    this.authenticationService
-      .login(this.loginForm.value)
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        finalize(() => {
-          this.loginForm.markAsPristine();
-          this.isLoading.set(false);
-        })
-      )
-      .subscribe({
-        complete: () => {
-          this.router.navigate(
-            [this.route.snapshot.queryParams['redirect'] || '/'],
-            { replaceUrl: true }
-          );
-        },
-        error: (err) => {
-          this.error.set(err.error?.message);
-        },
+  private async signIn(credentials: LoginContext): Promise<undefined> {
+    try {
+      await lastValueFrom(this.authenticationService.login(credentials), {
+        defaultValue: undefined,
       });
+    } catch (err) {
+      this.error.set((err as { error?: { message?: string } }).error?.message);
+      return;
+    }
+    this.router.navigate([this.route.snapshot.queryParams['redirect'] || '/'], {
+      replaceUrl: true,
+    });
   }
 }

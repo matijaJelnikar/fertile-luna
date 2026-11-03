@@ -3,26 +3,47 @@ import {
   Component,
   computed,
   inject,
+  signal,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { toSignal } from '@angular/core/rxjs-interop';
 import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+  form,
+  FormField,
+  FormRoot,
+  max,
+  min,
+  required,
+  validate,
+} from '@angular/forms/signals';
+import { MatButton } from '@angular/material/button';
 import { provideNativeDateAdapter } from '@angular/material/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatDatepicker,
+  MatDatepickerInput,
+  MatDatepickerToggle,
+} from '@angular/material/datepicker';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogActions,
+  MatDialogContent,
+  MatDialogRef,
+  MatDialogTitle,
+} from '@angular/material/dialog';
+import {
+  MatError,
+  MatFormField,
+  MatHint,
+  MatLabel,
+  MatSuffix,
+} from '@angular/material/form-field';
+import { MatInput } from '@angular/material/input';
 import { CycleDto } from '@basal-temp-log-workspace/model';
 import { TranslatePipe } from '@ngx-translate/core';
-import { MaterialModule } from '../../material.module';
 import { toCycleDay } from '../../state/measurements/cycle-day';
 
-interface NewCycleFormModel {
-  startDate: FormControl<Date>;
-  bleedingLength: FormControl<number | null>;
+interface NewCycleModel {
+  startDate: Date | null;
+  bleedingLength: number | null;
 }
 
 /** What the dialog returns when confirmed: only what is known on the day a cycle starts. */
@@ -39,14 +60,17 @@ export interface NewCycleDialogData {
   suggestedStartDate?: Date | null;
 }
 
+const NOT_AFTER_OPEN_CYCLE = 'notAfterOpenCycle';
+
 /** A new cycle must begin after the open cycle's first day, or the open one would have no days. */
-const startsAfter =
-  (openCycleStart: Date | string | null | undefined): ValidatorFn =>
-  (control) => {
-    if (!openCycleStart || !control.value) return null;
-    const day = toCycleDay(control.value, openCycleStart);
-    return day !== null && day > 1 ? null : { notAfterOpenCycle: true };
-  };
+const startsAfter = (
+  date: Date | null,
+  openCycleStart: Date | string | null | undefined
+): boolean => {
+  if (!openCycleStart || !date) return true;
+  const day = toCycleDay(date, openCycleStart);
+  return day !== null && day > 1;
+};
 
 const dayBefore = (date: Date): Date => {
   const previous = new Date(date);
@@ -59,40 +83,64 @@ const dayBefore = (date: Date): Date => {
   templateUrl: './new-cycle.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideNativeDateAdapter()],
-  imports: [DatePipe, ReactiveFormsModule, MaterialModule, TranslatePipe],
+  imports: [
+    DatePipe,
+    FormField,
+    FormRoot,
+    TranslatePipe,
+    MatButton,
+    MatDatepicker,
+    MatDatepickerInput,
+    MatDatepickerToggle,
+    MatDialogActions,
+    MatDialogContent,
+    MatDialogTitle,
+    MatError,
+    MatFormField,
+    MatHint,
+    MatInput,
+    MatLabel,
+    MatSuffix,
+  ],
 })
 export class NewCycleComponent {
   readonly dialogRef = inject(MatDialogRef<NewCycleComponent>);
   readonly data = inject<NewCycleDialogData>(MAT_DIALOG_DATA, { optional: true }) ?? {};
 
-  form = new FormGroup<NewCycleFormModel>({
-    startDate: new FormControl(this.data.suggestedStartDate ?? new Date(), {
-      nonNullable: true,
-      validators: [Validators.required, startsAfter(this.data.openCycleStartDate)],
-    }),
-    bleedingLength: new FormControl(null, [
-      Validators.required,
-      Validators.min(1),
-      Validators.max(14),
-    ]),
+  private cycle = signal<NewCycleModel>({
+    startDate: this.data.suggestedStartDate ?? new Date(),
+    bleedingLength: null,
   });
 
-  private value = toSignal(this.form.valueChanges, {
-    initialValue: this.form.value,
-  });
+  cycleForm = form(
+    this.cycle,
+    (path) => {
+      required(path.startDate);
+      validate(path.startDate, ({ value }) =>
+        startsAfter(value(), this.data.openCycleStartDate)
+          ? null
+          : { kind: NOT_AFTER_OPEN_CYCLE }
+      );
+      required(path.bleedingLength);
+      min(path.bleedingLength, 1);
+      max(path.bleedingLength, 14);
+    },
+    { submission: { action: async () => this.save() } }
+  );
 
-  /** Read through the value signal: `hasError` alone is not reactive. */
-  startsTooEarly = computed(() => {
-    this.value();
-    return this.form.controls.startDate.hasError('notAfterOpenCycle');
-  });
+  startsTooEarly = computed(() =>
+    this.cycleForm
+      .startDate()
+      .errors()
+      .some((error) => error.kind === NOT_AFTER_OPEN_CYCLE)
+  );
 
   /**
    * Starting a cycle closes the open one on the day before, in a single operation. The user is
    * told which cycle that is and on what day, because it is not otherwise visible.
    */
   closingCycle = computed(() => {
-    const start = this.value().startDate;
+    const start = this.cycle().startDate;
     if (!start || !this.data.openCycleStartDate || this.startsTooEarly()) return null;
     return {
       number: this.data.openCycleNumber ?? null,
@@ -105,10 +153,10 @@ export class NewCycleComponent {
   }
 
   save(): void {
-    if (this.form.invalid) return;
-    const { startDate, bleedingLength } = this.form.getRawValue();
+    if (this.cycleForm().invalid()) return;
+    const { startDate, bleedingLength } = this.cycle();
     const payload: NewCyclePayload = {
-      startDate,
+      startDate: startDate as Date,
       bleedingLength: bleedingLength as number,
     };
     this.dialogRef.close(payload);

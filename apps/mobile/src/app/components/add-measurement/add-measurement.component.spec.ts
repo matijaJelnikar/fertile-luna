@@ -11,6 +11,7 @@ import { provideTranslateService } from '@ngx-translate/core';
 import {
   AddMeasurementComponent,
   MeasurementDialogData,
+  MeasurementFormModel,
 } from './add-measurement.component';
 
 const EXISTING: Measurement = {
@@ -52,10 +53,13 @@ describe('AddMeasurementComponent', () => {
     fixture.detectChanges();
   };
 
+  const patch = (values: Partial<MeasurementFormModel>) =>
+    component.temperatureForm().value.update((current) => ({ ...current, ...values }));
+
   it('pre-fills the form from the measurement being edited', async () => {
     await setup({ mode: 'edit', measurement: EXISTING });
 
-    const value = component.temperatureForm.getRawValue();
+    const value = component.temperatureForm().value();
     expect(value.temperature).toBe(36.7);
     expect(value.bleeding).toBe(BleedingOption.Medium);
     expect(value.mucusFeeling).toBe(MucusFeelingOption.Dry);
@@ -83,7 +87,7 @@ describe('AddMeasurementComponent', () => {
     ) as HTMLElement;
     selectedChip.click();
     fixture.detectChanges();
-    component.temperatureForm.controls.notes.setValue(null);
+    component.temperatureForm.notes().value.set(null);
     component.save();
 
     expect(dialogRef.close).toHaveBeenCalledWith(
@@ -99,7 +103,7 @@ describe('AddMeasurementComponent', () => {
   it('closes with undefined for empty fields when creating', async () => {
     await setup({ mode: 'create', measurement: { date: new Date() } });
 
-    component.temperatureForm.controls.temperature.setValue(36.5);
+    component.temperatureForm.temperature().value.set(36.5);
     component.save();
 
     expect(dialogRef.close).toHaveBeenCalledWith(
@@ -119,7 +123,7 @@ describe('AddMeasurementComponent', () => {
     it('saves when it records an observation', async () => {
       await setup({ mode: 'create', measurement: { date: new Date() } });
 
-      component.temperatureForm.controls.mucusFeeling.setValue(
+      component.temperatureForm.mucusFeeling().value.set(
         MucusFeelingOption.Wet
       );
       component.save();
@@ -135,16 +139,27 @@ describe('AddMeasurementComponent', () => {
     it('is rejected when it records nothing at all', async () => {
       await setup({ mode: 'create', measurement: { date: new Date() } });
 
-      expect(component.temperatureForm.hasError('noObservation')).toBe(true);
+      expect(component.canSave()).toBe(false);
       component.save();
 
       expect(dialogRef.close).not.toHaveBeenCalled();
     });
 
+    it('explains why once the user has tried to save', async () => {
+      await setup({ mode: 'create', measurement: { date: new Date() } });
+      expect(fixture.nativeElement.textContent).not.toContain('measurement.nothing.recorded');
+
+      fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain('measurement.nothing.recorded');
+    });
+
     it('still rejects a temperature outside the range when one is given', async () => {
       await setup({ mode: 'create', measurement: { date: new Date() } });
 
-      component.temperatureForm.controls.temperature.setValue(12);
+      component.temperatureForm.temperature().value.set(12);
       component.save();
 
       expect(dialogRef.close).not.toHaveBeenCalled();
@@ -154,7 +169,7 @@ describe('AddMeasurementComponent', () => {
   describe('the disturbance mark', () => {
     const disturbedDay = async () => {
       await setup({ mode: 'create', measurement: { date: new Date() } });
-      component.temperatureForm.patchValue({ temperature: 37.1, disturbed: true });
+      patch({ temperature: 37.1, disturbed: true });
       fixture.detectChanges();
     };
 
@@ -164,7 +179,7 @@ describe('AddMeasurementComponent', () => {
       expect(component.canMarkDisturbed()).toBe(false);
 
       // Even if the flag is somehow set, a day without a value is never sent as disturbed.
-      component.temperatureForm.patchValue({
+      patch({
         disturbed: true,
         mucusFeeling: MucusFeelingOption.Wet,
       });
@@ -177,7 +192,7 @@ describe('AddMeasurementComponent', () => {
 
     it('sends the mark and its reasons, keeping the measured value', async () => {
       await disturbedDay();
-      component.temperatureForm.controls.disturbanceReasons.setValue([
+      component.temperatureForm.disturbanceReasons().value.set([
         DisturbanceReason.PoorSleep,
       ]);
 
@@ -194,7 +209,7 @@ describe('AddMeasurementComponent', () => {
 
     it('carries free text beside Other, and only then', async () => {
       await disturbedDay();
-      component.temperatureForm.patchValue({
+      patch({
         disturbanceReasons: [DisturbanceReason.Other],
         disturbanceNote: 'karneval',
       });
@@ -210,7 +225,7 @@ describe('AddMeasurementComponent', () => {
 
     it('unmarks without touching the value', async () => {
       await disturbedDay();
-      component.temperatureForm.patchValue({ disturbed: false });
+      patch({ disturbed: false });
 
       component.save();
 
@@ -236,7 +251,7 @@ describe('AddMeasurementComponent', () => {
 
       expect(component.cycleDay()).toBe(5);
 
-      component.temperatureForm.controls.date.setValue(new Date('2026-08-10'));
+      component.temperatureForm.date().value.set(new Date('2026-08-10'));
       expect(component.cycleDay()).toBe(10);
     });
 
@@ -246,7 +261,7 @@ describe('AddMeasurementComponent', () => {
         measurement: { date: new Date('2026-07-28') },
         cycleStartDate: CYCLE_START,
       });
-      component.temperatureForm.controls.temperature.setValue(36.5);
+      component.temperatureForm.temperature().value.set(36.5);
       fixture.detectChanges();
 
       expect(component.dateOutsideCycle()).toBe(true);
@@ -267,11 +282,11 @@ describe('AddMeasurementComponent', () => {
         existingEntries: [EXISTING],
       });
 
-      component.temperatureForm.controls.date.setValue(new Date(EXISTING.date));
+      component.temperatureForm.date().value.set(new Date(EXISTING.date));
       fixture.detectChanges();
 
       expect(component.editingExistingDay()).toBe(true);
-      expect(component.temperatureForm.getRawValue().temperature).toBe(36.7);
+      expect(component.temperatureForm().value().temperature).toBe(36.7);
       expect(fixture.nativeElement.textContent).toContain(
         'measurement.editing.existing'
       );

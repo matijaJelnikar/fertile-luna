@@ -1,20 +1,19 @@
-import { NgClass } from '@angular/common';
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   inject,
-  ChangeDetectionStrategy,
   signal,
 } from '@angular/core';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { form, FormField, FormRoot, required } from '@angular/forms/signals';
+import { MatAnchor, MatButton } from '@angular/material/button';
+import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatInput } from '@angular/material/input';
+import { Router } from '@angular/router';
+import { LoginResponse } from '@basal-temp-log-workspace/model';
 import { TranslatePipe } from '@ngx-translate/core';
-import { MaterialModule } from '../../../material.module';
+import { firstValueFrom } from 'rxjs';
+
 import { AuthenticationService } from '../../authentication.service';
 import { CredentialsService } from '../../credentials.service';
 
@@ -26,35 +25,43 @@ export interface UserDto {
   weight?: number;
 }
 
+type RegistrationModel = Pick<UserDto, 'email' | 'password'>;
+
 @Component({
-  standalone: true,
   selector: 'app-registration',
   templateUrl: './registration.component.html',
   styleUrls: ['./registration.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MaterialModule, ReactiveFormsModule, TranslatePipe, NgClass],
+  imports: [
+    FormField,
+    FormRoot,
+    TranslatePipe,
+    MatAnchor,
+    MatButton,
+    MatError,
+    MatFormField,
+    MatInput,
+    MatLabel,
+  ],
 })
 export class RegistrationComponent implements AfterViewInit {
   private authService = inject(AuthenticationService);
+  private credentialsService = inject(CredentialsService);
   private router = inject(Router);
-  private route = inject(ActivatedRoute);
 
-  registrationForm: FormGroup = new FormGroup({
-    email: new FormControl('', {
-      validators: [Validators.required],
-      nonNullable: true,
-    }),
-    password: new FormControl('', {
-      validators: [Validators.required],
-      nonNullable: true,
-    }),
-  });
-
-  isLoading = signal(false);
   initialLoad = signal(true);
   error = signal<string | null>(null);
 
-  private credentialsService = inject(CredentialsService);
+  private account = signal<RegistrationModel>({ email: '', password: '' });
+
+  registrationForm = form(
+    this.account,
+    (path) => {
+      required(path.email);
+      required(path.password);
+    },
+    { submission: { action: (field) => this.register(field().value()) } }
+  );
 
   ngAfterViewInit(): void {
     setTimeout(() => {
@@ -62,36 +69,25 @@ export class RegistrationComponent implements AfterViewInit {
     }, 10);
   }
 
-  register(): void {
-    if (this.registrationForm.invalid) {
+  private async register(account: RegistrationModel): Promise<undefined> {
+    let response: LoginResponse;
+    try {
+      response = await firstValueFrom(this.authService.register(account));
+    } catch (err) {
+      this.error.set(
+        (err as { error?: { message?: string[] } }).error?.message?.[0] ||
+          'Registration failed. Please try again.'
+      );
       return;
     }
-
-    this.isLoading.set(true);
-    const formValues: UserDto = this.registrationForm.value;
-
-    this.authService.register(formValues).subscribe({
-      next: (response) => {
-        // Store credentials after successful registration
-        this.credentialsService.setCredentials(
-          {
-            email: formValues.email,
-            token: response.access_token,
-            profileIncomplete: response.profileIncomplete,
-          },
-          false
-        );
-
-        // Navigate directly to complete-profile
-        this.router.navigate(['/complete-profile'], { replaceUrl: true });
-        this.isLoading.set(false);
+    this.credentialsService.setCredentials(
+      {
+        email: account.email,
+        token: response.access_token,
+        profileIncomplete: response.profileIncomplete,
       },
-      error: (err) => {
-        this.isLoading.set(false);
-        this.error.set(
-          err.error?.message?.[0] || 'Registration failed. Please try again.'
-        );
-      },
-    });
+      false
+    );
+    this.router.navigate(['/complete-profile'], { replaceUrl: true });
   }
 }

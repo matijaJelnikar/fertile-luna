@@ -55,29 +55,38 @@ describe('CompleteProfileComponent', () => {
   });
 
   it('saves the profile and the first cycle together, then marks the profile complete', () => {
-    component.userFormGroup.setValue({
+    component.profileForm().value.set({
       username: 'Ana',
-      birthDate: '1995-04-02',
-      weight: '62',
+      birthDate: new Date(1995, 3, 2),
+      weight: 62,
     });
-    component.cycleFormGroup.setValue({
-      lastPeriodDate: '2026-04-01',
-      bleedingLength: '5',
+    component.cycleForm().value.set({
+      lastPeriodDate: new Date(2026, 3, 1),
+      bleedingLength: 5,
     });
 
     component.submit();
 
     expect(authenticationService.updateUser).toHaveBeenCalledWith(
-      expect.objectContaining({ email: 'me@example.test', username: 'Ana' })
+      expect.objectContaining({ email: 'me@example.test', username: 'Ana', weight: 62 })
     );
     expect(cycleService.addCycle).toHaveBeenCalledWith(
-      expect.objectContaining({ cycleNumber: 1, bleedingLength: '5' })
+      expect.objectContaining({ cycleNumber: 1, bleedingLength: 5 })
     );
     expect(credentialsService.setCredentials).toHaveBeenCalledWith(
       expect.objectContaining({ profileIncomplete: false }),
       true
     );
     expect(router.navigate).toHaveBeenCalledWith(['/home']);
+  });
+
+  it('saves nothing until both steps are filled in', () => {
+    component.profileForm().value.set({ username: 'Ana', birthDate: null, weight: null });
+
+    component.submit();
+
+    expect(authenticationService.updateUser).not.toHaveBeenCalled();
+    expect(cycleService.addCycle).not.toHaveBeenCalled();
   });
 
   it('signs the user out and returns them to login', () => {

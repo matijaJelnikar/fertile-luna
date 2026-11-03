@@ -1,15 +1,40 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import { form, FormField, FormRoot, required } from '@angular/forms/signals';
+import { MatButton } from '@angular/material/button';
+import { provideNativeDateAdapter } from '@angular/material/core';
+import {
+  MatDatepicker,
+  MatDatepickerInput,
+  MatDatepickerToggle,
+} from '@angular/material/datepicker';
+import {
+  MatError,
+  MatFormField,
+  MatLabel,
+  MatSuffix,
+} from '@angular/material/form-field';
+import { MatIcon } from '@angular/material/icon';
+import { MatInput } from '@angular/material/input';
+import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
+import {
+  MatStep,
+  MatStepLabel,
+  MatStepper,
+  MatStepperNext,
+  MatStepperPrevious,
+} from '@angular/material/stepper';
+import { MatToolbar } from '@angular/material/toolbar';
+import { Router } from '@angular/router';
 import { CycleDto } from '@basal-temp-log-workspace/model';
 import { TranslatePipe } from '@ngx-translate/core';
 import { forkJoin } from 'rxjs';
-import { MaterialModule } from '../../../material.module';
+
 import { CycleService } from '../../../state/measurements/cycle.service';
 import { AuthenticationService } from '../../authentication.service';
 import { CredentialsService } from '../../credentials.service';
@@ -20,60 +45,97 @@ export interface CompleteProfileDto {
   birthDate: Date;
   weight: number;
 }
+
+interface ProfileModel {
+  username: string;
+  birthDate: Date | null;
+  weight: number | null;
+}
+
+interface FirstCycleModel {
+  lastPeriodDate: Date | null;
+  bleedingLength: number | null;
+}
+
 @Component({
-  standalone: true,
   selector: 'app-complete-profile',
   templateUrl: './complete-profile.component.html',
   styleUrls: ['./complete-profile.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MaterialModule, ReactiveFormsModule, TranslatePipe, RouterModule],
+  providers: [provideNativeDateAdapter()],
+  imports: [
+    FormField,
+    FormRoot,
+    TranslatePipe,
+    MatButton,
+    MatDatepicker,
+    MatDatepickerInput,
+    MatDatepickerToggle,
+    MatError,
+    MatFormField,
+    MatIcon,
+    MatInput,
+    MatLabel,
+    MatMenu,
+    MatMenuItem,
+    MatMenuTrigger,
+    MatStep,
+    MatStepLabel,
+    MatStepper,
+    MatStepperNext,
+    MatStepperPrevious,
+    MatSuffix,
+    MatToolbar,
+  ],
 })
 export class CompleteProfileComponent {
+  private authService = inject(AuthenticationService);
+  private credentialService = inject(CredentialsService);
+  private cycleService = inject(CycleService);
+  private router = inject(Router);
+
   isLinear = false;
-  userFormGroup = new FormGroup({
-    username: new FormControl('', {
-      validators: [Validators.required],
-      nonNullable: true,
-    }),
-    birthDate: new FormControl('', {
-      validators: [Validators.required],
-      nonNullable: true,
-    }),
-    weight: new FormControl('', {
-      validators: [],
-    }),
+
+  private profile = signal<ProfileModel>({
+    username: '',
+    birthDate: null,
+    weight: null,
   });
-  cycleFormGroup = new FormGroup({
-    lastPeriodDate: new FormControl('', {
-      validators: [Validators.required],
-      nonNullable: true,
-    }),
-    bleedingLength: new FormControl('', {
-      validators: [Validators.required],
-      nonNullable: true,
-    }),
+  profileForm = form(this.profile, (path) => {
+    required(path.username);
+    required(path.birthDate);
   });
 
-  authService = inject(AuthenticationService);
-  credentialService = inject(CredentialsService);
-  cycleService = inject(CycleService);
-  router = inject(Router);
+  private firstCycle = signal<FirstCycleModel>({
+    lastPeriodDate: null,
+    bleedingLength: null,
+  });
+  cycleForm = form(this.firstCycle, (path) => {
+    required(path.lastPeriodDate);
+    required(path.bleedingLength);
+  });
+
+  canSubmit = computed(
+    () => this.profileForm().valid() && this.cycleForm().valid()
+  );
 
   submit(): void {
-    const userFormValue = this.userFormGroup.value;
-    const cycleFormValue = this.cycleFormGroup.value;
+    if (!this.canSubmit()) return;
+
+    const profile = this.profile();
+    const firstCycle = this.firstCycle();
 
     const user: Partial<UserDto> = {
       email: this.credentialService.credentials?.email,
-      birthDate: userFormValue.birthDate as unknown as Date,
-      username: userFormValue.username,
-      weight: userFormValue.weight as unknown as number,
+      username: profile.username,
+      birthDate: profile.birthDate as Date,
+      weight: profile.weight ?? undefined,
     };
 
     const cycle: CycleDto = {
       cycleNumber: 1,
-      startDate: cycleFormValue.lastPeriodDate as unknown as Date,
-      bleedingLength: cycleFormValue.bleedingLength as unknown as number,
+      startDate: firstCycle.lastPeriodDate as Date,
+      bleedingLength: firstCycle.bleedingLength as number,
     };
 
     forkJoin({
@@ -81,14 +143,10 @@ export class CompleteProfileComponent {
       cycle: this.cycleService.addCycle(cycle),
     }).subscribe({
       next: () => {
-        // Update credentials to mark profile as complete
         const currentCredentials = this.credentialService.credentials;
         if (currentCredentials) {
           this.credentialService.setCredentials(
-            {
-              ...currentCredentials,
-              profileIncomplete: false,
-            },
+            { ...currentCredentials, profileIncomplete: false },
             true
           );
         }

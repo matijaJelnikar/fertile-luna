@@ -30,7 +30,7 @@ describe('NewCycleComponent', () => {
   it('says which cycle closes and on what day', async () => {
     await setup({ openCycleNumber: 3, openCycleStartDate: new Date('2026-08-01') });
 
-    component.form.controls.startDate.setValue(new Date('2026-08-29'));
+    component.cycleForm.startDate().value.set(new Date('2026-08-29'));
     fixture.detectChanges();
 
     const closing = component.closingCycle();
@@ -58,7 +58,7 @@ describe('NewCycleComponent', () => {
   it('returns only the start date and bleeding length, never a conclusion', async () => {
     await setup({ openCycleStartDate: new Date('2026-08-01') });
 
-    component.form.setValue({
+    component.cycleForm().value.set({
       startDate: new Date('2026-08-29'),
       bleedingLength: 5,
     });
@@ -81,7 +81,7 @@ describe('NewCycleComponent', () => {
   it('refuses a start on or before the open cycle`s first day, which would leave it no days', async () => {
     await setup({ openCycleStartDate: new Date(2026, 7, 1) });
 
-    component.form.setValue({ startDate: new Date(2026, 7, 1), bleedingLength: 5 });
+    component.cycleForm().value.set({ startDate: new Date(2026, 7, 1), bleedingLength: 5 });
     fixture.detectChanges();
     component.save();
 
@@ -100,7 +100,7 @@ describe('NewCycleComponent', () => {
     it('starts from the day the bleeding was recorded', async () => {
       await setup(offered);
 
-      expect(component.form.controls.startDate.value).toEqual(new Date(2026, 7, 29));
+      expect(component.cycleForm.startDate().value()).toEqual(new Date(2026, 7, 29));
       expect(fixture.nativeElement.querySelector('.offer-note')).toBeTruthy();
     });
 

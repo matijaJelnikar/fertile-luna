@@ -2,10 +2,10 @@
   {{ (isEdit ? 'measurement.edit.title' : 'measurement.add.title') | translate }}
 </h2>
 <mat-dialog-content>
-  <form [formGroup]="temperatureForm" (ngSubmit)="save()">
+  <form [formRoot]="temperatureForm" novalidate>
     <mat-form-field>
       <mat-label>{{ 'measurement.date' | translate }}</mat-label>
-      <input matInput [matDatepicker]="picker" formControlName="date" />
+      <input matInput [matDatepicker]="picker" [formField]="temperatureForm.date" />
       <mat-hint>{{ 'measurement.date.hint' | translate }}</mat-hint>
       <mat-datepicker-toggle
         matIconSuffix
@@ -37,7 +37,7 @@
       <input
         #temperatureInput
         matInput
-        formControlName="temperature"
+        [formField]="temperatureForm.temperature"
         type="number"
         step="0.01"
       />
@@ -46,21 +46,21 @@
 
     <!-- The value stays; the mark only says how the engine must read it (`#R-DIST-02`). -->
     <div class="disturbance">
-      <mat-checkbox formControlName="disturbed" [disabled]="!canMarkDisturbed()">
+      <mat-checkbox [formField]="temperatureForm.disturbed">
         {{ 'measurement.disturbed' | translate }}
       </mat-checkbox>
       @if (!canMarkDisturbed()) {
       <p class="form-note">{{ 'measurement.disturbed.needs.temperature' | translate }}</p>
       }
 
-      @if (canMarkDisturbed() && temperatureForm.controls.disturbed.value) {
+      @if (showDisturbanceReasons()) {
       <div class="chip-group">
         <span class="chip-group-label" id="disturbanceReasonsLabel">{{
           'measurement.disturbance.reasons' | translate
         }}</span>
         <mat-chip-listbox
           multiple
-          formControlName="disturbanceReasons"
+          [formField]="temperatureForm.disturbanceReasons"
           aria-labelledby="disturbanceReasonsLabel"
         >
           @for (option of disturbanceReasonOptions; track option) {
@@ -72,119 +72,65 @@
       @if (showDisturbanceNote()) {
       <mat-form-field appearance="outline">
         <mat-label>{{ 'measurement.disturbance.note' | translate }}</mat-label>
-        <input matInput formControlName="disturbanceNote" type="text" />
+        <input matInput [formField]="temperatureForm.disturbanceNote" type="text" />
       </mat-form-field>
       } }
     </div>
 
-    <div class="chip-group">
-      <span class="chip-group-label" id="bleedingLabel">{{ 'measurement.bleeding' | translate }}</span>
-      <mat-chip-listbox formControlName="bleeding" aria-labelledby="bleedingLabel">
-        @for (option of bleedingOptions; track option) {
-        <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
-        }
-      </mat-chip-listbox>
-    </div>
+    <app-chip-choice
+      [formField]="temperatureForm.bleeding"
+      [label]="'measurement.bleeding' | translate"
+      [options]="bleedingOptions"
+    />
 
-    <div class="chip-group">
-      <span class="chip-group-label" id="painLabel">{{ 'measurement.pain' | translate }}</span>
-      <mat-chip-listbox formControlName="pain" aria-labelledby="painLabel">
-        @for (option of painOptions; track option) {
-        <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
-        }
-      </mat-chip-listbox>
-    </div>
+    <app-chip-choice
+      [formField]="temperatureForm.pain"
+      [label]="'measurement.pain' | translate"
+      [options]="painOptions"
+    />
 
-    <div class="chip-group">
-      <span class="chip-group-label" id="mucusFeelingLabel">{{
-        'measurement.mucus.feeling' | translate
-      }}</span>
-      <mat-chip-listbox
-        formControlName="mucusFeeling"
-        aria-labelledby="mucusFeelingLabel"
-      >
-        @for (option of mucusFeelingOptions; track option) {
-        <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
-        }
-      </mat-chip-listbox>
-    </div>
+    <app-chip-choice
+      [formField]="temperatureForm.mucusFeeling"
+      [label]="'measurement.mucus.feeling' | translate"
+      [options]="mucusFeelingOptions"
+    />
 
-    <div class="chip-group">
-      <span class="chip-group-label" id="mucusAppearanceLabel">{{
-        'measurement.mucus.appearance' | translate
-      }}</span>
-      <mat-chip-listbox
-        formControlName="mucusAppearance"
-        aria-labelledby="mucusAppearanceLabel"
-      >
-        @for (option of mucusAppearanceOptions; track option) {
-        <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
-        }
-      </mat-chip-listbox>
-    </div>
+    <app-chip-choice
+      [formField]="temperatureForm.mucusAppearance"
+      [label]="'measurement.mucus.appearance' | translate"
+      [options]="mucusAppearanceOptions"
+    />
 
-    <div class="chip-group">
-      <span class="chip-group-label" id="cervixPositionLabel">{{
-        'measurement.cervix.position' | translate
-      }}</span>
-      <mat-chip-listbox
-        formControlName="cervixPosition"
-        aria-labelledby="cervixPositionLabel"
-      >
-        @for (option of cervixPositionOptions; track option) {
-        <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
-        }
-      </mat-chip-listbox>
-    </div>
+    <app-chip-choice
+      [formField]="temperatureForm.cervixPosition"
+      [label]="'measurement.cervix.position' | translate"
+      [options]="cervixPositionOptions"
+    />
 
-    <div class="chip-group">
-      <span class="chip-group-label" id="cervixOpennessLabel">{{
-        'measurement.cervix.openness' | translate
-      }}</span>
-      <mat-chip-listbox
-        formControlName="cervixOpenness"
-        aria-labelledby="cervixOpennessLabel"
-      >
-        @for (option of cervixOpennessOptions; track option) {
-        <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
-        }
-      </mat-chip-listbox>
-    </div>
+    <app-chip-choice
+      [formField]="temperatureForm.cervixOpenness"
+      [label]="'measurement.cervix.openness' | translate"
+      [options]="cervixOpennessOptions"
+    />
 
-    <div class="chip-group">
-      <span class="chip-group-label" id="cervixFirmnessLabel">{{
-        'measurement.cervix.firmness' | translate
-      }}</span>
-      <mat-chip-listbox
-        formControlName="cervixFirmness"
-        aria-labelledby="cervixFirmnessLabel"
-      >
-        @for (option of cervixFirmnessOptions; track option) {
-        <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
-        }
-      </mat-chip-listbox>
-    </div>
+    <app-chip-choice
+      [formField]="temperatureForm.cervixFirmness"
+      [label]="'measurement.cervix.firmness' | translate"
+      [options]="cervixFirmnessOptions"
+    />
 
-    <div class="chip-group">
-      <span class="chip-group-label" id="intercourseLabel">{{
-        'measurement.intercourse' | translate
-      }}</span>
-      <mat-chip-listbox
-        formControlName="intercourse"
-        aria-labelledby="intercourseLabel"
-      >
-        @for (option of intercourseOptions; track option) {
-        <mat-chip-option [value]="option">{{ option }}</mat-chip-option>
-        }
-      </mat-chip-listbox>
-    </div>
+    <app-chip-choice
+      [formField]="temperatureForm.intercourse"
+      [label]="'measurement.intercourse' | translate"
+      [options]="intercourseOptions"
+    />
 
     <mat-form-field appearance="outline">
       <mat-label>{{ 'measurement.notes' | translate }}</mat-label>
-      <input matInput formControlName="notes" type="text" />
+      <input matInput [formField]="temperatureForm.notes" type="text" />
     </mat-form-field>
 
-    @if (temperatureForm.touched && temperatureForm.hasError('noObservation')) {
+    @if (nothingRecorded()) {
     <p class="form-error" role="alert">
       {{ 'measurement.nothing.recorded' | translate }}
     </p>
@@ -193,11 +139,12 @@
 </mat-dialog-content>
 
 <mat-dialog-actions>
-  <button mat-button (click)="close()">
+  <button mat-button type="button" (click)="close()">
     {{ 'measurement.cancel' | translate }}
   </button>
   <button
     mat-button
+    type="button"
     (click)="save()"
     cdkFocusInitial
     [disabled]="!canSave()"

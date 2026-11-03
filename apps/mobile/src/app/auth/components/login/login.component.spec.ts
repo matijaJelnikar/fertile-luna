@@ -20,7 +20,12 @@ describe('LoginComponent', () => {
   const route = { snapshot: { queryParams: {} as Record<string, string> } };
 
   const fillIn = (email: string, password: string) =>
-    component.loginForm.setValue({ email, password, remember: false });
+    component.loginForm().value.set({ email, password, remember: false });
+
+  const submit = async () => {
+    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    await fixture.whenStable();
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -49,13 +54,20 @@ describe('LoginComponent', () => {
   });
 
   it('starts with an invalid, empty form', () => {
-    expect(component.loginForm.valid).toBe(false);
+    expect(component.loginForm().valid()).toBe(false);
   });
 
-  it('signs in with what was typed and lands on the default route', () => {
+  it('does not sign in with an empty form, and flags the missing fields', async () => {
+    await submit();
+
+    expect(authenticationService.login).not.toHaveBeenCalled();
+    expect(component.loginForm.email().touched()).toBe(true);
+  });
+
+  it('signs in with what was typed and lands on the default route', async () => {
     fillIn('me@example.test', 'secret');
 
-    component.login();
+    await submit();
 
     expect(authenticationService.login).toHaveBeenCalledWith({
       email: 'me@example.test',
@@ -63,30 +75,30 @@ describe('LoginComponent', () => {
       remember: false,
     });
     expect(router.navigate).toHaveBeenCalledWith(['/'], { replaceUrl: true });
-    expect(component.isLoading()).toBe(false);
+    expect(component.loginForm().submitting()).toBe(false);
   });
 
-  it('returns to the route the guard redirected from', () => {
+  it('returns to the route the guard redirected from', async () => {
     route.snapshot.queryParams = { redirect: '/history' };
     fillIn('me@example.test', 'secret');
 
-    component.login();
+    await submit();
 
     expect(router.navigate).toHaveBeenCalledWith(['/history'], {
       replaceUrl: true,
     });
   });
 
-  it('shows the server`s message and stays put when sign-in fails', () => {
+  it('shows the server`s message and stays put when sign-in fails', async () => {
     authenticationService.login.mockReturnValueOnce(
       throwError(() => ({ error: { message: 'Invalid credentials' } }))
     );
     fillIn('me@example.test', 'wrong');
 
-    component.login();
+    await submit();
 
     expect(component.error()).toBe('Invalid credentials');
     expect(router.navigate).not.toHaveBeenCalled();
-    expect(component.isLoading()).toBe(false);
+    expect(component.loginForm().submitting()).toBe(false);
   });
 });

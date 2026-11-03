@@ -23,19 +23,15 @@
 </mat-toolbar>
 <mat-stepper [linear]="isLinear" #stepper [orientation]="'vertical'">
   <!-- Step 1: Fill out name -->
-  <mat-step [stepControl]="userFormGroup">
-    <form [formGroup]="userFormGroup">
+  <mat-step [completed]="profileForm().valid()">
+    <form [formRoot]="profileForm" novalidate>
       <ng-template matStepLabel>Fill out your name</ng-template>
 
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>{{ 'username' | translate }}</mat-label>
-        <input type="text" matInput formControlName="username" required />
-        @if (
-          userFormGroup.controls['username'].invalid &&
-          userFormGroup.controls['username'].touched
-          ) {
-          <mat-error
-            >
+        <input type="text" matInput [formField]="profileForm.username" />
+        @if (profileForm.username().invalid() && profileForm.username().touched()) {
+          <mat-error>
             <span>{{ 'username.required' | translate }}</span>
           </mat-error>
         }
@@ -46,20 +42,15 @@
         <input
           matInput
           [matDatepicker]="birthDatePicker"
-          formControlName="birthDate"
-          required
-          />
+          [formField]="profileForm.birthDate"
+        />
         <mat-datepicker-toggle
           matIconSuffix
           [for]="birthDatePicker"
         ></mat-datepicker-toggle>
         <mat-datepicker touchUi #birthDatePicker></mat-datepicker>
-        @if (
-          userFormGroup.controls['birthDate'].invalid &&
-          userFormGroup.controls['birthDate'].touched
-          ) {
-          <mat-error
-            >
+        @if (profileForm.birthDate().invalid() && profileForm.birthDate().touched()) {
+          <mat-error>
             <span>{{ 'birth.date.required' | translate }}</span>
           </mat-error>
         }
@@ -67,20 +58,11 @@
 
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>{{ 'weight' | translate }}</mat-label>
-        <input type="number" matInput formControlName="weight" />
-        @if (
-          userFormGroup.controls['weight'].invalid &&
-          userFormGroup.controls['weight'].touched
-          ) {
-          <mat-error
-            >
-            <span>{{ 'weight.required' | translate }}</span>
-          </mat-error>
-        }
+        <input type="number" matInput [formField]="profileForm.weight" />
       </mat-form-field>
 
       <div class="button-group">
-        <button mat-button matStepperNext [disabled]="userFormGroup.invalid">
+        <button mat-button matStepperNext type="button" [disabled]="profileForm().invalid()">
           Next
         </button>
       </div>
@@ -88,8 +70,8 @@
   </mat-step>
 
   <!-- Step 2: Fill cycle info -->
-  <mat-step [stepControl]="cycleFormGroup">
-    <form [formGroup]="cycleFormGroup">
+  <mat-step [completed]="cycleForm().valid()">
+    <form [formRoot]="cycleForm" novalidate>
       <ng-template matStepLabel>Fill cycle info</ng-template>
 
       <mat-form-field appearance="fill" class="full-width">
@@ -97,8 +79,8 @@
         <input
           matInput
           [matDatepicker]="lastPeriodPicker"
-          formControlName="lastPeriodDate"
-          />
+          [formField]="cycleForm.lastPeriodDate"
+        />
         <mat-datepicker-toggle
           matIconSuffix
           [for]="lastPeriodPicker"
@@ -108,17 +90,12 @@
 
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>How many days were you bleeding?</mat-label>
-        <input
-          type="number"
-          matInput
-          formControlName="bleedingLength"
-          required
-          />
+        <input type="number" matInput [formField]="cycleForm.bleedingLength" />
       </mat-form-field>
 
       <div class="button-group">
-        <button mat-button matStepperPrevious>Back</button>
-        <button mat-button matStepperNext [disabled]="cycleFormGroup.invalid">
+        <button mat-button matStepperPrevious type="button">Back</button>
+        <button mat-button matStepperNext type="button" [disabled]="cycleForm().invalid()">
           Next
         </button>
       </div>
@@ -130,8 +107,10 @@
     <ng-template matStepLabel>Done</ng-template>
     <p>You are now done.</p>
     <div class="button-group">
-      <button mat-button matStepperPrevious>Back</button>
-      <button mat-button (click)="submit()">Submit</button>
+      <button mat-button matStepperPrevious type="button">Back</button>
+      <button mat-button type="button" [disabled]="!canSubmit()" (click)="submit()">
+        Submit
+      </button>
     </div>
   </mat-step>
 </mat-stepper>

@@ -1,12 +1,12 @@
 <div class="registration-wrapper">
   <div
     class="registration-image"
-    [ngClass]="{ 'initial-load': initialLoad() }"
+    [class.initial-load]="initialLoad()"
     style="background-image: url('resources/fertileluna_background.png')"
   ></div>
 
   <div class="registration-form">
-    <form (ngSubmit)="register()" [formGroup]="registrationForm" novalidate>
+    <form [formRoot]="registrationForm" novalidate>
       <div class="registration-error">
         @if (error()) {
           {{ error() }}
@@ -14,59 +14,47 @@
       </div>
       <br />
       <h1>{{ 'register' | translate }}</h1>
-      <!-- Email field -->
       <mat-form-field [appearance]="'outline'">
         <input
           type="email"
           matInput
-          formControlName="email"
+          [formField]="registrationForm.email"
           autocomplete="email"
           id="emailInput"
-          required
         />
         <mat-label for="emailInput">{{ 'email' | translate }}</mat-label>
-        @if (
-          registrationForm.controls['email'].invalid &&
-          registrationForm.controls['email'].touched
-        ) {
+        @if (registrationForm.email().invalid() && registrationForm.email().touched()) {
           <mat-error>
             <span>{{ 'email.required' | translate }}</span>
           </mat-error>
         }
       </mat-form-field>
 
-      <!-- Password field -->
       <mat-form-field [appearance]="'outline'">
         <input
           type="password"
           matInput
-          formControlName="password"
+          [formField]="registrationForm.password"
           autocomplete="new-password"
           id="passwordInput"
-          required
         />
         <mat-label for="passwordInput">{{ 'password' | translate }}</mat-label>
-        @if (
-          registrationForm.controls['password'].invalid &&
-          registrationForm.controls['password'].touched
-        ) {
+        @if (registrationForm.password().invalid() && registrationForm.password().touched()) {
           <mat-error>
             <span>{{ 'password.required' | translate }}</span>
           </mat-error>
         }
       </mat-form-field>
 
-      <!-- Submit button -->
       <button
         mat-flat-button
         color="secondary"
         type="submit"
-        [disabled]="registrationForm.invalid || isLoading()"
+        [disabled]="registrationForm().invalid() || registrationForm().submitting()"
       >
         <span>{{ 'sign.up.label' | translate }}</span>
       </button>
 
-      <!-- Back to login link -->
       <div class="back-to-login">
         <a mat-button href="/login">{{
           'register.back.to.login' | translate
