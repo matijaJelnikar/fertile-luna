@@ -7,14 +7,16 @@ performant, and accessible code following the conventions in this repo.
 
 | Area | Choice |
 |------|--------|
-| Monorepo | Nx 20.4 |
-| Frontend | Angular **19.1**, Angular Material 19 (M3), SCSS, ngx-translate, Chart.js, PWA |
-| Backend | NestJS 10 on Express, TypeORM 0.3, PostgreSQL, Passport JWT, Swagger |
+| Runtime | Node 26 |
+| Monorepo | Nx 23 |
+| Frontend | Angular **22**, Angular Material 22 (M3), SCSS, ngx-translate 18, SVG charts, PWA |
+| Backend | NestJS 11 on Express 5, TypeORM 0.3, PostgreSQL, Passport JWT, Swagger |
 | Shared | `libs/shared/model` (DTOs/types), `libs/shared/components` (UI) |
-| Tests | Jest (unit + `apps/api-e2e`) |
+| Tests | Jest 30 (unit + `apps/api-e2e`) |
+| Language | TypeScript 6.0 (not 7 — Angular 22 needs `<6.1`) |
 
-Angular is on **v19** — Signal Forms, `httpResource()`, and zoneless bootstrap are v20/v21
-features and are **not available**. Never write code against them.
+Angular is on **v22**. The app still runs with zone.js (`provideZoneChangeDetection`).
+NestJS stays on 11 until `@nx/nest` supports 12.
 The backend uses **TypeORM + Express** — never Prisma, never Fastify.
 
 ```
@@ -43,7 +45,7 @@ rules. Don't copy those patterns; migrate them when you touch the surrounding co
 - Avoid `any` — use `unknown` when the type is uncertain
 
 ### Angular
-- Standalone components; never set `standalone: true` (it's the v19 default) or `false`
+- Standalone components; never set `standalone: true` (it's the default) or `false`
 - `ChangeDetectionStrategy.OnPush` on every component — if it breaks under OnPush, it's a bug
 - `inject()` over constructor injection (frontend); NestJS keeps constructor injection
 - `input()` / `output()` / `model()` functions — never `@Input()` / `@Output()` decorators
@@ -52,7 +54,7 @@ rules. Don't copy those patterns; migrate them when you touch the surrounding co
 - `[class.x]` / `[style.x]` bindings — never `ngClass` / `ngStyle`
 - No arrow functions, `new Date()`, or function calls in templates — logic goes in `computed()`
 - Lazy-load feature routes; functional guards and interceptors only
-- Reactive forms only, typed with an interface
+- Signal Forms for new forms; existing typed reactive forms stay until touched
 - `NgOptimizedImage` for static images (not for inline base64)
 - Import individual Material components — never a `MaterialModule` barrel
 

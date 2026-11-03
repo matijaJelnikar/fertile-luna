@@ -1,10 +1,13 @@
-# Backend Rules — `apps/api` (NestJS 10 + TypeORM + PostgreSQL)
+# Backend Rules — `apps/api` (NestJS 11 + TypeORM + PostgreSQL)
 
-Stack: NestJS **10** (Express platform) · TypeORM **0.3** · PostgreSQL ·
+Stack: NestJS **11** (Express 5 platform) · TypeORM **0.3** · PostgreSQL ·
 Passport (JWT + local) · class-validator / class-transformer · Swagger · Jest.
 
 > This project uses **TypeORM**, not Prisma, and **Express**, not Fastify.
 > Do not introduce a second ORM or HTTP adapter.
+>
+> Express 5 route syntax: a wildcard needs a name (`*splat`), not a bare `*`.
+> NestJS 12 waits until `@nx/nest` supports it (Nx 24 still caps it below 12).
 
 ---
 
