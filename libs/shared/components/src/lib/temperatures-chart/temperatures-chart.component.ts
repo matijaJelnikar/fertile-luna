@@ -17,6 +17,7 @@ const MARKER_LABELS: Record<DayMarkerKind, string> = {
   'temperature-counted-2': 'Higher temperature 2',
   'temperature-counted-3': 'Higher temperature 3',
   'temperature-counted-4': 'Higher temperature 4',
+  'temperature-counted-5': 'Higher temperature 5',
   'temperature-uncounted': 'Not counted',
   disturbed: 'Disturbed — not taken into account',
 };

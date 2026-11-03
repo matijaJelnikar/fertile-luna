@@ -3,6 +3,7 @@ import {
   PlacedMeasurement,
   TemperatureRule,
   TemperatureShift,
+  notSatisfied,
   satisfied,
   unevaluable,
 } from '@basal-temp-log-workspace/model';
@@ -69,6 +70,33 @@ export const evaluateTemperatureShift = (
   }
 
   return unevaluable(truncated ? 'awaiting-days' : 'too-few-values');
+};
+
+/**
+ * The first raised phase after stopping hormonal contraception needs one value more (`#R-LIFE-02`):
+ * after the evaluation completes under one of the rules above, the next sound value must lie above
+ * the helper line. It need not be 0.2 °C higher, and the evaluation then completes on its day.
+ *
+ * **"The next sound value" is a reading**, the stricter of two: if it lies on or below the line the
+ * rise is not confirmed, rather than waiting for some later value above it. Recorded under the
+ * anchor to confirm against the handbook.
+ */
+export const requireFurtherRaisedValue = (
+  shift: Evaluation<TemperatureShift>,
+  entries: readonly PlacedMeasurement[]
+): Evaluation<TemperatureShift> => {
+  if (shift.status !== 'satisfied') return shift;
+
+  const { completedOnDay, helperLineTemperature, countedDays } = shift.result;
+  const next = soundValues(entries).find((value) => value.day > completedOnDay);
+  if (!next) return unevaluable('awaiting-days');
+  if (next.temperature <= helperLineTemperature) return notSatisfied();
+
+  return satisfied({
+    ...shift.result,
+    countedDays: [...countedDays, next.day],
+    completedOnDay: next.day,
+  });
 };
 
 const buildShift = (

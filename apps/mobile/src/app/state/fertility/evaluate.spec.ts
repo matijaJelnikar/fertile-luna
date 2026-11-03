@@ -1,10 +1,15 @@
 import {
+  BleedingOption,
+  CervixFirmnessOption,
+  CervixOpennessOption,
+  EvaluationContext,
   MeasurementGraphData,
   MucusAppearanceOption,
   MucusFeelingOption,
   MucusSymbol,
   PlacedMeasurement,
 } from '@basal-temp-log-workspace/model';
+import { evaluateCervixClosure } from './cervix';
 import { classifyDay } from './mucus';
 import { evaluateCycle } from './evaluate';
 import { evaluateTemperatureShift } from './temperature';
@@ -330,9 +335,11 @@ describe('the double-check (R-COMBI-01, R-COMBI-02)', () => {
     expect(postOvulatory.status).toBe('satisfied');
     if (postOvulatory.status !== 'satisfied') return;
     // Mucus completed on day 6, temperature on day 9 — the later governs.
-    expect(postOvulatory.result.mucusCompletedOnDay).toBe(6);
-    expect(postOvulatory.result.temperatureCompletedOnDay).toBe(9);
-    expect(postOvulatory.result.infertileFromDay).toBe(9);
+    expect(postOvulatory.result).toEqual({
+      infertileFromDay: 9,
+      temperatureCompletedOnDay: 9,
+      mucusCompletedOnDay: 6,
+    });
   });
 
   it('never confirms the phase on temperature alone, but still reports the rise', () => {
@@ -422,6 +429,251 @@ describe('the pre-ovulatory phase (R-FIRST-01, R-FIRST-02)', () => {
     expect(preOvulatory.result.rule).toBe('R-FIRST-02');
     // Earliest first higher temperature is day 17, so 17 - 8 = 9.
     expect(preOvulatory.result.lastInfertileDay).toBe(9);
+  });
+});
+
+/** A previous cycle whose first higher temperature fell late enough to keep the five-day rule. */
+const previousWithRise = (): PlacedMeasurement[] => [
+  ...sixLow(),
+  entry(17, { temperature: 36.7 }),
+  entry(18, { temperature: 36.65 }),
+  entry(19, { temperature: 36.8 }),
+];
+
+/** Six low values, then a rise completing on day 9 under the standard rule. */
+const riseOnDayNine = (): PlacedMeasurement[] => [
+  ...sixLow(),
+  entry(7, { temperature: 36.7 }),
+  entry(8, { temperature: 36.65 }),
+  entry(9, { temperature: 36.8 }),
+];
+
+describe('the cervix (R-CERVIX-01, R-CERVIX-02)', () => {
+  const open = {
+    cervixOpenness: CervixOpennessOption.MediumOpened,
+    cervixFirmness: CervixFirmnessOption.Soft,
+  };
+  const closedFirm = {
+    cervixOpenness: CervixOpennessOption.Closed,
+    cervixFirmness: CervixFirmnessOption.Firm,
+  };
+  const closedSoft = {
+    cervixOpenness: CervixOpennessOption.Closed,
+    cervixFirmness: CervixFirmnessOption.Soft,
+  };
+
+  it('completes on the third consecutive day recorded closed and firm', () => {
+    const result = evaluateCervixClosure([
+      entry(4, open),
+      entry(5, closedFirm),
+      entry(6, closedFirm),
+      entry(7, closedFirm),
+    ]);
+
+    expect(result).toEqual({
+      status: 'satisfied',
+      result: { lastOpenDay: 4, closedDays: [5, 6, 7], completedOnDay: 7 },
+    });
+  });
+
+  it('does not count a cervix that is closed but not firm', () => {
+    const result = evaluateCervixClosure([
+      entry(4, open),
+      entry(5, closedSoft),
+      entry(6, closedSoft),
+      entry(7, closedSoft),
+    ]);
+
+    expect(result).toEqual({ status: 'unevaluable', missing: 'awaiting-days' });
+  });
+
+  it('does not count a closed cervix whose firmness was not recorded', () => {
+    const closedOnly = { cervixOpenness: CervixOpennessOption.Closed };
+    const result = evaluateCervixClosure([
+      entry(4, open),
+      entry(5, closedOnly),
+      entry(6, closedOnly),
+      entry(7, closedOnly),
+    ]);
+
+    expect(result.status).not.toBe('satisfied');
+  });
+
+  it('restarts the count across a day with no cervix record', () => {
+    const result = evaluateCervixClosure([
+      entry(4, open),
+      entry(5, closedFirm),
+      entry(6),
+      entry(7, closedFirm),
+      entry(8, closedFirm),
+      entry(9, closedFirm),
+    ]);
+
+    expect(result.status).toBe('satisfied');
+    if (result.status !== 'satisfied') return;
+    expect(result.result.closedDays).toEqual([7, 8, 9]);
+  });
+
+  it('reports a cervix never recorded as unevaluable, not unsatisfied', () => {
+    expect(evaluateCycle(sixLow()).cervix).toEqual({ status: 'unevaluable', missing: 'not-recorded' });
+  });
+
+  describe('the alternative double-check', () => {
+    // The cervix opens on day 5 and is closed and firm on 6, 7 and 8; the rise completes on day 9.
+    const riseWithCervix = (): PlacedMeasurement[] =>
+      riseOnDayNine().map((e) =>
+        e.day === 5 ? { ...e, ...open } : [6, 7, 8].includes(e.day) ? { ...e, ...closedFirm } : e
+      );
+
+    it('completes with the cervix and temperature when no mucus is recorded', () => {
+      const { mucus, cervix, postOvulatory } = evaluateCycle(riseWithCervix());
+
+      expect(mucus).toEqual({ status: 'unevaluable', missing: 'not-recorded' });
+      expect(cervix.status).toBe('satisfied');
+      expect(postOvulatory).toEqual({
+        status: 'satisfied',
+        result: { infertileFromDay: 9, temperatureCompletedOnDay: 9, cervixCompletedOnDay: 8 },
+      });
+    });
+
+    it('lets recorded mucus govern, even when the cervix has already closed', () => {
+      // A wet day 9 is a mucus record whose peak cannot yet be named.
+      const withMucus = riseWithCervix().map((e) =>
+        e.day === 9 ? { ...e, mucusFeeling: MucusFeelingOption.Wet } : e
+      );
+
+      expect(evaluateCycle(withMucus).postOvulatory).toEqual({
+        status: 'unevaluable',
+        missing: 'awaiting-second-sign',
+      });
+    });
+  });
+
+  describe('at the start of the cycle', () => {
+    it('ends the five-day rule early at a change after menstruation', () => {
+      const current = [
+        // Observations during the bleeding are not the baseline a change is measured from.
+        entry(1, { bleeding: BleedingOption.Medium, ...open }),
+        entry(2, { bleeding: BleedingOption.Light }),
+        entry(3, closedFirm),
+        entry(4, { ...closedFirm, cervixOpenness: CervixOpennessOption.MediumOpened }),
+      ];
+
+      const { preOvulatory } = evaluateCycle(current, [previousWithRise()]);
+
+      expect(preOvulatory).toEqual({
+        status: 'satisfied',
+        result: {
+          lastInfertileDay: 3,
+          rule: 'R-FIRST-01',
+          endedEarlyByMucus: false,
+          endedEarlyByCervix: true,
+        },
+      });
+    });
+
+    it('never extends the infertile days while the cervix stays unchanged', () => {
+      const unchanged = [
+        entry(1, { bleeding: BleedingOption.Medium }),
+        ...[2, 3, 4, 5, 6, 7, 8].map((day) => entry(day, closedFirm)),
+      ];
+
+      const { preOvulatory } = evaluateCycle(unchanged, [previousWithRise()]);
+
+      expect(preOvulatory).toEqual({
+        status: 'satisfied',
+        result: { lastInfertileDay: 5, rule: 'R-FIRST-01', endedEarlyByMucus: false },
+      });
+    });
+
+    it('grants nothing where no pre-ovulatory rule allows infertile days', () => {
+      const { preOvulatory } = evaluateCycle([entry(1, closedFirm), entry(2, closedFirm)], []);
+
+      expect(preOvulatory).toEqual({ status: 'unevaluable', missing: 'no-evaluated-previous-cycle' });
+    });
+  });
+});
+
+describe('the first cycle after stopping hormonal contraception (R-LIFE-02)', () => {
+  const AFTER_BLEED: EvaluationContext = { afterHormonalContraception: { bleedingInFirstWeek: true } };
+  const NO_BLEED: EvaluationContext = { afterHormonalContraception: { bleedingInFirstWeek: false } };
+
+  it('takes the first five days as infertile after a bleed in the first week, with no history', () => {
+    const { preOvulatory } = evaluateCycle(sixLow(), [], AFTER_BLEED);
+
+    expect(preOvulatory).toEqual({
+      status: 'satisfied',
+      result: { lastInfertileDay: 5, rule: 'R-LIFE-02', endedEarlyByMucus: false },
+    });
+  });
+
+  it('still ends those days early when mucus shows first', () => {
+    const mucusOnDayThree = sixLow().map((e) =>
+      e.day === 3 ? { ...e, mucusFeeling: MucusFeelingOption.Wet } : e
+    );
+
+    const { preOvulatory } = evaluateCycle(mucusOnDayThree, [], AFTER_BLEED);
+
+    expect(preOvulatory.status).toBe('satisfied');
+    if (preOvulatory.status !== 'satisfied') return;
+    expect(preOvulatory.result.lastInfertileDay).toBe(2);
+    expect(preOvulatory.result.endedEarlyByMucus).toBe(true);
+  });
+
+  it('assumes no infertile days when no bleeding came in the first week', () => {
+    expect(evaluateCycle(sixLow(), [], NO_BLEED).preOvulatory).toEqual({
+      status: 'satisfied',
+      result: { lastInfertileDay: null, rule: 'R-LIFE-02', endedEarlyByMucus: false },
+    });
+  });
+
+  it('waits for one further raised value before the temperature evaluation completes', () => {
+    expect(evaluateCycle(riseOnDayNine(), [], AFTER_BLEED).temperature).toEqual({
+      status: 'unevaluable',
+      missing: 'awaiting-days',
+    });
+    // The same curve in an ordinary cycle completes on day 9.
+    expect(evaluateCycle(riseOnDayNine()).temperature.status).toBe('satisfied');
+  });
+
+  it('accepts a further value above the helper line that is not 0.2 higher', () => {
+    const { temperature, markers } = evaluateCycle(
+      [...riseOnDayNine(), entry(10, { temperature: 36.65 })],
+      [],
+      AFTER_BLEED
+    );
+
+    expect(temperature.status).toBe('satisfied');
+    if (temperature.status !== 'satisfied') return;
+    expect(temperature.result.countedDays).toEqual([7, 8, 9, 10]);
+    expect(temperature.result.completedOnDay).toBe(10);
+    expect(markers).toContainEqual({ day: 10, kind: 'temperature-counted-4' });
+  });
+
+  it('does not confirm the rise when the further value falls back to the line', () => {
+    const { temperature } = evaluateCycle(
+      [...riseOnDayNine(), entry(10, { temperature: 36.6 })],
+      [],
+      AFTER_BLEED
+    );
+
+    expect(temperature).toEqual({ status: 'not-satisfied' });
+  });
+
+  it('skips a bracketed value when looking for the further one', () => {
+    const { temperature } = evaluateCycle(
+      [
+        ...riseOnDayNine(),
+        entry(10, { temperature: 36.4, disturbed: true }),
+        entry(11, { temperature: 36.7 }),
+      ],
+      [],
+      AFTER_BLEED
+    );
+
+    expect(temperature.status).toBe('satisfied');
+    if (temperature.status !== 'satisfied') return;
+    expect(temperature.result.completedOnDay).toBe(11);
   });
 });
 

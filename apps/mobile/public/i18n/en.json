@@ -36,6 +36,7 @@
   "home.phase.infertile.from": "From cycle day",
   "home.phase.awaiting.mucus": "Awaiting the mucus sign",
   "home.phase.awaiting.temperature": "Awaiting the temperature sign",
+  "home.phase.awaiting.cervix": "Awaiting the cervix sign",
   "home.phase.awaiting.both": "Awaiting both signs",
   "home.temperature.evaluated": "Temperature rise evaluated",
   "home.temperature.not.evaluated": "Temperature rise not yet evaluated",

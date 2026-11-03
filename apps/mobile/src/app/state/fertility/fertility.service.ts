@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
   CycleEvaluation,
+  EvaluationContext,
   MeasurementGraphData,
 } from '@basal-temp-log-workspace/model';
 import { evaluateCycle } from './evaluate';
@@ -16,8 +17,9 @@ import { evaluateCycle } from './evaluate';
 export class FertilityService {
   evaluate(
     currentCycle: readonly MeasurementGraphData[],
-    priorCycles: readonly (readonly MeasurementGraphData[])[] = []
+    priorCycles: readonly (readonly MeasurementGraphData[])[] = [],
+    context: EvaluationContext = {}
   ): CycleEvaluation {
-    return evaluateCycle(currentCycle, priorCycles);
+    return evaluateCycle(currentCycle, priorCycles, context);
   }
 }

@@ -50,9 +50,11 @@ const MEASUREMENTS: MeasurementGraphData[] = [
 const NOTHING_EVALUATED: CycleEvaluation = {
   temperature: { status: 'unevaluable', missing: 'too-few-values' },
   mucus: { status: 'unevaluable', missing: 'not-recorded' },
+  cervix: { status: 'unevaluable', missing: 'not-recorded' },
   preOvulatory: { status: 'unevaluable', missing: 'no-evaluated-previous-cycle' },
   postOvulatory: { status: 'unevaluable', missing: 'awaiting-second-sign' },
   markers: [],
+  mucusByDay: [],
   unplaceableEntries: 0,
 };
 
@@ -79,6 +81,7 @@ describe('HomeComponent', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    fertilityService.evaluate.mockReturnValue(NOTHING_EVALUATED);
     cycleService.currentCycleUuid.set('cycle-2');
 
     await TestBed.configureTestingModule({
@@ -123,6 +126,27 @@ describe('HomeComponent', () => {
   it('charts the temperatures of the placed entries, keyed by cycle day', () => {
     expect(component.temperatureData()).toEqual([36.4, 36.5]);
     expect(component.timestampData()).toEqual(['1', '2']);
+  });
+
+  it('names the cervix as the awaited sign when no mucus is recorded', () => {
+    fertilityService.evaluate.mockReturnValue({
+      ...NOTHING_EVALUATED,
+      temperature: {
+        status: 'satisfied',
+        result: {
+          helperLineTemperature: 36.5,
+          helperLineDays: [1, 2, 3, 4, 5, 6],
+          countedDays: [7, 8, 9],
+          uncountedDays: [],
+          rule: 'R-TEMP-02',
+          completedOnDay: 9,
+        },
+      },
+      cervix: { status: 'unevaluable', missing: 'awaiting-days' },
+    });
+    homeService.measurements.set([...MEASUREMENTS]);
+
+    expect(component.phaseStateKey()).toBe('home.phase.awaiting.cervix');
   });
 
   it('averages only the cycles that have finished', () => {

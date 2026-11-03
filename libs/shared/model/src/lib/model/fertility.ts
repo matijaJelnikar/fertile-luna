@@ -70,7 +70,10 @@ export interface TemperatureShift {
   readonly helperLineTemperature: number;
   /** The six cycle days the line was drawn from, all undisturbed (`#R-DIST-02`). */
   readonly helperLineDays: readonly number[];
-  /** The raised days the method counts, in order. Three, or four under `R-TEMP-03`. */
+  /**
+   * The raised days the method counts, in order. Three, or four under `R-TEMP-03` — and one more in
+   * the first cycle after stopping hormonal contraception (`#R-LIFE-02`).
+   */
   readonly countedDays: readonly number[];
   /** Raised-window days that were skipped: a dip under `R-TEMP-04`, or a bracket. */
   readonly uncountedDays: readonly number[];
@@ -90,7 +93,7 @@ export interface MucusPeak {
   readonly completedOnDay: number;
 }
 
-export type PreOvulatoryRule = 'R-FIRST-01' | 'R-FIRST-02';
+export type PreOvulatoryRule = 'R-FIRST-01' | 'R-FIRST-02' | 'R-LIFE-02';
 
 export interface PreOvulatoryPhase {
   /**
@@ -101,6 +104,30 @@ export interface PreOvulatoryPhase {
   readonly rule: PreOvulatoryRule;
   /** Set when mucus appeared first and ended the phase early — "whichever shows first". */
   readonly endedEarlyByMucus: boolean;
+  /** Set when a change in the cervix ended it early (`#R-CERVIX-02`); absent when it did not. */
+  readonly endedEarlyByCervix?: true;
+}
+
+/** The cervix sign after ovulation (`#R-CERVIX-01`). */
+export interface CervixClosure {
+  /** The last day the cervix was recorded as anything other than closed and firm. */
+  readonly lastOpenDay: number;
+  /** The three consecutive days recorded closed and firm, in order. */
+  readonly closedDays: readonly number[];
+  /** Evening of the third. */
+  readonly completedOnDay: number;
+}
+
+/**
+ * Facts about the woman's situation that change which rules apply to a cycle. Not observations of
+ * the cycle, and not derived from them.
+ */
+export interface EvaluationContext {
+  /**
+   * Present when this is the first cycle after stopping hormonal contraception (`#R-LIFE-02`), saying
+   * whether it began with bleeding within the seven days after stopping.
+   */
+  readonly afterHormonalContraception?: { readonly bleedingInFirstWeek: boolean };
 }
 
 /** What the sheet draws above a day. Addressed by cycle day, never by array position. */
@@ -113,6 +140,7 @@ export type DayMarkerKind =
   | 'temperature-counted-2'
   | 'temperature-counted-3'
   | 'temperature-counted-4'
+  | 'temperature-counted-5'
   | 'temperature-uncounted'
   | 'disturbed';
 
@@ -121,18 +149,37 @@ export interface DayMarker {
   readonly kind: DayMarkerKind;
 }
 
-/** Which sign closed the post-ovulatory phase, or which is still outstanding. */
-export interface DoubleCheck {
+interface DoubleCheckBase {
   /** The cycle day the post-ovulatory infertile phase begins — the later of the two signs. */
   readonly infertileFromDay: number;
-  /** Both are always present when satisfied; the method has no single-sign conclusion. */
+  /** Always present when satisfied; the method has no single-sign conclusion. */
   readonly temperatureCompletedOnDay: number;
+}
+
+/** The double-check with mucus (`#R-COMBI-01`). */
+export interface MucusDoubleCheck extends DoubleCheckBase {
   readonly mucusCompletedOnDay: number;
+}
+
+/** The alternative double-check with the cervix, for a cycle with no mucus recorded (`#R-CERVIX-01`). */
+export interface CervixDoubleCheck extends DoubleCheckBase {
+  readonly cervixCompletedOnDay: number;
+}
+
+/** Which two signs closed the post-ovulatory phase. Tell them apart with `'mucusCompletedOnDay' in`. */
+export type DoubleCheck = MucusDoubleCheck | CervixDoubleCheck;
+
+/** A day's mucus symbol, as the engine classified it (`#R-MUCUS-01`). */
+export interface ClassifiedDay {
+  readonly day: number;
+  readonly symbol: MucusSymbol;
 }
 
 export interface CycleEvaluation {
   readonly temperature: Evaluation<TemperatureShift>;
   readonly mucus: Evaluation<MucusPeak>;
+  /** Reported on its own like any sign (`#R-COMBI-02`), and used only where mucus is not recorded. */
+  readonly cervix: Evaluation<CervixClosure>;
   readonly preOvulatory: Evaluation<PreOvulatoryPhase>;
   /**
    * The post-ovulatory infertile phase, and it needs **both** signs (`#R-COMBI-01`). With one sign
@@ -141,6 +188,12 @@ export interface CycleEvaluation {
    */
   readonly postOvulatory: Evaluation<DoubleCheck>;
   readonly markers: readonly DayMarker[];
+  /**
+   * Each day's mucus symbol. Published by the engine so that a view can print the sheet's
+   * abbreviation row without re-deriving the classification — there must be exactly one place a
+   * day becomes a symbol.
+   */
+  readonly mucusByDay: readonly ClassifiedDay[];
   /** Entries that carried no cycle day and so were not evaluated. Reported, never silently dropped. */
   readonly unplaceableEntries: number;
 }

@@ -94,9 +94,16 @@ export class HomeComponent {
    * risk and never advice (`#R-COMBI-01`, `#R-COMBI-02`).
    */
   phaseStateKey = computed(() => {
-    const { postOvulatory, temperature, mucus } = this.evaluation();
+    const { postOvulatory, temperature, mucus, cervix } = this.evaluation();
     if (postOvulatory.status === 'satisfied') return 'home.phase.infertile.confirmed';
-    if (temperature.status === 'satisfied') return 'home.phase.awaiting.mucus';
+    if (temperature.status === 'satisfied') {
+      // Without mucus the cervix is the second sign (`#R-CERVIX-01`), so name the one awaited.
+      const unrecorded = (sign: typeof mucus | typeof cervix) =>
+        sign.status === 'unevaluable' && sign.missing === 'not-recorded';
+      return unrecorded(mucus) && !unrecorded(cervix)
+        ? 'home.phase.awaiting.cervix'
+        : 'home.phase.awaiting.mucus';
+    }
     if (mucus.status === 'satisfied') return 'home.phase.awaiting.temperature';
     return 'home.phase.awaiting.both';
   });
