@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideRouter, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
 import { AuthenticationService } from '../../auth';
@@ -19,8 +19,9 @@ describe('ShellComponent', () => {
     jest.clearAllMocks();
 
     await TestBed.configureTestingModule({
-      imports: [ShellComponent, NoopAnimationsModule, TranslateModule.forRoot()],
+      imports: [ShellComponent, NoopAnimationsModule],
       providers: [
+        provideTranslateService(),
         provideRouter([]),
         { provide: AuthenticationService, useValue: authenticationService },
         { provide: CycleService, useValue: cycleService },

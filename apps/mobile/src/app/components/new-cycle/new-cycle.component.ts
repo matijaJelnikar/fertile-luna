@@ -16,7 +16,7 @@ import {
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { CycleDto } from '@basal-temp-log-workspace/model';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { MaterialModule } from '../../material.module';
 import { toCycleDay } from '../../state/measurements/cycle-day';
 
@@ -59,7 +59,7 @@ const dayBefore = (date: Date): Date => {
   templateUrl: './new-cycle.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideNativeDateAdapter()],
-  imports: [DatePipe, ReactiveFormsModule, MaterialModule, TranslateModule],
+  imports: [DatePipe, ReactiveFormsModule, MaterialModule, TranslatePipe],
 })
 export class NewCycleComponent {
   readonly dialogRef = inject(MatDialogRef<NewCycleComponent>);

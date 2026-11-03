@@ -14,7 +14,7 @@ import {
   viewChildren,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import {
   CycleEvaluation,
   DayMarkerKind,
@@ -87,7 +87,7 @@ interface DayColumn {
   templateUrl: './temperatures-chart.component.html',
   styleUrl: './temperatures-chart.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslateModule],
+  imports: [TranslatePipe],
   host: {
     class: 'zyklusblatt',
     // One listener for the whole sheet: a tap anywhere in a column selects that day.

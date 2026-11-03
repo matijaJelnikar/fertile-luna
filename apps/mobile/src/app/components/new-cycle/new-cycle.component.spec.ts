@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 
 import { NewCycleComponent, NewCycleDialogData } from './new-cycle.component';
 
@@ -14,8 +14,9 @@ describe('NewCycleComponent', () => {
     dialogRef.close.mockClear();
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
-      imports: [NewCycleComponent, NoopAnimationsModule, TranslateModule.forRoot()],
+      imports: [NewCycleComponent, NoopAnimationsModule],
       providers: [
+        provideTranslateService(),
         { provide: MatDialogRef, useValue: dialogRef },
         { provide: MAT_DIALOG_DATA, useValue: data },
       ],

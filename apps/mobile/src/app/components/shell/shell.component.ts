@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { firstValueFrom, tap } from 'rxjs';
 import { AuthenticationService } from '../../auth';
 import { MaterialModule } from '../../material.module';
@@ -27,7 +27,7 @@ enum NavigationButton {
   templateUrl: './shell.component.html',
   styleUrls: ['./shell.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterModule, NgClass, TranslateModule, MaterialModule],
+  imports: [RouterModule, NgClass, TranslatePipe, MaterialModule],
 })
 export class ShellComponent implements OnInit {
   router = inject(Router);

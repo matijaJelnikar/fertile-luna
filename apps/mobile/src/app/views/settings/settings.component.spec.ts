@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
 import { NewCycleDialogService } from '../../components/new-cycle/new-cycle-dialog.service';
@@ -37,8 +37,9 @@ describe('SettingsComponent', () => {
     contraceptionStoppedOn.set(null);
 
     await TestBed.configureTestingModule({
-      imports: [SettingsComponent, NoopAnimationsModule, TranslateModule.forRoot()],
+      imports: [SettingsComponent, NoopAnimationsModule],
       providers: [
+        provideTranslateService(),
         { provide: ThemeService, useValue: theme },
         { provide: UserService, useValue: user },
         { provide: NewCycleDialogService, useValue: newCycleDialog },

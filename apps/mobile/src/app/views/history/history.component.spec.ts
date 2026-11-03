@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MeasurementGraphData } from '@basal-temp-log-workspace/model';
-import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { AddMeasurementComponent } from '../../components/add-measurement/add-measurement.component';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
@@ -42,9 +42,9 @@ describe('HistoryComponent', () => {
       imports: [
         HistoryComponent,
         NoopAnimationsModule,
-        TranslateModule.forRoot(),
       ],
       providers: [
+        provideTranslateService(),
         { provide: MatDialog, useValue: dialog },
         { provide: CycleService, useValue: cycleService },
       ],

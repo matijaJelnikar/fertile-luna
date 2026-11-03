@@ -2,7 +2,7 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { provideTranslateService, TranslateService } from '@ngx-translate/core';
 import {
   CycleEvaluation,
   CycleWithDerived,
@@ -79,8 +79,9 @@ describe('HomeComponent', () => {
     userService.contraceptionStoppedOn.set(null);
 
     await TestBed.configureTestingModule({
-      imports: [HomeComponent, NoopAnimationsModule, TranslateModule.forRoot()],
+      imports: [HomeComponent, NoopAnimationsModule],
       providers: [
+        provideTranslateService(),
         { provide: CycleService, useValue: cycleService },
         { provide: FertilityService, useValue: fertilityService },
         { provide: UserService, useValue: userService },

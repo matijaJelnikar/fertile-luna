@@ -7,7 +7,7 @@ import {
   MatDialogRef,
   MatDialogTitle,
 } from '@angular/material/dialog';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 export interface ConfirmDialogData {
   titleKey: string;
@@ -22,7 +22,7 @@ export interface ConfirmDialogData {
   selector: 'app-confirm-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    TranslateModule,
+    TranslatePipe,
     MatButton,
     MatDialogActions,
     MatDialogContent,

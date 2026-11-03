@@ -13,7 +13,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { MaterialModule } from '../../../material.module';
 import { AuthenticationService } from '../../authentication.service';
 import { CredentialsService } from '../../credentials.service';
@@ -32,7 +32,7 @@ export interface UserDto {
   templateUrl: './registration.component.html',
   styleUrls: ['./registration.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MaterialModule, ReactiveFormsModule, TranslateModule, NgClass],
+  imports: [MaterialModule, ReactiveFormsModule, TranslatePipe, NgClass],
 })
 export class RegistrationComponent implements AfterViewInit {
   private authService = inject(AuthenticationService);

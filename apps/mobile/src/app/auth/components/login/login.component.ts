@@ -17,7 +17,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
 import { CommonModule, NgClass } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { MaterialModule } from '../../../material.module';
 import { AuthenticationService } from '../../authentication.service';
 
@@ -30,7 +30,7 @@ import { AuthenticationService } from '../../authentication.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    TranslateModule,
+    TranslatePipe,
     MaterialModule,
     NgClass,
   ],

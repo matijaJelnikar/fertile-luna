@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { Router } from '@angular/router';
 import { Cycle } from '@basal-temp-log-workspace/model';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { filter } from 'rxjs';
 import { NewCycleDialogService } from '../../components/new-cycle/new-cycle-dialog.service';
 import { MaterialModule } from '../../material.module';
@@ -16,7 +16,7 @@ import { UserService } from '../../state/user/user.service';
   styleUrls: ['./settings.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideNativeDateAdapter()],
-  imports: [MaterialModule, FormsModule, TranslateModule],
+  imports: [MaterialModule, FormsModule, TranslatePipe],
 })
 export class SettingsComponent {
   private theme = inject(ThemeService);

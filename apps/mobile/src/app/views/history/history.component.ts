@@ -20,7 +20,7 @@ import {
   MeasurementGraphData,
   UpdateMeasurementDto,
 } from '@basal-temp-log-workspace/model';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import {
   AddMeasurementComponent,
   MeasurementDialogData,
@@ -49,7 +49,7 @@ const MOBILE_DIALOG_CONFIG = {
   providers: [HistoryService],
   imports: [
     DatePipe,
-    TranslateModule,
+    TranslatePipe,
     MatCell,
     MatCellDef,
     MatColumnDef,
