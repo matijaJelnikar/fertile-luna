@@ -1,4 +1,4 @@
-<div fxFill fxLayout="column" class="registration-wrapper">
+<div class="registration-wrapper">
   <div
     class="registration-image"
     [ngClass]="{ 'initial-load': initialLoad() }"
@@ -67,7 +67,7 @@
       </button>
 
       <!-- Back to login link -->
-      <div class="back-to-login" fxLayout="row" fxLayoutAlign="center center">
+      <div class="back-to-login">
         <a mat-button href="/login">{{
           'register.back.to.login' | translate
         }}</a>
