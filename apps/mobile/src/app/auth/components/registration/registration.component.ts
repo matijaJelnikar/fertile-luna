@@ -11,7 +11,7 @@ import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { Router } from '@angular/router';
 import { LoginResponse } from '@basal-temp-log-workspace/model';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
 import { AuthenticationService } from '../../authentication.service';
@@ -48,6 +48,7 @@ export class RegistrationComponent implements AfterViewInit {
   private authService = inject(AuthenticationService);
   private credentialsService = inject(CredentialsService);
   private router = inject(Router);
+  private translate = inject(TranslateService);
 
   initialLoad = signal(true);
   error = signal<string | null>(null);
@@ -76,7 +77,7 @@ export class RegistrationComponent implements AfterViewInit {
     } catch (err) {
       this.error.set(
         (err as { error?: { message?: string[] } }).error?.message?.[0] ||
-          'Registration failed. Please try again.'
+          this.translate.instant('register.failed')
       );
       return;
     }

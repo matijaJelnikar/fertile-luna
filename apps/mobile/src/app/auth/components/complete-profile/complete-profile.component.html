@@ -8,14 +8,15 @@
         <mat-icon
           class="user-avatar"
           [style.background-image]="'url(resources/avatar_woman.png)'"
-          alt="User Avatar"
+          role="img"
+          [attr.aria-label]="'profile.avatar' | translate"
         ></mat-icon>
       </mat-icon>
 
       <mat-menu #menu="matMenu">
         <button mat-menu-item (click)="logout()">
-          <mat-icon>logout</mat-icon>
-          Logout
+          <mat-icon aria-hidden="true">logout</mat-icon>
+          {{ 'common.logout' | translate }}
         </button>
       </mat-menu>
     </div>
@@ -25,7 +26,7 @@
   <!-- Step 1: Fill out name -->
   <mat-step [completed]="profileForm().valid()">
     <form [formRoot]="profileForm" novalidate>
-      <ng-template matStepLabel>Fill out your name</ng-template>
+      <ng-template matStepLabel>{{ 'profile.step.name' | translate }}</ng-template>
 
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>{{ 'username' | translate }}</mat-label>
@@ -63,7 +64,7 @@
 
       <div class="button-group">
         <button mat-button matStepperNext type="button" [disabled]="profileForm().invalid()">
-          Next
+          {{ 'common.next' | translate }}
         </button>
       </div>
     </form>
@@ -72,10 +73,10 @@
   <!-- Step 2: Fill cycle info -->
   <mat-step [completed]="cycleForm().valid()">
     <form [formRoot]="cycleForm" novalidate>
-      <ng-template matStepLabel>Fill cycle info</ng-template>
+      <ng-template matStepLabel>{{ 'profile.step.cycle' | translate }}</ng-template>
 
       <mat-form-field appearance="fill" class="full-width">
-        <mat-label>When did you have your last period?</mat-label>
+        <mat-label>{{ 'profile.last.period' | translate }}</mat-label>
         <input
           matInput
           [matDatepicker]="lastPeriodPicker"
@@ -89,14 +90,14 @@
       </mat-form-field>
 
       <mat-form-field appearance="fill" class="full-width">
-        <mat-label>How many days were you bleeding?</mat-label>
+        <mat-label>{{ 'profile.bleeding.length' | translate }}</mat-label>
         <input type="number" matInput [formField]="cycleForm.bleedingLength" />
       </mat-form-field>
 
       <div class="button-group">
-        <button mat-button matStepperPrevious type="button">Back</button>
+        <button mat-button matStepperPrevious type="button">{{ 'common.back' | translate }}</button>
         <button mat-button matStepperNext type="button" [disabled]="cycleForm().invalid()">
-          Next
+          {{ 'common.next' | translate }}
         </button>
       </div>
     </form>
@@ -104,12 +105,15 @@
 
   <!-- Step 3: Completion -->
   <mat-step>
-    <ng-template matStepLabel>Done</ng-template>
-    <p>You are now done.</p>
+    <ng-template matStepLabel>{{ 'profile.step.done' | translate }}</ng-template>
+    <p>{{ 'profile.done' | translate }}</p>
+    @if (error()) {
+      <p class="error" role="alert">{{ 'profile.failed' | translate }}</p>
+    }
     <div class="button-group">
-      <button mat-button matStepperPrevious type="button">Back</button>
+      <button mat-button matStepperPrevious type="button">{{ 'common.back' | translate }}</button>
       <button mat-button type="button" [disabled]="!canSubmit()" (click)="submit()">
-        Submit
+        {{ 'common.submit' | translate }}
       </button>
     </div>
   </mat-step>

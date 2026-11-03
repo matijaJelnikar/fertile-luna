@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { Router } from '@angular/router';
 import { Cycle } from '@basal-temp-log-workspace/model';
@@ -16,7 +15,7 @@ import { UserService } from '../../state/user/user.service';
   styleUrls: ['./settings.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideNativeDateAdapter()],
-  imports: [MaterialModule, FormsModule, TranslatePipe],
+  imports: [MaterialModule, TranslatePipe],
 })
 export class SettingsComponent {
   private theme = inject(ThemeService);

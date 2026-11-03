@@ -95,6 +95,7 @@ export class CompleteProfileComponent {
   private router = inject(Router);
 
   isLinear = false;
+  error = signal(false);
 
   private profile = signal<ProfileModel>({
     username: '',
@@ -121,6 +122,7 @@ export class CompleteProfileComponent {
 
   submit(): void {
     if (!this.canSubmit()) return;
+    this.error.set(false);
 
     const profile = this.profile();
     const firstCycle = this.firstCycle();
@@ -152,9 +154,7 @@ export class CompleteProfileComponent {
         }
         this.router.navigate(['/home']);
       },
-      error: (err) => {
-        console.error('Error completing profile:', err);
-      },
+      error: () => this.error.set(true),
     });
   }
 
